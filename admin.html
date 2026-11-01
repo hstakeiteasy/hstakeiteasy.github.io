@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Portal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <style> body { background-color: #f1f5f9; } .tab-content { display: none; } .tab-content.active { display: block; } </style>
+</head>
+<body class="text-gray-800">
+
+  <!-- Admin Navbar with Hamburger Icon -->
+  <nav class="bg-white shadow-sm p-4 flex justify-between items-center sticky top-0 z-50">
+    <div class="flex items-center gap-3">
+      <button onclick="toggleSidebar()" class="md:hidden text-gray-600 text-2xl focus:outline-none"><i class="fa-solid fa-bars"></i></button>
+      <div class="text-xl font-bold text-blue-600"><i class="fa-solid fa-shield-halved"></i> Admin Portal</div>
+    </div>
+    <button onclick="logout()" class="hidden md:block text-red-500 hover:text-red-700 font-medium"><i class="fa-solid fa-power-off"></i> Logout</button>
+  </nav>
+
+  <div class="flex min-h-screen relative overflow-hidden">
+    
+    <!-- Mobile Sidebar Overlay -->
+    <div id="sidebarOverlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black bg-opacity-50 z-30 hidden md:hidden transition-opacity"></div>
+
+    <!-- Sidebar Menu -->
+    <div id="sidebar" class="fixed md:static inset-y-0 left-0 transform -translate-x-full md:translate-x-0 transition-transform duration-200 ease-in-out w-64 bg-white shadow-md p-4 space-y-2 z-40 h-full overflow-y-auto">
+      <div class="flex justify-end md:hidden mb-4">
+        <button onclick="toggleSidebar()" class="text-gray-500 text-2xl focus:outline-none"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <button onclick="switchTab('batches')" class="w-full text-left p-3 rounded hover:bg-blue-50 font-medium"><i class="fa-solid fa-users-rectangle w-6"></i> Batches</button>
+      <button onclick="switchTab('students')" class="w-full text-left p-3 rounded hover:bg-blue-50 font-medium"><i class="fa-solid fa-user-graduate w-6"></i> Students</button>
+      <button onclick="switchTab('dues')" class="w-full text-left p-3 rounded hover:bg-blue-50 font-medium"><i class="fa-solid fa-file-invoice-dollar w-6"></i> Dues & Billing</button>
+      <button onclick="switchTab('reports')" class="w-full text-left p-3 rounded hover:bg-blue-50 font-medium"><i class="fa-solid fa-chart-line w-6"></i> Reports</button>
+      <button onclick="logout()" class="w-full text-left p-3 rounded hover:bg-red-50 text-red-600 font-medium md:hidden mt-10"><i class="fa-solid fa-power-off w-6"></i> Logout</button>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="flex-1 p-4 md:p-6 w-full max-w-full overflow-x-hidden">
+      
+      <!-- BATCHES TAB -->
+      <div id="batches" class="tab-content active space-y-6">
+        <h2 class="text-2xl font-bold">Manage Batches</h2>
+        <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-2">
+            <input type="text" id="bName" placeholder="Batch Name" class="p-2 border rounded">
+            <input type="number" id="bFee" placeholder="Fee (₹)" class="p-2 border rounded">
+            <input type="number" id="bDueDay" placeholder="Due Day" class="p-2 border rounded">
+            <button onclick="addBatch()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Add</button>
+          </div>
+        </div>
+        <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100 overflow-x-auto">
+          <table class="w-full text-left border-collapse whitespace-nowrap">
+            <thead><tr class="bg-gray-100"><th class="p-2">ID</th><th class="p-2">Name</th><th class="p-2">Fee</th><th class="p-2">Due Day</th><th class="p-2">Action</th></tr></thead>
+            <tbody id="batchTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- STUDENTS TAB -->
+      <div id="students" class="tab-content space-y-6">
+        <h2 class="text-2xl font-bold">Manage Students</h2>
+        <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-2">
+            <input type="text" id="sName" placeholder="Student Name" class="p-2 border rounded">
+            <input type="text" id="sParent" placeholder="Parent Name" class="p-2 border rounded">
+            <input type="text" id="sPhone" placeholder="Parent Phone" class="p-2 border rounded">
+            <input type="number" id="sFee" placeholder="Custom Fee (Opt)" class="p-2 border rounded">
+            <select id="sBatch" class="p-2 border rounded batch-dropdown col-span-1 md:col-span-2"><option value="">Select Batch</option></select>
+            <button onclick="addStudent()" class="bg-blue-600 text-white p-2 rounded col-span-1 md:col-span-2">Add Student</button>
+          </div>
+          
+          <!-- New Student Result & WhatsApp Share Box -->
+          <div id="newStudentResult" class="mt-4 p-4 bg-green-50 border border-green-200 rounded hidden">
+            <p class="text-green-800 font-medium" id="newStudentText"></p>
+            <a id="newStudentWaLink" target="_blank" class="mt-2 inline-block bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 shadow-sm transition">
+              <i class="fa-brands fa-whatsapp"></i> Share Login via WhatsApp
+            </a>
+          </div>
+        </div>
+        
+        <div class="bg-white p-4 md:p-6 rounded-lg shadow-sm border border-gray-100 overflow-x-auto">
+          <input type="text" id="studentSearch" onkeyup="filterStudents()" placeholder="🔍 Search by Name or ID..." class="w-full p-3 border border-gray-300 rounded mb-4 focus:outline-none focus:border-blue-500">
+          <table class="w-full text-left border-collapse whitespace-nowrap" id="studentTable">
+            <thead>
+              <tr class="bg-gray-100 text-sm">
+                <th class="p-2">ID</th><th class="p-2">Name</th><th class="p-2">Parent Name</th>
+                <th class="p-2">Phone</th><th class="p-2">Batch</th><th class="p-2">Custom Fee</th>
+                <th class="p-2">Join Date</th><th class="p-2">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="studentTableBody" class="text-sm"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- DUES & BILLING TAB -->
+      <div id="dues" class="tab-content space-y-6">
+        <h2 class="text-2xl font-bold">Dues & Billing</h2>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <!-- Generate Bills -->
+          <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+            <h3 class="text-lg font-semibold mb-3"><i class="fa-solid fa-file-invoice text-blue-500"></i> Generate Monthly Bills</h3>
+            <select id="billBatch" class="p-2 border rounded w-full mb-3 batch-dropdown"><option value="">Select Batch</option></select>
+            <div class="flex gap-2 mb-3">
+              <input type="number" id="billMonth" placeholder="Month (1-12)" class="p-2 border rounded w-full">
+              <input type="number" id="billYear" placeholder="Year" class="p-2 border rounded w-full">
+            </div>
+            <button onclick="generateBills()" class="bg-blue-600 text-white p-2 rounded w-full">Generate</button>
+          </div>
+
+          <!-- Fee Collection & Discounts -->
+          <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+            <h3 class="text-lg font-semibold mb-3"><i class="fa-solid fa-hand-holding-dollar text-green-500"></i> Fee Actions</h3>
+            
+            <input type="text" id="feeStudentInput" list="studentDataList" placeholder="Search Student ID or Name..." onchange="loadStudentBills()" class="p-2 border rounded w-full mb-2">
+            <datalist id="studentDataList"></datalist>
+            
+            <div id="pendingBillsArea" class="bg-gray-50 p-2 rounded mb-3 max-h-40 overflow-y-auto hidden text-sm"></div>
+
+            <div class="flex gap-2 mb-2">
+              <input type="number" id="feeAmount" placeholder="Amount (₹)" class="p-2 border rounded w-full">
+              <select id="feeMode" class="p-2 border rounded w-1/2">
+                <option value="CASH">CASH</option><option value="UPI">UPI</option><option value="BANK">BANK</option>
+              </select>
+            </div>
+            <input type="text" id="feeNote" placeholder="Note (For Discounts or Records)" class="p-2 border rounded w-full mb-3">
+            
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              <button onclick="collectDistributedFee()" class="bg-green-500 text-white p-2 rounded text-sm" title="Pay Selected Bills"><i class="fa-solid fa-check"></i> Collect</button>
+              <button onclick="applyDistributedDiscount()" class="bg-purple-500 text-white p-2 rounded text-sm" title="Discount Selected Bills"><i class="fa-solid fa-tag"></i> Discount</button>
+              <button onclick="addPrevDue()" class="bg-yellow-500 text-white p-2 rounded text-sm" title="Add Generic Due"><i class="fa-solid fa-plus"></i> Add Due</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Check Batch Dues -->
+        <div class="bg-white p-4 md:p-6 rounded-lg shadow-sm border border-gray-100">
+          <h3 class="text-lg font-semibold mb-3">Check Batch Dues</h3>
+          <div class="flex gap-2 mb-4">
+            <select id="viewDueBatch" class="p-2 border rounded w-full batch-dropdown"><option value="">All Batches</option></select>
+            <button onclick="loadBatchDues()" class="bg-gray-800 text-white px-4 rounded"><i class="fa-solid fa-search"></i></button>
+          </div>
+          <div id="dueResults" class="space-y-2"></div>
+        </div>
+      </div>
+
+      <!-- REPORTS TAB -->
+      <div id="reports" class="tab-content space-y-6">
+        <h2 class="text-2xl font-bold">Collection Reports</h2>
+        <div class="bg-white p-4 md:p-6 rounded-lg shadow-sm border border-gray-100">
+          <div class="flex flex-col md:flex-row gap-2 mb-4">
+            <select id="reportDays" class="p-2 border rounded w-full md:w-auto"><option value="7">Last 7 Days</option><option value="30">Last 30 Days</option><option value="365">Last 1 Year</option></select>
+            <select id="reportBatch" class="p-2 border rounded w-full md:w-auto batch-dropdown"><option value="">All Batches</option></select>
+            <div class="flex gap-2 w-full md:w-auto">
+              <button onclick="loadReport()" class="bg-blue-600 text-white px-4 py-2 rounded w-full md:w-auto">Fetch</button>
+              <button onclick="downloadPDF()" class="bg-red-500 text-white px-4 py-2 rounded w-full md:w-auto"><i class="fa-solid fa-file-pdf"></i> PDF</button>
+            </div>
+          </div>
+          
+          <div id="reportPrintArea" class="p-6 bg-white border mt-4 hidden overflow-x-auto">
+            <h2 class="text-2xl font-bold text-center">Collection Report</h2>
+            <p id="reportPeriodStr" class="text-center text-gray-500 mb-4"></p>
+            <p class="font-bold text-right mb-2">Total: ₹<span id="reportTotal">0</span></p>
+            <table class="w-full text-left border-collapse mt-2 whitespace-nowrap">
+              <thead><tr class="bg-gray-100 border-b"><th class="p-2">Date</th><th class="p-2">Student</th><th class="p-2">Batch</th><th class="p-2">Amount</th><th class="p-2">Mode</th></tr></thead>
+              <tbody id="reportTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Universal Edit Modal -->
+  <div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex justify-center items-center z-50 p-4">
+    <div class="bg-white p-6 rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto">
+      <h3 id="modalTitle" class="text-lg font-bold mb-4">Edit</h3>
+      <div id="modalBody" class="space-y-3"></div>
+      <div class="flex justify-end gap-2 mt-4">
+        <button onclick="document.getElementById('editModal').classList.add('hidden')" class="px-4 py-2 bg-gray-200 rounded text-gray-800">Cancel</button>
+        <button id="modalSaveBtn" class="px-4 py-2 bg-blue-600 text-white rounded">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- REPLACE THIS URL WITH YOUR NEW DEPLOYMENT URL ---
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby7Q4nKX35FU54JgLEyj7HSCRktuHOWX6MCNcHpTcNKLJs_TIfCCEDAvcteRM0sXcWBkw/exec";
+    
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    
+    // Auth guard
+    if(!token || (localStorage.getItem('role') && localStorage.getItem('role') !== 'admin')) {
+      window.location.href = 'login.html';
+    }
+    
+    function logout() { 
+      localStorage.clear(); 
+      sessionStorage.clear(); 
+      window.location.href = 'login.html'; 
+    }
+    
+    // Mobile Sidebar Toggle
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('-translate-x-full');
+      document.getElementById('sidebarOverlay').classList.toggle('hidden');
+    }
+
+    // Tab Switcher
+    function switchTab(tabId) { 
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active')); 
+      document.getElementById(tabId).classList.add('active'); 
+      if(window.innerWidth < 768) { toggleSidebar(); }
+    }
+    
+    // Date Formatter (Removes timezone junk)
+    function cleanDate(isoString) {
+      if(!isoString) return '';
+      const d = new Date(isoString);
+      return d.toLocaleDateString('en-IN', {day:'2-digit', month:'2-digit', year:'numeric'});
+    }
+
+    // Core API Fetcher
+    async function fetchAPI(action, params = {}) {
+      let url = `${SCRIPT_URL}?action=${action}&token=${token}`;
+      Object.keys(params).forEach(k => url += `&${k}=${encodeURIComponent(params[k])}`);
+      try {
+        const res = await fetch(url); 
+        return await res.json();
+      } catch(err) {
+        alert("Network Error: Make sure your Script is deployed as Web App (Anyone)");
+        return {ok: false};
+      }
+    }
+
+    let allBatches = [], allStudents = [];
+    
+    // INITIAL LOAD
+    window.onload = async () => {
+      const bRes = await fetchAPI('getBatches');
+      if(bRes.ok) {
+        allBatches = bRes.data;
+        let bHtml = '';
+        document.querySelectorAll('.batch-dropdown').forEach(s => { s.innerHTML = '<option value="">All Batches / Select</option>'; });
+        allBatches.forEach(b => {
+          document.querySelectorAll('.batch-dropdown').forEach(s => s.innerHTML += `<option value="${b.BatchID}">${b.BatchName}</option>`);
+          bHtml += `<tr class="border-b"><td class="p-2">${b.BatchID}</td><td class="p-2">${b.BatchName}</td><td class="p-2">₹${b.DefaultFee}</td><td class="p-2">${b.DueDay}</td><td class="p-2"><button onclick="editBatch('${b.BatchID}')" class="text-blue-500 hover:text-blue-700"><i class="fa-solid fa-pen"></i></button></td></tr>`;
+        });
+        document.getElementById('batchTableBody').innerHTML = bHtml;
+      }
+
+      const sRes = await fetchAPI('getStudents');
+      if(sRes.ok) {
+        allStudents = sRes.data;
+        let sHtml = '', dlHtml = '';
+        allStudents.forEach(s => {
+          sHtml += `<tr class="border-b student-row hover:bg-gray-50">
+            <td class="p-2 stu-id text-gray-500 text-xs font-mono">${s.StudentID}</td>
+            <td class="p-2 font-medium stu-name">${s.Name}</td>
+            <td class="p-2 text-gray-600">${s.ParentName || '-'}</td>
+            <td class="p-2">${s.ParentPhone}</td>
+            <td class="p-2"><span class="bg-gray-200 text-gray-800 text-xs px-2 py-1 rounded">${s.BatchID}</span></td>
+            <td class="p-2 text-green-600 font-medium">${s.CustomFee ? '₹'+s.CustomFee : '-'}</td>
+            <td class="p-2 text-gray-500">${cleanDate(s.JoinDate)}</td>
+            <td class="p-2 flex gap-4">
+              <button onclick="editStudent('${s.StudentID}')" class="text-blue-500 hover:text-blue-700" title="Edit Profile"><i class="fa-solid fa-pen"></i></button>
+              <button onclick="managePassword('${s.StudentID}')" class="text-orange-500 hover:text-orange-700" title="Manage Password"><i class="fa-solid fa-key"></i></button>
+            </td>
+          </tr>`;
+          dlHtml += `<option value="${s.StudentID} - ${s.Name}"></option>`;
+        });
+        document.getElementById('studentTableBody').innerHTML = sHtml;
+        document.getElementById('studentDataList').innerHTML = dlHtml;
+      }
+    };
+
+    // --- BATCHES ---
+    async function addBatch() { 
+      await fetchAPI('addBatch', {name: document.getElementById('bName').value, fee: document.getElementById('bFee').value, dueDay: document.getElementById('bDueDay').value}); 
+      window.location.reload(); 
+    }
+    
+    function editBatch(id) {
+      const b = allBatches.find(x => x.BatchID === id);
+      document.getElementById('modalTitle').innerText = `Edit Batch ${id}`;
+      document.getElementById('modalBody').innerHTML = `<label class="text-sm font-bold text-gray-600">Batch Name</label><input type="text" id="mBName" value="${b.BatchName}" class="w-full border p-2 rounded mb-2"><label class="text-sm font-bold text-gray-600">Default Fee</label><input type="number" id="mBFee" value="${b.DefaultFee}" class="w-full border p-2 rounded mb-2"><label class="text-sm font-bold text-gray-600">Due Day (1-28)</label><input type="number" id="mBDue" value="${b.DueDay}" class="w-full border p-2 rounded">`;
+      document.getElementById('editModal').classList.remove('hidden');
+      document.getElementById('modalSaveBtn').onclick = async () => { 
+        await fetchAPI('updateBatch', {batchId:id, name:document.getElementById('mBName').value, fee:document.getElementById('mBFee').value, dueDay:document.getElementById('mBDue').value}); 
+        window.location.reload(); 
+      };
+    }
+
+    // --- STUDENTS ---
+    function filterStudents() {
+      let filter = document.getElementById('studentSearch').value.toUpperCase();
+      let rows = document.querySelectorAll('.student-row');
+      rows.forEach(row => {
+        let id = row.querySelector('.stu-id').textContent.toUpperCase();
+        let name = row.querySelector('.stu-name').textContent.toUpperCase();
+        row.style.display = (id.indexOf(filter) > -1 || name.indexOf(filter) > -1) ? "" : "none";
+      });
+    }
+
+    async function addStudent() {
+      const res = await fetchAPI('addStudent', {
+        name: document.getElementById('sName').value, 
+        parentName: document.getElementById('sParent').value, 
+        parentPhone: document.getElementById('sPhone').value, 
+        customFee: document.getElementById('sFee').value, 
+        batchId: document.getElementById('sBatch').value
+      });
+      
+      if(res.ok) { 
+        document.getElementById('newStudentResult').classList.remove('hidden'); 
+        document.getElementById('newStudentText').innerText = `Success! Student ID: ${res.studentId} | Password: ${res.password}`; 
+        
+        // Prepare WhatsApp Link
+        let phone = res.parentPhone; 
+        if(phone.length === 10) phone = '91' + phone;
+        let waMsg = encodeURIComponent(`Hi ${document.getElementById('sName').value}, your tuition portal login details are:\n\n*ID:* ${res.studentId}\n*Password:* ${res.password}\n\nPlease keep this safe.`);
+        document.getElementById('newStudentWaLink').href = `https://wa.me/${phone}?text=${waMsg}`;
+      }
+    }
+    
+    function editStudent(id) {
+      const s = allStudents.find(x => x.StudentID === id);
+      document.getElementById('modalTitle').innerText = `Edit Student ${id}`;
+      let bOpts = allBatches.map(b => `<option value="${b.BatchID}" ${b.BatchID===s.BatchID?'selected':''}>${b.BatchName}</option>`).join('');
+      document.getElementById('modalBody').innerHTML = `<label class="text-sm font-bold text-gray-600">Name</label><input type="text" id="mSName" value="${s.Name}" class="w-full border p-2 rounded mb-2"><label class="text-sm font-bold text-gray-600">Parent Phone</label><input type="text" id="mSPhone" value="${s.ParentPhone}" class="w-full border p-2 rounded mb-2"><label class="text-sm font-bold text-gray-600">Custom Fee</label><input type="number" id="mSFee" value="${s.CustomFee}" placeholder="Leave blank for Batch default" class="w-full border p-2 rounded mb-2"><label class="text-sm font-bold text-gray-600">Batch</label><select id="mSBatch" class="w-full border p-2 rounded">${bOpts}</select>`;
+      document.getElementById('editModal').classList.remove('hidden');
+      document.getElementById('modalSaveBtn').onclick = async () => { 
+        await fetchAPI('updateStudent', {studentId:id, name:document.getElementById('mSName').value, parentPhone:document.getElementById('mSPhone').value, customFee:document.getElementById('mSFee').value, batchId:document.getElementById('mSBatch').value}); 
+        window.location.reload(); 
+      };
+    }
+
+    function managePassword(id) {
+      const s = allStudents.find(x => x.StudentID === id);
+      document.getElementById('modalTitle').innerText = `Manage Login - ${s.Name}`;
+      let phone = String(s.ParentPhone).replace(/\D/g, ''); 
+      if(phone.length === 10) phone = '91' + phone;
+      let waMsg = encodeURIComponent(`Hi ${s.Name}, your tuition portal login details are:\n\n*ID:* ${id}\n*Password:* ${s.Password}\n\nPlease keep this safe.`);
+      
+      document.getElementById('modalBody').innerHTML = `
+        <div class="mb-4 p-4 bg-blue-50 border border-blue-100 rounded flex justify-between items-center">
+          <div>
+            <span class="text-xs text-blue-500 font-bold uppercase">Current Password</span><br>
+            <span class="font-bold font-mono text-lg text-gray-800 tracking-wider">${s.Password}</span>
+          </div>
+          <a href="https://wa.me/${phone}?text=${waMsg}" target="_blank" class="bg-green-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-green-600 transition shadow-sm">
+            <i class="fa-brands fa-whatsapp text-lg"></i> Share
+          </a>
+        </div>
+        <hr class="my-4">
+        <label class="text-sm font-bold text-gray-700">Change Password</label>
+        <input type="text" id="mSNewPass" placeholder="Enter new password..." class="w-full border p-3 rounded mt-1 focus:ring focus:ring-blue-200 focus:outline-none">
+      `;
+      document.getElementById('editModal').classList.remove('hidden');
+      document.getElementById('modalSaveBtn').onclick = async () => {
+        const newPass = document.getElementById('mSNewPass').value.trim();
+        if(!newPass) return alert("Please enter a new password.");
+        document.getElementById('modalSaveBtn').innerText = "Saving...";
+        await fetchAPI('adminChangeStudentPassword', {studentId:id, newPassword:newPass});
+        alert("Password Updated!"); 
+        window.location.reload();
+      };
+    }
+
+    // --- FEES & MULTI-ACTION ---
+    async function generateBills() { 
+      await fetchAPI('generateBills', {batchId: document.getElementById('billBatch').value, month: document.getElementById('billMonth').value, year: document.getElementById('billYear').value}); 
+      alert('Bills Generated Successfully'); 
+    }
+    
+    async function loadStudentBills() {
+      let input = document.getElementById('feeStudentInput').value.split(' - ')[0].trim();
+      if(!input) return;
+      const res = await fetchAPI('studentFees', {studentId: input});
+      if(res.ok) {
+        let pending = res.bills.filter(b => b.status !== 'PAID').sort((a,b) => new Date(a.dueDate) - new Date(b.dueDate));
+        let html = '';
+        if(pending.length === 0) html = '<p class="text-green-600 text-center font-medium py-2">No pending bills!</p>';
+        pending.forEach(b => {
+          let left = b.amount - b.discount - b.paid;
+          html += `<label class="flex justify-between items-center bg-white p-2 border-b hover:bg-gray-50 cursor-pointer transition">
+            <div class="flex items-center gap-3">
+              <input type="checkbox" class="bill-check h-4 w-4 text-blue-600 border-gray-300 rounded" value="${b.billId}" checked> 
+              <span class="font-medium text-gray-700">Due: ${cleanDate(b.dueDate)}</span>
+            </div> 
+            <span class="font-bold text-red-500">₹${left}</span>
+          </label>`;
+        });
+        document.getElementById('pendingBillsArea').innerHTML = html;
+        document.getElementById('pendingBillsArea').classList.remove('hidden');
+      }
+    }
+
+    async function collectDistributedFee() {
+      const studentId = document.getElementById('feeStudentInput').value.split(' - ')[0].trim();
+      const amount = document.getElementById('feeAmount').value;
+      if(!studentId || !amount) return alert("Enter a student and amount first.");
+      
+      const checks = document.querySelectorAll('.bill-check:checked');
+      if(checks.length === 0) return alert("Select at least one bill to pay.");
+      
+      const res = await fetchAPI('collectMultiFee', { 
+        studentId: studentId, 
+        amount: amount, 
+        mode: document.getElementById('feeMode').value, 
+        note: document.getElementById('feeNote').value, 
+        billIds: JSON.stringify(Array.from(checks).map(c=>c.value)) 
+      });
+      
+      if(res.ok) { 
+        alert("Payment Recorded!"); 
+        loadStudentBills(); 
+        document.getElementById('feeAmount').value=''; 
+      }
+    }
+
+    async function applyDistributedDiscount() {
+      const studentId = document.getElementById('feeStudentInput').value.split(' - ')[0].trim();
+      const amount = document.getElementById('feeAmount').value;
+      if(!studentId || !amount) return alert("Enter a student and discount amount.");
+      
+      const checks = document.querySelectorAll('.bill-check:checked');
+      if(checks.length === 0) return alert("Select at least one bill to discount.");
+      
+      const res = await fetchAPI('applyMultiDiscount', { 
+        studentId: studentId, 
+        amount: amount, 
+        note: document.getElementById('feeNote').value, 
+        billIds: JSON.stringify(Array.from(checks).map(c=>c.value)) 
+      });
+      
+      if(res.ok) { 
+        alert("Discount Applied!"); 
+        loadStudentBills(); 
+        document.getElementById('feeAmount').value=''; 
+        document.getElementById('feeNote').value=''; 
+      }
+    }
+
+    async function addPrevDue() {
+      const id = document.getElementById('feeStudentInput').value.split(' - ')[0].trim();
+      const amt = document.getElementById('feeAmount').value;
+      if(!id || !amt) return alert("Enter student and amount.");
+      await fetchAPI('addPrevDue', {studentId:id, amount:amt}); 
+      alert("Previous Due Added"); 
+      loadStudentBills();
+    }
+
+    // --- BATCH DUES ---
+    async function loadBatchDues() {
+      const batchId = document.getElementById('viewDueBatch').value;
+      document.getElementById('dueResults').innerHTML = '<p class="text-center py-4"><i class="fa-solid fa-spinner fa-spin text-blue-500 text-2xl"></i></p>';
+      
+      const res = await fetchAPI('batchDues', {batchId});
+      if(res.ok) {
+        if (res.students.length === 0) { 
+          document.getElementById('dueResults').innerHTML = `<div class="p-3 bg-green-100 text-green-800 rounded mb-4 text-center font-bold">No pending dues!</div>`; 
+          return; 
+        }
+        
+        let html = `<div class="p-4 bg-red-50 border border-red-200 text-red-800 font-bold rounded-lg mb-4 flex justify-between shadow-sm">
+          <span>Total Pending Due:</span> 
+          <span class="text-xl">₹${res.totalDue}</span>
+        </div>`;
+        
+        res.students.forEach(s => { 
+          let waStr = encodeURIComponent(`Hi ${s.name}, your total pending tuition due is ₹${s.due}. Please pay as soon as possible. Thanks!`);
+          let phone = String(s.parentPhone).replace(/\D/g, ''); 
+          if(phone.length === 10) phone = '91' + phone;
+          
+          html += `
+          <div class="flex justify-between items-center p-4 border-b hover:bg-gray-50 transition">
+            <div>
+              <span class="font-semibold text-gray-800">${s.name} <span class="text-xs text-gray-400 font-normal font-mono">(${s.studentId})</span></span>
+              <span class="ml-2 text-[10px] bg-gray-200 text-gray-700 px-2 py-1 rounded tracking-wide font-bold uppercase">${s.batchName}</span>
+              <p class="text-sm text-red-500 font-bold mt-1">Due: ₹${s.due}</p>
+            </div>
+            <a href="https://wa.me/${phone}?text=${waStr}" target="_blank" class="text-green-500 text-2xl hover:text-green-600 transition p-2">
+              <i class="fa-brands fa-whatsapp"></i>
+            </a>
+          </div>`; 
+        });
+        document.getElementById('dueResults').innerHTML = html;
+      }
+    }
+
+    // --- REPORTS ---
+    async function loadReport() {
+      const days = document.getElementById('reportDays').value;
+      const res = await fetchAPI('collectionReport', {days: days, batchId: document.getElementById('reportBatch').value});
+      
+      if(res.ok) {
+        document.getElementById('reportPrintArea').classList.remove('hidden');
+        document.getElementById('reportTotal').innerText = res.total;
+        
+        const fromD = new Date(); 
+        fromD.setDate(fromD.getDate() - parseInt(days));
+        document.getElementById('reportPeriodStr').innerText = `Period: ${fromD.toLocaleDateString('en-IN')} to ${new Date().toLocaleDateString('en-IN')}`;
+        
+        let tbody = '';
+        res.rows.forEach(r => { 
+          tbody += `<tr class="border-b text-sm hover:bg-gray-50">
+            <td class="p-3">${cleanDate(r.paidOn)}</td>
+            <td class="p-3 font-medium">${r.name} <span class="text-xs text-gray-400">(${r.studentId})</span></td>
+            <td class="p-3 text-gray-500">${r.batchName}</td>
+            <td class="p-3 text-green-600 font-bold">₹${r.amount}</td>
+            <td class="p-3"><span class="bg-gray-100 px-2 py-1 rounded text-xs text-gray-600 font-medium">${r.mode}</span></td>
+          </tr>`; 
+        });
+        document.getElementById('reportTableBody').innerHTML = tbody;
+      }
+    }
+    
+    function downloadPDF() { 
+      const el = document.getElementById('reportPrintArea'); 
+      html2pdf().set({ 
+        margin: [0.5, 0.5], 
+        filename: 'collection_report.pdf', 
+        image: { type: 'jpeg', quality: 0.98 }, 
+        html2canvas: { scale: 2 }, 
+        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' } 
+      }).from(el).save(); 
+    }
+  </script>
+</body>
+</html>

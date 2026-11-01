@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Portal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    body { background-color: #f8fafc; padding-bottom: 80px; }
+    .page-section { display: none; }
+    .page-section.active { display: block; }
+  </style>
+</head>
+<body class="text-gray-800">
+
+  <!-- Top Header with Hamburger Menu -->
+  <div class="bg-blue-600 text-white p-5 rounded-b-3xl shadow-md">
+    <div class="flex justify-between items-center mb-2">
+      <h1 id="greeting" class="text-xl font-light">Good Morning,</h1>
+      
+      <!-- Hamburger Menu Dropdown -->
+      <div class="relative">
+        <button onclick="toggleStudentMenu()" class="text-blue-100 hover:text-white text-2xl focus:outline-none"><i class="fa-solid fa-bars"></i></button>
+        <div id="studentMenuDropdown" class="absolute right-0 mt-2 w-40 bg-white rounded-md shadow-lg hidden overflow-hidden z-50 text-gray-800">
+          <div class="px-4 py-3 border-b text-sm font-bold text-gray-500">Settings</div>
+          <button onclick="logout()" class="w-full text-left px-4 py-3 text-red-600 hover:bg-gray-100 font-medium"><i class="fa-solid fa-power-off mr-2"></i> Logout</button>
+        </div>
+      </div>
+    </div>
+    
+    <h2 id="studentName" class="text-2xl font-bold tracking-wide">Student</h2>
+    <p id="studentIdDisplay" class="text-blue-200 text-sm mt-1">ID: ...</p>
+  </div>
+
+  <!-- Main Content Area -->
+  <div class="p-5">
+    
+    <!-- FEES PAGE -->
+    <div id="page-fees" class="page-section active space-y-4">
+      <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
+        <div>
+          <p class="text-sm text-gray-500 font-medium">Total Pending Due</p>
+          <h3 id="totalDueAmount" class="text-3xl font-bold text-red-500 mt-1">₹0</h3>
+        </div>
+        <div class="bg-red-50 p-3 rounded-full"><i class="fa-solid fa-triangle-exclamation text-red-500 text-xl"></i></div>
+      </div>
+
+      <h3 class="text-lg font-bold text-gray-700 mt-6 mb-2">Bill History</h3>
+      <div id="billsList" class="space-y-3">
+        <p class="text-gray-400 text-center py-4"><i class="fa-solid fa-spinner fa-spin"></i> Loading bills...</p>
+      </div>
+    </div>
+
+    <!-- MARKS PAGE (Coming Soon) -->
+    <div id="page-marks" class="page-section">
+      <div class="bg-white p-10 rounded-2xl shadow-sm text-center">
+        <i class="fa-solid fa-award text-4xl text-yellow-400 mb-3"></i>
+        <h3 class="text-xl font-bold">Marks</h3>
+        <p class="text-gray-500 mt-2">Section coming soon!</p>
+      </div>
+    </div>
+
+    <!-- TESTS PAGE (Coming Soon) -->
+    <div id="page-tests" class="page-section">
+      <div class="bg-white p-10 rounded-2xl shadow-sm text-center">
+        <i class="fa-solid fa-pen-clip text-4xl text-blue-400 mb-3"></i>
+        <h3 class="text-xl font-bold">Tests</h3>
+        <p class="text-gray-500 mt-2">Section coming soon!</p>
+      </div>
+    </div>
+
+    <!-- NOTICE PAGE (Coming Soon) -->
+    <div id="page-notice" class="page-section">
+      <div class="bg-white p-10 rounded-2xl shadow-sm text-center">
+        <i class="fa-solid fa-bullhorn text-4xl text-purple-400 mb-3"></i>
+        <h3 class="text-xl font-bold">Notice Board</h3>
+        <p class="text-gray-500 mt-2">Section coming soon!</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Bottom Navigation -->
+  <div class="fixed bottom-0 w-full bg-white border-t border-gray-200 flex justify-around p-3 pb-safe shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+    <button onclick="nav('fees')" class="nav-btn flex flex-col items-center text-blue-600 w-16" data-target="fees">
+      <i class="fa-solid fa-wallet text-xl mb-1"></i><span class="text-[10px] font-medium mt-1">Fees</span>
+    </button>
+    <button onclick="nav('marks')" class="nav-btn flex flex-col items-center text-gray-400 hover:text-blue-500 w-16" data-target="marks">
+      <i class="fa-solid fa-award text-xl mb-1"></i><span class="text-[10px] font-medium mt-1">Marks</span>
+    </button>
+    <button onclick="nav('tests')" class="nav-btn flex flex-col items-center text-gray-400 hover:text-blue-500 w-16" data-target="tests">
+      <i class="fa-solid fa-pen-clip text-xl mb-1"></i><span class="text-[10px] font-medium mt-1">Tests</span>
+    </button>
+    <button onclick="nav('notice')" class="nav-btn flex flex-col items-center text-gray-400 hover:text-blue-500 w-16" data-target="notice">
+      <i class="fa-solid fa-bullhorn text-xl mb-1"></i><span class="text-[10px] font-medium mt-1">Notice</span>
+    </button>
+  </div>
+
+  <script>
+    // Make sure this matches your deployed Google Apps Script Web App URL
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby7Q4nKX35FU54JgLEyj7HSCRktuHOWX6MCNcHpTcNKLJs_TIfCCEDAvcteRM0sXcWBkw/exec";
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    const studentId = localStorage.getItem('studentId') || sessionStorage.getItem('studentId');
+
+    // Authentication Check
+    if(!token || (localStorage.getItem('role') && localStorage.getItem('role') !== 'student')) {
+      window.location.href = 'login.html';
+    }
+
+    function logout() {
+      localStorage.clear(); 
+      sessionStorage.clear();
+      window.location.href = 'login.html';
+    }
+
+    function toggleStudentMenu() {
+      document.getElementById('studentMenuDropdown').classList.toggle('hidden');
+    }
+
+    // Hide hamburger dropdown when clicking anywhere outside of it
+    document.addEventListener('click', function(event) {
+      const menu = document.getElementById('studentMenuDropdown');
+      const button = event.target.closest('button[onclick="toggleStudentMenu()"]');
+      if (!button && !menu.classList.contains('hidden')) {
+        menu.classList.add('hidden');
+      }
+    });
+
+    // Dynamic Greeting based on time
+    const hour = new Date().getHours();
+    let greetingTxt = "Good Morning,";
+    if (hour >= 12 && hour < 16) greetingTxt = "Good Afternoon,";
+    else if (hour >= 16 && hour < 20) greetingTxt = "Good Evening,";
+    else if (hour >= 20) greetingTxt = "Good Night,";
+    document.getElementById('greeting').innerText = greetingTxt;
+
+    // Bottom Navigation Switcher
+    function nav(pageId) {
+      document.querySelectorAll('.page-section').forEach(el => el.classList.remove('active'));
+      document.getElementById('page-' + pageId).classList.add('active');
+      
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.classList.remove('text-blue-600');
+        btn.classList.add('text-gray-400');
+      });
+      const activeBtn = document.querySelector(`.nav-btn[data-target="${pageId}"]`);
+      activeBtn.classList.remove('text-gray-400');
+      activeBtn.classList.add('text-blue-600');
+    }
+
+    // Formatter to remove timezone strings and display nice dates (DD/MM/YYYY)
+    function cleanDate(isoString) {
+      if(!isoString) return '';
+      const d = new Date(isoString);
+      return d.toLocaleDateString('en-IN', {day:'2-digit', month:'2-digit', year:'numeric'});
+    }
+
+    // Fetch Data on Load
+    window.onload = async () => {
+      try {
+        // 1. Fetch Identity (Name & ID)
+        const meRes = await fetch(`${SCRIPT_URL}?action=me&token=${token}&role=student`);
+        const meData = await meRes.json();
+        if(meData.ok) {
+          document.getElementById('studentName').innerText = meData.name;
+          document.getElementById('studentIdDisplay').innerText = `ID: ${meData.studentId}`;
+        }
+
+        // 2. Fetch Fees & Total Due
+        const feeRes = await fetch(`${SCRIPT_URL}?action=studentFees&token=${token}&studentId=${studentId}`);
+        const feeData = await feeRes.json();
+        
+        if(feeData.ok) {
+          document.getElementById('totalDueAmount').innerText = `₹${feeData.totalDue}`;
+          
+          let billsHtml = '';
+          if(feeData.bills.length === 0) {
+            billsHtml = '<p class="text-gray-500 text-sm text-center mt-4 bg-gray-100 p-3 rounded-lg">No bills found.</p>';
+          }
+          
+          // Sort bills so the newest bills appear at the top
+          feeData.bills.sort((a,b) => new Date(b.dueDate) - new Date(a.dueDate)).forEach(b => {
+            const isPaid = b.status === 'PAID';
+            const statusColor = isPaid ? 'text-green-600 bg-green-100' : (b.status === 'PARTIAL' ? 'text-orange-600 bg-orange-100' : 'text-red-600 bg-red-100');
+            const remaining = (Number(b.amount) - Number(b.discount) - Number(b.paid));
+            
+            billsHtml += `
+              <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+                <div class="flex justify-between items-center mb-2">
+                  <span class="text-xs font-bold px-2 py-1 rounded ${statusColor}">${b.status}</span>
+                  <span class="text-xs text-gray-500 font-medium">Due: ${cleanDate(b.dueDate)}</span>
+                </div>
+                <div class="flex justify-between items-end mt-3">
+                  <div>
+                    <p class="text-sm text-gray-500">Bill ID: ${b.billId.split('-')[1] || b.billId}</p>
+                    ${b.note ? `<p class="text-xs text-gray-400 mt-1"><i class="fa-solid fa-tag"></i> ${b.note}</p>` : ''}
+                  </div>
+                  <div class="text-right">
+                    <p class="text-lg font-bold text-gray-800">₹${b.amount}</p>
+                    ${!isPaid && remaining > 0 ? `<p class="text-xs text-red-500 font-semibold mt-1">Left: ₹${remaining}</p>` : ''}
+                  </div>
+                </div>
+              </div>`;
+          });
+          document.getElementById('billsList').innerHTML = billsHtml;
+        }
+      } catch(err) {
+        document.getElementById('billsList').innerHTML = '<p class="text-red-500 text-sm text-center">Failed to load data. Please refresh.</p>';
+      }
+    };
+  </script>
+</body>
+</html>
