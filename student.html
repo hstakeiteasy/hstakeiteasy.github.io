@@ -3,131 +3,169 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Student Portal</title>
+  <title>Student Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <style>
-    body { background-color: #f8fafc; padding-bottom: 80px; }
+    body { background-color: #f8fafc; padding-bottom: 90px; }
     .page-section { display: none; }
-    .page-section.active { display: block; }
+    .page-section.active { display: block; animation: fadeIn 0.3s ease-in-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    .nav-center-btn { transform: translateY(-20px); box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.4); }
   </style>
 </head>
 <body class="text-gray-800">
 
-  <!-- Top Header with Hamburger Menu -->
-  <div class="bg-blue-600 text-white p-5 rounded-b-3xl shadow-md">
-    <div class="flex justify-between items-center mb-2">
-      <h1 id="greeting" class="text-xl font-light">Good Morning,</h1>
-      
-      <!-- Hamburger Menu Dropdown -->
-      <div class="relative">
-        <button onclick="toggleStudentMenu()" class="text-blue-100 hover:text-white text-2xl focus:outline-none"><i class="fa-solid fa-bars"></i></button>
-        <div id="studentMenuDropdown" class="absolute right-0 mt-2 w-40 bg-white rounded-md shadow-lg hidden overflow-hidden z-50 text-gray-800">
-          <div class="px-4 py-3 border-b text-sm font-bold text-gray-500">Settings</div>
-          <button onclick="logout()" class="w-full text-left px-4 py-3 text-red-600 hover:bg-gray-100 font-medium"><i class="fa-solid fa-power-off mr-2"></i> Logout</button>
-        </div>
-      </div>
-    </div>
-    
-    <h2 id="studentName" class="text-2xl font-bold tracking-wide">Student</h2>
-    <p id="studentIdDisplay" class="text-blue-200 text-sm mt-1">ID: ...</p>
+  <!-- GLOBAL LOADING SPINNER -->
+  <div id="globalLoader" class="fixed inset-0 bg-black bg-opacity-60 z-[100] hidden flex-col justify-center items-center">
+    <i class="fa-solid fa-circle-notch fa-spin text-white text-5xl mb-4"></i>
+    <p class="text-white font-semibold tracking-wider text-lg">Loading Dashboard...</p>
   </div>
 
-  <!-- Main Content Area -->
+  <!-- Header -->
+  <div class="bg-blue-600 text-white p-6 rounded-b-[2rem] shadow-lg">
+    <div class="flex justify-between items-center mb-4">
+      <h1 id="greeting" class="text-xl font-light text-blue-100">Good Morning,</h1>
+      
+      <div class="relative">
+        <button onclick="toggleStudentMenu()" class="text-white text-2xl focus:outline-none"><i class="fa-solid fa-bars"></i></button>
+        <div id="studentMenuDropdown" class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl hidden overflow-hidden z-50 text-gray-800 border border-gray-100">
+          <div class="px-4 py-3 border-b text-xs font-bold text-gray-400 uppercase tracking-wider">Account Settings</div>
+          <button onclick="logout()" class="w-full text-left px-4 py-3 text-red-600 hover:bg-red-50 font-bold transition"><i class="fa-solid fa-power-off mr-2"></i> Log Out</button>
+        </div>
+      </div>
+    </div>
+    <h2 id="studentName" class="text-3xl font-extrabold tracking-tight">Student</h2>
+    <div class="mt-2 inline-block bg-blue-700/50 px-3 py-1 rounded-full border border-blue-500/30">
+      <p id="studentIdDisplay" class="text-blue-50 text-xs font-mono font-medium tracking-widest">ID: ...</p>
+    </div>
+  </div>
+
+  <!-- Main Content -->
   <div class="p-5">
     
+    <!-- HOME PAGE -->
+    <div id="page-home" class="page-section active space-y-6">
+      <div class="bg-gradient-to-r from-blue-50 to-indigo-50 p-5 rounded-2xl border border-blue-100 relative overflow-hidden">
+        <i class="fa-solid fa-quote-left absolute -top-2 -left-2 text-6xl text-blue-500 opacity-10"></i>
+        <p id="dailyQuote" class="text-gray-700 font-medium italic text-center text-sm relative z-10">"Education is the most powerful weapon which you can use to change the world."</p>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center">
+          <div class="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 mb-2"><i class="fa-solid fa fa-calendar text-xl"></i></div>
+          <p class="text-xs text-gray-500 font-semibold uppercase tracking-wider mb-1">Attendance</p>
+          <h3 id="homeAttendance" class="text-2xl font-black text-gray-800">--%</h3>
+          <p class="text-[10px] text-gray-400 mt-1">Since Joining</p>
+        </div>
+        <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center">
+          <div class="w-12 h-12 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-600 mb-2"><i class="fa-solid fa-award text-xl"></i></div>
+          <p class="text-xs text-gray-500 font-semibold uppercase tracking-wider mb-1">Last Exam</p>
+          <h3 id="homeLastExamMark" class="text-2xl font-black text-gray-800">--/--</h3>
+          <p id="homeLastExamName" class="text-[10px] text-gray-400 mt-1 truncate w-full px-2">No exams yet</p>
+        </div>
+      </div>
+
+      <h3 class="font-bold text-gray-800 ml-1 mb-2 mt-4">Quick Links</h3>
+      <div class="grid grid-cols-3 gap-3">
+        <button onclick="alert('Grammar Page Coming Soon!')" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center hover:bg-gray-50 transition active:scale-95"><i class="fa-solid fa-book-open text-blue-500 text-2xl mb-2"></i><span class="text-xs font-bold text-gray-700">Grammar</span></button>
+        <button onclick="alert('Writing Page Coming Soon!')" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center hover:bg-gray-50 transition active:scale-95"><i class="fa-solid fa-pen-nib text-green-500 text-2xl mb-2"></i><span class="text-xs font-bold text-gray-700">Writing</span></button>
+        <button onclick="alert('Resources Page Coming Soon!')" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center hover:bg-gray-50 transition active:scale-95"><i class="fa-solid fa-folder-open text-orange-500 text-2xl mb-2"></i><span class="text-xs font-bold text-gray-700">Resources</span></button>
+      </div>
+    </div>
+
     <!-- FEES PAGE -->
-    <div id="page-fees" class="page-section active space-y-4">
-      <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
+    <div id="page-fees" class="page-section space-y-4">
+      <div class="bg-white p-6 rounded-2xl shadow-sm border border-red-100 flex items-center justify-between">
         <div>
           <p class="text-sm text-gray-500 font-medium">Total Pending Due</p>
-          <h3 id="totalDueAmount" class="text-3xl font-bold text-red-500 mt-1">₹0</h3>
+          <h3 id="totalDueAmount" class="text-3xl font-black text-red-500 mt-1 tracking-tight">₹0</h3>
         </div>
-        <div class="bg-red-50 p-3 rounded-full"><i class="fa-solid fa-triangle-exclamation text-red-500 text-xl"></i></div>
+        <div class="bg-red-50 p-4 rounded-full"><i class="fa-solid fa-triangle-exclamation text-red-500 text-2xl"></i></div>
       </div>
-
-      <h3 class="text-lg font-bold text-gray-700 mt-6 mb-2">Bill History</h3>
-      <div id="billsList" class="space-y-3">
-        <p class="text-gray-400 text-center py-4"><i class="fa-solid fa-spinner fa-spin"></i> Loading bills...</p>
-      </div>
+      <h3 class="text-lg font-bold text-gray-800 ml-1 mt-6 mb-2">Bill History</h3>
+      <div id="billsList" class="space-y-3"><p class="text-gray-400 text-center py-4"><i class="fa-solid fa-spinner fa-spin"></i> Loading bills...</p></div>
     </div>
 
-    <!-- MARKS PAGE (Coming Soon) -->
+    <!-- ACADEMICS PAGE (Marks & Attendance Toggle) -->
     <div id="page-marks" class="page-section">
-      <div class="bg-white p-10 rounded-2xl shadow-sm text-center">
-        <i class="fa-solid fa-award text-4xl text-yellow-400 mb-3"></i>
-        <h3 class="text-xl font-bold">Marks</h3>
-        <p class="text-gray-500 mt-2">Section coming soon!</p>
+      
+      <!-- Top Toggle Switch -->
+      <div class="flex justify-center mb-6">
+        <div class="bg-white rounded-full p-1 shadow-sm border border-gray-100 flex w-full max-w-sm">
+          <button id="btnMarksView" onclick="toggleAcademicView('marks')" class="flex-1 py-2 text-sm font-bold rounded-full bg-blue-600 text-white shadow transition-all">Marks</button>
+          <button id="btnAttView" onclick="toggleAcademicView('attendance')" class="flex-1 py-2 text-sm font-bold rounded-full text-gray-500 hover:text-gray-800 transition-all">Attendance</button>
+        </div>
       </div>
+
+      <!-- Marks View Area -->
+      <div id="view-marks">
+        <div id="marksHistoryList" class="space-y-3 mb-8">
+          <p class="text-gray-400 text-center py-4"><i class="fa-solid fa-spinner fa-spin"></i> Loading marks...</p>
+        </div>
+      </div>
+
+      <!-- Attendance View Area -->
+      <div id="view-attendance" class="hidden">
+        <div id="attendanceHistoryList" class="space-y-2">
+          <p class="text-gray-400 text-center py-4"><i class="fa-solid fa-spinner fa-spin"></i> Loading attendance...</p>
+        </div>
+      </div>
+
     </div>
 
-    <!-- TESTS PAGE (Coming Soon) -->
+    <!-- TESTS PAGE -->
     <div id="page-tests" class="page-section">
-      <div class="bg-white p-10 rounded-2xl shadow-sm text-center">
-        <i class="fa-solid fa-pen-clip text-4xl text-blue-400 mb-3"></i>
-        <h3 class="text-xl font-bold">Tests</h3>
-        <p class="text-gray-500 mt-2">Section coming soon!</p>
+      <div class="bg-white p-10 rounded-2xl shadow-sm border border-gray-100 text-center">
+        <i class="fa-solid fa-file-contract text-5xl text-indigo-400 mb-4"></i>
+        <h3 class="text-xl font-bold">Upcoming Tests</h3>
+        <p class="text-gray-500 mt-2 text-sm">Test calendar coming soon!</p>
       </div>
     </div>
 
-    <!-- NOTICE PAGE (Coming Soon) -->
+    <!-- NOTICE PAGE -->
     <div id="page-notice" class="page-section">
-      <div class="bg-white p-10 rounded-2xl shadow-sm text-center">
-        <i class="fa-solid fa-bullhorn text-4xl text-purple-400 mb-3"></i>
+      <div class="bg-white p-10 rounded-2xl shadow-sm border border-gray-100 text-center">
+        <i class="fa-solid fa-bullhorn text-5xl text-purple-400 mb-4"></i>
         <h3 class="text-xl font-bold">Notice Board</h3>
-        <p class="text-gray-500 mt-2">Section coming soon!</p>
+        <p class="text-gray-500 mt-2 text-sm">No new notices at this time.</p>
       </div>
     </div>
 
   </div>
 
   <!-- Bottom Navigation -->
-  <div class="fixed bottom-0 w-full bg-white border-t border-gray-200 flex justify-around p-3 pb-safe shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
-    <button onclick="nav('fees')" class="nav-btn flex flex-col items-center text-blue-600 w-16" data-target="fees">
-      <i class="fa-solid fa-wallet text-xl mb-1"></i><span class="text-[10px] font-medium mt-1">Fees</span>
-    </button>
-    <button onclick="nav('marks')" class="nav-btn flex flex-col items-center text-gray-400 hover:text-blue-500 w-16" data-target="marks">
-      <i class="fa-solid fa-award text-xl mb-1"></i><span class="text-[10px] font-medium mt-1">Marks</span>
-    </button>
-    <button onclick="nav('tests')" class="nav-btn flex flex-col items-center text-gray-400 hover:text-blue-500 w-16" data-target="tests">
-      <i class="fa-solid fa-pen-clip text-xl mb-1"></i><span class="text-[10px] font-medium mt-1">Tests</span>
-    </button>
-    <button onclick="nav('notice')" class="nav-btn flex flex-col items-center text-gray-400 hover:text-blue-500 w-16" data-target="notice">
-      <i class="fa-solid fa-bullhorn text-xl mb-1"></i><span class="text-[10px] font-medium mt-1">Notice</span>
-    </button>
+  <div class="fixed bottom-0 w-full bg-white flex justify-between items-end px-2 pb-safe shadow-[0_-10px_20px_-5px_rgba(0,0,0,0.05)] rounded-t-2xl border-t border-gray-100 z-40">
+    <div class="flex w-2/5 justify-evenly pb-2 pt-3">
+      <button onclick="nav('fees')" class="nav-btn flex flex-col items-center text-gray-400 hover:text-blue-500 transition" data-target="fees"><i class="fa-solid fa-wallet text-xl mb-1"></i><span class="text-[10px] font-bold tracking-wide">FEES</span></button>
+      <button onclick="nav('marks')" class="nav-btn flex flex-col items-center text-gray-400 hover:text-blue-500 transition" data-target="marks"><i class="fa-solid fa-award text-xl mb-1"></i><span class="text-[10px] font-bold tracking-wide">ACADEMICS</span></button>
+    </div>
+    <div class="w-1/5 flex justify-center pb-2">
+      <button onclick="nav('home')" class="nav-btn nav-center-btn bg-blue-600 text-white w-14 h-14 rounded-full flex flex-col items-center justify-center transition active:scale-95" data-target="home"><i class="fa-solid fa-house text-xl"></i></button>
+    </div>
+    <div class="flex w-2/5 justify-evenly pb-2 pt-3">
+      <button onclick="nav('tests')" class="nav-btn flex flex-col items-center text-gray-400 hover:text-blue-500 transition" data-target="tests"><i class="fa-solid fa-pen-clip text-xl mb-1"></i><span class="text-[10px] font-bold tracking-wide">TESTS</span></button>
+      <button onclick="nav('notice')" class="nav-btn flex flex-col items-center text-gray-400 hover:text-blue-500 transition" data-target="notice"><i class="fa-solid fa-bullhorn text-xl mb-1"></i><span class="text-[10px] font-bold tracking-wide">NOTICE</span></button>
+    </div>
   </div>
 
   <script>
-    // Make sure this matches your deployed Google Apps Script Web App URL
+    // --- REPLACE THIS URL WITH YOUR DEPLOYMENT URL ---
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby7Q4nKX35FU54JgLEyj7HSCRktuHOWX6MCNcHpTcNKLJs_TIfCCEDAvcteRM0sXcWBkw/exec";
+    
     const token = localStorage.getItem('token') || sessionStorage.getItem('token');
     const studentId = localStorage.getItem('studentId') || sessionStorage.getItem('studentId');
 
-    // Authentication Check
-    if(!token || (localStorage.getItem('role') && localStorage.getItem('role') !== 'student')) {
-      window.location.href = 'login.html';
-    }
-
-    function logout() {
-      localStorage.clear(); 
-      sessionStorage.clear();
-      window.location.href = 'login.html';
-    }
-
-    function toggleStudentMenu() {
-      document.getElementById('studentMenuDropdown').classList.toggle('hidden');
-    }
-
-    // Hide hamburger dropdown when clicking anywhere outside of it
+    if(!token || (localStorage.getItem('role') && localStorage.getItem('role') !== 'student')) { window.location.href = 'login.html'; }
+    function logout() { localStorage.clear(); sessionStorage.clear(); window.location.href = 'login.html'; }
+    function toggleStudentMenu() { document.getElementById('studentMenuDropdown').classList.toggle('hidden'); }
+    
     document.addEventListener('click', function(event) {
       const menu = document.getElementById('studentMenuDropdown');
       const button = event.target.closest('button[onclick="toggleStudentMenu()"]');
-      if (!button && !menu.classList.contains('hidden')) {
-        menu.classList.add('hidden');
-      }
+      if (!button && !menu.classList.contains('hidden')) { menu.classList.add('hidden'); }
     });
 
-    // Dynamic Greeting based on time
     const hour = new Date().getHours();
     let greetingTxt = "Good Morning,";
     if (hour >= 12 && hour < 16) greetingTxt = "Good Afternoon,";
@@ -135,31 +173,48 @@
     else if (hour >= 20) greetingTxt = "Good Night,";
     document.getElementById('greeting').innerText = greetingTxt;
 
-    // Bottom Navigation Switcher
+    const quotes = ["Education is the most powerful weapon which you can use to change the world.", "The future belongs to those who believe in the beauty of their dreams.", "Success is not final, failure is not fatal: it is the courage to continue that counts.", "The only way to do great work is to love what you do.", "Believe you can and you're halfway there."];
+    document.getElementById('dailyQuote').innerText = `"${quotes[Math.floor(Math.random() * quotes.length)]}"`;
+
     function nav(pageId) {
       document.querySelectorAll('.page-section').forEach(el => el.classList.remove('active'));
       document.getElementById('page-' + pageId).classList.add('active');
       
       document.querySelectorAll('.nav-btn').forEach(btn => {
-        btn.classList.remove('text-blue-600');
-        btn.classList.add('text-gray-400');
+        if(!btn.classList.contains('nav-center-btn')) { btn.classList.remove('text-blue-600'); btn.classList.add('text-gray-400'); } 
+        else { btn.classList.remove('bg-blue-600', 'text-white'); btn.classList.add('bg-gray-200', 'text-gray-500'); }
       });
+      
       const activeBtn = document.querySelector(`.nav-btn[data-target="${pageId}"]`);
-      activeBtn.classList.remove('text-gray-400');
-      activeBtn.classList.add('text-blue-600');
+      if(!activeBtn.classList.contains('nav-center-btn')) { activeBtn.classList.remove('text-gray-400'); activeBtn.classList.add('text-blue-600'); } 
+      else { activeBtn.classList.remove('bg-gray-200', 'text-gray-500'); activeBtn.classList.add('bg-blue-600', 'text-white'); }
     }
 
-    // Formatter to remove timezone strings and display nice dates (DD/MM/YYYY)
+    // Toggle Academic Views (Marks vs Attendance)
+    function toggleAcademicView(view) {
+      if(view === 'marks') {
+        document.getElementById('view-marks').classList.remove('hidden');
+        document.getElementById('view-attendance').classList.add('hidden');
+        document.getElementById('btnMarksView').className = 'flex-1 py-2 text-sm font-bold rounded-full bg-blue-600 text-white shadow transition-all';
+        document.getElementById('btnAttView').className = 'flex-1 py-2 text-sm font-bold rounded-full text-gray-500 hover:text-gray-800 transition-all';
+      } else {
+        document.getElementById('view-marks').classList.add('hidden');
+        document.getElementById('view-attendance').classList.remove('hidden');
+        document.getElementById('btnAttView').className = 'flex-1 py-2 text-sm font-bold rounded-full bg-blue-600 text-white shadow transition-all';
+        document.getElementById('btnMarksView').className = 'flex-1 py-2 text-sm font-bold rounded-full text-gray-500 hover:text-gray-800 transition-all';
+      }
+    }
+
     function cleanDate(isoString) {
       if(!isoString) return '';
       const d = new Date(isoString);
       return d.toLocaleDateString('en-IN', {day:'2-digit', month:'2-digit', year:'numeric'});
     }
 
-    // Fetch Data on Load
     window.onload = async () => {
+      document.getElementById('globalLoader').classList.remove('hidden');
+      
       try {
-        // 1. Fetch Identity (Name & ID)
         const meRes = await fetch(`${SCRIPT_URL}?action=me&token=${token}&role=student`);
         const meData = await meRes.json();
         if(meData.ok) {
@@ -167,46 +222,69 @@
           document.getElementById('studentIdDisplay').innerText = `ID: ${meData.studentId}`;
         }
 
-        // 2. Fetch Fees & Total Due
+        const acaRes = await fetch(`${SCRIPT_URL}?action=studentAcademicStats&token=${token}&studentId=${studentId}`);
+        const acaData = await acaRes.json();
+        if(acaData.ok) {
+          document.getElementById('homeAttendance').innerText = `${acaData.attendance}%`;
+          if(acaData.lastTest) {
+            document.getElementById('homeLastExamMark').innerText = `${acaData.lastTest.mark}/${acaData.lastTest.max}`;
+            document.getElementById('homeLastExamName').innerText = acaData.lastTest.name;
+          }
+        }
+
         const feeRes = await fetch(`${SCRIPT_URL}?action=studentFees&token=${token}&studentId=${studentId}`);
         const feeData = await feeRes.json();
-        
         if(feeData.ok) {
           document.getElementById('totalDueAmount').innerText = `₹${feeData.totalDue}`;
-          
           let billsHtml = '';
-          if(feeData.bills.length === 0) {
-            billsHtml = '<p class="text-gray-500 text-sm text-center mt-4 bg-gray-100 p-3 rounded-lg">No bills found.</p>';
-          }
-          
-          // Sort bills so the newest bills appear at the top
+          if(feeData.bills.length === 0) billsHtml = '<p class="text-gray-500 text-sm text-center mt-4 bg-gray-100 p-3 rounded-lg">No bills found.</p>';
           feeData.bills.sort((a,b) => new Date(b.dueDate) - new Date(a.dueDate)).forEach(b => {
             const isPaid = b.status === 'PAID';
             const statusColor = isPaid ? 'text-green-600 bg-green-100' : (b.status === 'PARTIAL' ? 'text-orange-600 bg-orange-100' : 'text-red-600 bg-red-100');
             const remaining = (Number(b.amount) - Number(b.discount) - Number(b.paid));
-            
-            billsHtml += `
-              <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-                <div class="flex justify-between items-center mb-2">
-                  <span class="text-xs font-bold px-2 py-1 rounded ${statusColor}">${b.status}</span>
-                  <span class="text-xs text-gray-500 font-medium">Due: ${cleanDate(b.dueDate)}</span>
-                </div>
-                <div class="flex justify-between items-end mt-3">
-                  <div>
-                    <p class="text-sm text-gray-500">Bill ID: ${b.billId.split('-')[1] || b.billId}</p>
-                    ${b.note ? `<p class="text-xs text-gray-400 mt-1"><i class="fa-solid fa-tag"></i> ${b.note}</p>` : ''}
-                  </div>
-                  <div class="text-right">
-                    <p class="text-lg font-bold text-gray-800">₹${b.amount}</p>
-                    ${!isPaid && remaining > 0 ? `<p class="text-xs text-red-500 font-semibold mt-1">Left: ₹${remaining}</p>` : ''}
-                  </div>
-                </div>
-              </div>`;
+            billsHtml += `<div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100"><div class="flex justify-between items-center mb-2"><span class="text-[10px] font-black tracking-wider uppercase px-2 py-1 rounded ${statusColor}">${b.status}</span><span class="text-xs text-gray-500 font-semibold">Due: ${cleanDate(b.dueDate)}</span></div><div class="flex justify-between items-end mt-3"><div><p class="text-xs font-mono text-gray-400">#${b.billId.split('-')[1] || b.billId}</p>${b.note ? `<p class="text-xs text-purple-500 font-semibold mt-1 bg-purple-50 px-2 py-1 rounded inline-block"><i class="fa-solid fa-tag"></i> ${b.note}</p>` : ''}</div><div class="text-right"><p class="text-xl font-black text-gray-800">₹${b.amount}</p>${!isPaid && remaining > 0 ? `<p class="text-xs text-red-500 font-bold mt-1">Left: ₹${remaining}</p>` : ''}</div></div></div>`;
           });
           document.getElementById('billsList').innerHTML = billsHtml;
         }
+
+        const histRes = await fetch(`${SCRIPT_URL}?action=studentHistory&token=${token}&studentId=${studentId}`);
+        const histData = await histRes.json();
+        if(histData.ok) {
+          
+          let mHtml = '';
+          if(histData.marks.length === 0) mHtml = '<p class="text-gray-500 text-sm text-center bg-gray-100 p-3 rounded-lg">No test records found.</p>';
+          histData.marks.forEach(m => {
+            mHtml += `
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex justify-between items-center">
+              <div>
+                <p class="font-bold text-gray-800">${m.testName}</p>
+                <p class="text-xs text-gray-400">${cleanDate(m.date)}</p>
+              </div>
+              <div class="text-right">
+                <span class="text-xl font-black text-blue-600">${m.mark}</span>
+                <span class="text-xs text-gray-400 font-bold">/ ${m.max}</span>
+              </div>
+            </div>`;
+          });
+          document.getElementById('marksHistoryList').innerHTML = mHtml;
+
+          let aHtml = '';
+          if(histData.attendance.length === 0) aHtml = '<p class="text-gray-500 text-sm text-center bg-gray-100 p-3 rounded-lg">No attendance records found.</p>';
+          histData.attendance.forEach(a => {
+            const isPresent = a.status === 'PRESENT';
+            aHtml += `
+            <div class="bg-white p-3 rounded-xl shadow-sm border border-gray-100 flex justify-between items-center">
+              <span class="text-sm font-semibold text-gray-600">${cleanDate(a.date)}</span>
+              <span class="text-xs font-bold px-3 py-1 rounded-full ${isPresent ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">${a.status}</span>
+            </div>`;
+          });
+          document.getElementById('attendanceHistoryList').innerHTML = aHtml;
+        }
+
       } catch(err) {
-        document.getElementById('billsList').innerHTML = '<p class="text-red-500 text-sm text-center">Failed to load data. Please refresh.</p>';
+        console.error(err);
+      } finally {
+        document.getElementById('globalLoader').classList.add('hidden');
       }
     };
   </script>

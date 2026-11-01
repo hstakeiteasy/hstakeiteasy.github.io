@@ -7,43 +7,32 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-  <style> 
-    body { background-color: #f1f5f9; } 
-    .tab-content { display: none; } 
-    .tab-content.active { display: block; } 
-  </style>
+  <style> body { background-color: #f1f5f9; } .tab-content { display: none; } .tab-content.active { display: block; } </style>
 </head>
 <body class="text-gray-800">
 
-  <!-- GLOBAL LOADING SPINNER OVERLAY -->
   <div id="globalLoader" class="fixed inset-0 bg-black bg-opacity-60 z-[100] hidden flex-col justify-center items-center">
-    <i class="fa-solid fa-circle-notch fa-spin text-white text-5xl mb-4"></i>
-    <p class="text-white font-semibold tracking-wider text-lg">Processing...</p>
+    <i class="fa-solid fa-circle-notch fa-spin text-white text-5xl mb-4"></i><p class="text-white font-semibold">Processing...</p>
   </div>
 
-  <!-- Admin Navbar -->
   <nav class="bg-white shadow-sm p-4 flex justify-between items-center sticky top-0 z-50">
     <div class="flex items-center gap-3">
-      <button onclick="toggleSidebar()" class="md:hidden text-gray-600 text-2xl focus:outline-none"><i class="fa-solid fa-bars"></i></button>
+      <button onclick="toggleSidebar()" class="md:hidden text-gray-600 text-2xl"><i class="fa-solid fa-bars"></i></button>
       <div class="text-xl font-bold text-blue-600"><i class="fa-solid fa-shield-halved"></i> Admin Portal</div>
     </div>
     <button onclick="logout()" class="hidden md:block text-red-500 hover:text-red-700 font-medium"><i class="fa-solid fa-power-off"></i> Logout</button>
   </nav>
 
   <div class="flex min-h-screen relative overflow-hidden">
-    
-    <!-- Mobile Sidebar Overlay -->
     <div id="sidebarOverlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black bg-opacity-50 z-30 hidden md:hidden transition-opacity"></div>
-
-    <!-- Sidebar Menu -->
     <div id="sidebar" class="fixed md:static inset-y-0 left-0 transform -translate-x-full md:translate-x-0 transition-transform duration-200 ease-in-out w-64 bg-white shadow-md p-4 space-y-2 z-40 h-full overflow-y-auto">
-      <div class="flex justify-end md:hidden mb-4">
-        <button onclick="toggleSidebar()" class="text-gray-500 text-2xl focus:outline-none"><i class="fa-solid fa-xmark"></i></button>
-      </div>
-      <button onclick="switchTab('batches')" class="w-full text-left p-3 rounded hover:bg-blue-50 font-medium"><i class="fa-solid fa-users-rectangle w-6"></i> Batches</button>
-      <button onclick="switchTab('students')" class="w-full text-left p-3 rounded hover:bg-blue-50 font-medium"><i class="fa-solid fa-user-graduate w-6"></i> Students</button>
-      <button onclick="switchTab('dues')" class="w-full text-left p-3 rounded hover:bg-blue-50 font-medium"><i class="fa-solid fa-file-invoice-dollar w-6"></i> Dues & Billing</button>
-      <button onclick="switchTab('reports')" class="w-full text-left p-3 rounded hover:bg-blue-50 font-medium"><i class="fa-solid fa-chart-line w-6"></i> Reports</button>
+      <div class="flex justify-end md:hidden mb-4"><button onclick="toggleSidebar()" class="text-gray-500 text-2xl"><i class="fa-solid fa-xmark"></i></button></div>
+      <button onclick="switchTab('batches')" class="w-full text-left p-3 rounded hover:bg-blue-50 font-medium"><i class="fa-solid fa-users-rectangle w-6 text-blue-500"></i> Batches</button>
+      <button onclick="switchTab('students')" class="w-full text-left p-3 rounded hover:bg-blue-50 font-medium"><i class="fa-solid fa-user-graduate w-6 text-blue-500"></i> Students</button>
+      <button onclick="switchTab('attendance')" class="w-full text-left p-3 rounded hover:bg-blue-50 font-medium"><i class="fa-solid fa-clipboard-user w-6 text-purple-500"></i> Attendance</button>
+      <button onclick="switchTab('marks')" class="w-full text-left p-3 rounded hover:bg-blue-50 font-medium"><i class="fa-solid fa-award w-6 text-yellow-500"></i> Marks & Tests</button>
+      <button onclick="switchTab('dues')" class="w-full text-left p-3 rounded hover:bg-blue-50 font-medium"><i class="fa-solid fa-file-invoice-dollar w-6 text-green-500"></i> Dues & Billing</button>
+      <button onclick="switchTab('reports')" class="w-full text-left p-3 rounded hover:bg-blue-50 font-medium"><i class="fa-solid fa-chart-line w-6 text-gray-500"></i> Reports</button>
       <button onclick="logout()" class="w-full text-left p-3 rounded hover:bg-red-50 text-red-600 font-medium md:hidden mt-10"><i class="fa-solid fa-power-off w-6"></i> Logout</button>
     </div>
 
@@ -83,24 +72,72 @@
           </div>
           <div id="newStudentResult" class="mt-4 p-4 bg-green-50 border border-green-200 rounded hidden">
             <p class="text-green-800 font-medium" id="newStudentText"></p>
-            <a id="newStudentWaLink" target="_blank" class="mt-2 inline-block bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 shadow-sm transition">
-              <i class="fa-brands fa-whatsapp"></i> Share Login via WhatsApp
-            </a>
+            <a id="newStudentWaLink" target="_blank" class="mt-2 inline-block bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"><i class="fa-brands fa-whatsapp"></i> Share Login</a>
           </div>
         </div>
         
         <div class="bg-white p-4 md:p-6 rounded-lg shadow-sm border border-gray-100 overflow-x-auto">
-          <input type="text" id="studentSearch" onkeyup="filterStudents()" placeholder="🔍 Search by Name or ID..." class="w-full p-3 border border-gray-300 rounded mb-4 focus:outline-none focus:border-blue-500">
+          <input type="text" id="studentSearch" onkeyup="filterStudents()" placeholder="🔍 Search by Name or ID..." class="w-full p-3 border border-gray-300 rounded mb-4">
           <table class="w-full text-left border-collapse whitespace-nowrap" id="studentTable">
             <thead>
               <tr class="bg-gray-100 text-sm">
-                <th class="p-2">ID</th><th class="p-2">Name</th><th class="p-2">Parent Name</th>
-                <th class="p-2">Phone</th><th class="p-2">Batch</th><th class="p-2">Custom Fee</th>
-                <th class="p-2">Join Date</th><th class="p-2">Actions</th>
+                <th class="p-2">ID</th><th class="p-2">Name</th><th class="p-2">Parent</th><th class="p-2">Phone</th><th class="p-2">Batch</th><th class="p-2">Fee</th><th class="p-2">Joined</th><th class="p-2">Actions</th>
               </tr>
             </thead>
             <tbody id="studentTableBody" class="text-sm"></tbody>
           </table>
+        </div>
+      </div>
+
+      <!-- ATTENDANCE TAB -->
+      <div id="attendance" class="tab-content space-y-6">
+        <h2 class="text-2xl font-bold">Student Attendance</h2>
+        <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+          <div class="flex flex-col md:flex-row gap-3 mb-4">
+            <input type="date" id="attDate" class="p-2 border rounded w-full md:w-1/3">
+            <select id="attBatch" class="p-2 border rounded batch-dropdown-strict w-full md:w-1/3"><option value="">Select Batch</option></select>
+            <button onclick="fetchAttendance()" class="bg-blue-600 text-white px-4 py-2 rounded w-full md:w-auto">Fetch Roster</button>
+          </div>
+          
+          <div id="attendanceArea" class="hidden">
+            <table class="w-full text-left border-collapse whitespace-nowrap mt-4">
+              <thead><tr class="bg-gray-100 text-sm"><th class="p-2">ID</th><th class="p-2 w-full">Name</th><th class="p-2 text-center">Status</th></tr></thead>
+              <tbody id="attendanceTableBody"></tbody>
+            </table>
+            <button onclick="saveAttendance()" class="mt-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-md font-bold w-full"><i class="fa-solid fa-floppy-disk"></i> Save Attendance</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- MARKS & TESTS TAB -->
+      <div id="marks" class="tab-content space-y-6">
+        <h2 class="text-2xl font-bold">Marks & Tests</h2>
+        <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+          <h3 class="text-lg font-bold mb-3">Create New Test</h3>
+          <div class="grid grid-cols-1 md:grid-cols-5 gap-2">
+            <input type="text" id="testName" placeholder="Test Name" class="p-2 border rounded col-span-2">
+            <input type="number" id="testMax" placeholder="Max Marks" class="p-2 border rounded">
+            <input type="date" id="testDate" class="p-2 border rounded">
+            <select id="testBatch" class="p-2 border rounded batch-dropdown-strict"><option value="">Select Batch</option></select>
+          </div>
+          <button onclick="addTest()" class="mt-3 bg-blue-600 text-white px-4 py-2 rounded">Create Test</button>
+        </div>
+
+        <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+          <h3 class="text-lg font-bold mb-3">Enter Test Marks</h3>
+          <div class="flex gap-2 mb-4">
+            <select id="marksBatchSelect" class="p-2 border rounded w-1/3 batch-dropdown-strict" onchange="loadTestsForBatch()"><option value="">Select Batch</option></select>
+            <select id="marksTestSelect" class="p-2 border rounded w-1/3"><option value="">Select Test...</option></select>
+            <button onclick="fetchMarks()" class="bg-blue-600 text-white px-4 py-2 rounded">Load Roster</button>
+          </div>
+          <div id="marksArea" class="hidden">
+            <p id="marksMaxLabel" class="text-gray-500 font-bold mb-2"></p>
+            <table class="w-full text-left border-collapse whitespace-nowrap">
+              <thead><tr class="bg-gray-100 text-sm"><th class="p-2">ID</th><th class="p-2 w-full">Name</th><th class="p-2">Marks Obtained</th></tr></thead>
+              <tbody id="marksTableBody"></tbody>
+            </table>
+            <button onclick="saveMarks()" class="mt-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-md font-bold w-full"><i class="fa-solid fa-floppy-disk"></i> Save Marks</button>
+          </div>
         </div>
       </div>
 
@@ -109,33 +146,30 @@
         <h2 class="text-2xl font-bold">Dues & Billing</h2>
         
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <!-- Monthly Bills (With Password Protection) -->
           <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
             <h3 class="text-lg font-semibold mb-3"><i class="fa-solid fa-file-invoice text-blue-500"></i> Manage Monthly Bills</h3>
-            <select id="billBatch" class="p-2 border rounded w-full mb-3 batch-dropdown"><option value="">All Batches</option></select>
+            <select id="billBatch" class="p-2 border rounded w-full mb-3 batch-dropdown"></select>
             <div class="flex gap-2 mb-3">
               <input type="number" id="billMonth" placeholder="Month (1-12)" class="p-2 border rounded w-full">
               <input type="number" id="billYear" placeholder="Year" class="p-2 border rounded w-full">
             </div>
             <div class="grid grid-cols-2 gap-2 mt-3">
-              <button onclick="openBillAuth('generate')" class="bg-blue-600 text-white p-2 rounded w-full"><i class="fa-solid fa-bolt"></i> Generate</button>
-              <button onclick="openBillAuth('remove')" class="bg-red-500 text-white p-2 rounded w-full"><i class="fa-solid fa-trash-can"></i> Remove</button>
+              <button onclick="openBillAuth('generate')" class="bg-blue-600 text-white p-2 rounded w-full">Generate</button>
+              <button onclick="openBillAuth('remove')" class="bg-red-500 text-white p-2 rounded w-full">Remove</button>
             </div>
           </div>
 
-          <!-- Fee Collection -->
           <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
             <h3 class="text-lg font-semibold mb-3"><i class="fa-solid fa-hand-holding-dollar text-green-500"></i> Fee Actions</h3>
-            <input type="text" id="feeStudentInput" list="studentDataList" placeholder="Search Student ID or Name..." onchange="loadStudentBills()" class="p-2 border rounded w-full mb-2">
+            <!-- CHANGED to oninput to instantly load bills as soon as typed/selected -->
+            <input type="text" id="feeStudentInput" list="studentDataList" placeholder="Search Student ID or Name..." oninput="loadStudentBills()" class="p-2 border rounded w-full mb-2">
             <datalist id="studentDataList"></datalist>
             
             <div id="pendingBillsArea" class="bg-gray-50 p-2 rounded mb-3 max-h-40 overflow-y-auto hidden text-sm"></div>
 
             <div class="flex gap-2 mb-2">
               <input type="number" id="feeAmount" placeholder="Amount (₹)" class="p-2 border rounded w-full">
-              <select id="feeMode" class="p-2 border rounded w-1/2">
-                <option value="CASH">CASH</option><option value="UPI">UPI</option><option value="BANK">BANK</option>
-              </select>
+              <select id="feeMode" class="p-2 border rounded w-1/2"><option value="CASH">CASH</option><option value="UPI">UPI</option><option value="BANK">BANK</option></select>
             </div>
             <input type="text" id="feeNote" placeholder="Note (For Discounts or Records)" class="p-2 border rounded w-full mb-3">
             
@@ -150,7 +184,7 @@
         <div class="bg-white p-4 md:p-6 rounded-lg shadow-sm border border-gray-100">
           <h3 class="text-lg font-semibold mb-3">Check Batch Dues</h3>
           <div class="flex gap-2 mb-4">
-            <select id="viewDueBatch" class="p-2 border rounded w-full batch-dropdown"><option value="">All Batches</option></select>
+            <select id="viewDueBatch" class="p-2 border rounded w-full batch-dropdown"></select>
             <button onclick="loadBatchDues()" class="bg-gray-800 text-white px-4 rounded"><i class="fa-solid fa-search"></i></button>
           </div>
           <div id="dueResults" class="space-y-2"></div>
@@ -163,7 +197,7 @@
         <div class="bg-white p-4 md:p-6 rounded-lg shadow-sm border border-gray-100">
           <div class="flex flex-col md:flex-row gap-2 mb-4">
             <select id="reportDays" class="p-2 border rounded w-full md:w-auto"><option value="7">Last 7 Days</option><option value="30">Last 30 Days</option><option value="365">Last 1 Year</option></select>
-            <select id="reportBatch" class="p-2 border rounded w-full md:w-auto batch-dropdown"><option value="">All Batches</option></select>
+            <select id="reportBatch" class="p-2 border rounded w-full md:w-auto batch-dropdown"></select>
             <div class="flex gap-2 w-full md:w-auto">
               <button onclick="loadReport()" class="bg-blue-600 text-white px-4 py-2 rounded w-full md:w-auto">Fetch</button>
               <button onclick="downloadPDF()" class="bg-red-500 text-white px-4 py-2 rounded w-full md:w-auto"><i class="fa-solid fa-file-pdf"></i> PDF</button>
@@ -184,89 +218,61 @@
     </div>
   </div>
 
-  <!-- Universal Edit Modal -->
+  <!-- Modals -->
   <div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex justify-center items-center z-[60] p-4">
     <div class="bg-white p-6 rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto">
       <h3 id="modalTitle" class="text-lg font-bold mb-4">Edit</h3>
       <div id="modalBody" class="space-y-3"></div>
       <div class="flex justify-end gap-2 mt-4">
-        <button onclick="document.getElementById('editModal').classList.add('hidden')" class="px-4 py-2 bg-gray-200 rounded text-gray-800">Cancel</button>
+        <button onclick="document.getElementById('editModal').classList.add('hidden')" class="px-4 py-2 bg-gray-200 rounded">Cancel</button>
         <button id="modalSaveBtn" class="px-4 py-2 bg-blue-600 text-white rounded">Save</button>
       </div>
     </div>
   </div>
 
-  <!-- Password Auth Modal for Bills -->
   <div id="billAuthModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex justify-center items-center z-[60] p-4">
     <div class="bg-white p-6 rounded-lg w-full max-w-sm">
       <h3 id="billAuthTitle" class="text-xl font-bold text-gray-800 mb-2">Confirm Action</h3>
       <p class="text-sm text-gray-600 mb-4">Please enter your Admin Password to continue.</p>
-      <input type="password" id="billAdminPass" placeholder="Admin Password" class="w-full border p-3 rounded mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500">
+      <input type="password" id="billAdminPass" class="w-full border p-3 rounded mb-4">
       <div class="flex justify-end gap-2">
-        <button onclick="document.getElementById('billAuthModal').classList.add('hidden')" class="px-4 py-2 bg-gray-200 rounded text-gray-800 font-medium">Cancel</button>
-        <button id="billAuthConfirmBtn" class="px-4 py-2 text-white rounded font-medium">Confirm</button>
+        <button onclick="document.getElementById('billAuthModal').classList.add('hidden')" class="px-4 py-2 bg-gray-200 rounded">Cancel</button>
+        <button id="billAuthConfirmBtn" class="px-4 py-2 text-white rounded">Confirm</button>
       </div>
     </div>
   </div>
 
   <script>
-    // --- REPLACE THIS URL WITH YOUR NEW DEPLOYMENT URL ---
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby7Q4nKX35FU54JgLEyj7HSCRktuHOWX6MCNcHpTcNKLJs_TIfCCEDAvcteRM0sXcWBkw/exec";
-    
     const token = localStorage.getItem('token') || sessionStorage.getItem('token');
     
     if(!token || (localStorage.getItem('role') && localStorage.getItem('role') !== 'admin')) window.location.href = 'login.html';
-    
     function logout() { localStorage.clear(); sessionStorage.clear(); window.location.href = 'login.html'; }
-    
-    function toggleSidebar() {
-      document.getElementById('sidebar').classList.toggle('-translate-x-full');
-      document.getElementById('sidebarOverlay').classList.toggle('hidden');
-    }
+    function toggleSidebar() { document.getElementById('sidebar').classList.toggle('-translate-x-full'); document.getElementById('sidebarOverlay').classList.toggle('hidden'); }
+    function switchTab(tabId) { document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active')); document.getElementById(tabId).classList.add('active'); if(window.innerWidth < 768) { toggleSidebar(); } }
+    function cleanDate(isoString) { if(!isoString) return ''; const d = new Date(isoString); return d.toLocaleDateString('en-IN', {day:'2-digit', month:'2-digit', year:'numeric'}); }
 
-    function switchTab(tabId) { 
-      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active')); 
-      document.getElementById(tabId).classList.add('active'); 
-      if(window.innerWidth < 768) { toggleSidebar(); }
-    }
-    
-    function cleanDate(isoString) {
-      if(!isoString) return '';
-      const d = new Date(isoString);
-      return d.toLocaleDateString('en-IN', {day:'2-digit', month:'2-digit', year:'numeric'});
-    }
-
-    // UPDATED FETCH API WITH LOADING SPINNER
     async function fetchAPI(action, params = {}, showLoader = true) {
       if(showLoader) document.getElementById('globalLoader').classList.remove('hidden');
-      
       let url = `${SCRIPT_URL}?action=${action}&token=${token}`;
       Object.keys(params).forEach(k => url += `&${k}=${encodeURIComponent(params[k])}`);
-      
-      try {
-        const res = await fetch(url); 
-        const data = await res.json();
-        if(showLoader) document.getElementById('globalLoader').classList.add('hidden');
-        return data;
-      } catch(err) {
-        if(showLoader) document.getElementById('globalLoader').classList.add('hidden');
-        alert("Network Error: Make sure your Script is deployed as Web App (Anyone)");
-        return {ok: false};
-      }
+      try { const res = await fetch(url); const data = await res.json(); if(showLoader) document.getElementById('globalLoader').classList.add('hidden'); return data; } 
+      catch(err) { if(showLoader) document.getElementById('globalLoader').classList.add('hidden'); alert("Network Error."); return {ok: false}; }
     }
 
-    let allBatches = [], allStudents = [];
-    
-    // INITIAL LOAD
+    let allBatches = [], allStudents = [], allTests = [];
+    document.getElementById('attDate').valueAsDate = new Date(); document.getElementById('testDate').valueAsDate = new Date();
+
     window.onload = async () => {
       const bRes = await fetchAPI('getBatches');
       if(bRes.ok) {
         allBatches = bRes.data;
         let bHtml = '';
         document.querySelectorAll('.batch-dropdown').forEach(s => { s.innerHTML = '<option value="">All Batches / Select</option>'; });
+        document.querySelectorAll('.batch-dropdown-strict').forEach(s => { s.innerHTML = '<option value="">Select Batch...</option>'; });
         allBatches.forEach(b => {
-          document.querySelectorAll('.batch-dropdown').forEach(s => s.innerHTML += `<option value="${b.BatchID}">${b.BatchName}</option>`);
-          bHtml += `<tr class="border-b"><td class="p-2">${b.BatchID}</td><td class="p-2">${b.BatchName}</td><td class="p-2">₹${b.DefaultFee}</td><td class="p-2">${b.DueDay}</td><td class="p-2"><button onclick="editBatch('${b.BatchID}')" class="text-blue-500 hover:text-blue-700"><i class="fa-solid fa-pen"></i></button></td></tr>`;
+          document.querySelectorAll('.batch-dropdown, .batch-dropdown-strict').forEach(s => s.innerHTML += `<option value="${b.BatchID}">${b.BatchName}</option>`);
+          bHtml += `<tr class="border-b"><td class="p-2">${b.BatchID}</td><td class="p-2">${b.BatchName}</td><td class="p-2">₹${b.DefaultFee}</td><td class="p-2">${b.DueDay}</td><td class="p-2"><button onclick="editBatch('${b.BatchID}')" class="text-blue-500"><i class="fa-solid fa-pen"></i></button></td></tr>`;
         });
         document.getElementById('batchTableBody').innerHTML = bHtml;
       }
@@ -276,316 +282,216 @@
         allStudents = sRes.data;
         let sHtml = '', dlHtml = '';
         allStudents.forEach(s => {
-          sHtml += `<tr class="border-b student-row hover:bg-gray-50">
-            <td class="p-2 stu-id text-gray-500 text-xs font-mono">${s.StudentID}</td>
-            <td class="p-2 font-medium stu-name">${s.Name}</td>
-            <td class="p-2 text-gray-600">${s.ParentName || '-'}</td>
-            <td class="p-2">${s.ParentPhone}</td>
-            <td class="p-2"><span class="bg-gray-200 text-gray-800 text-xs px-2 py-1 rounded">${s.BatchID}</span></td>
-            <td class="p-2 text-green-600 font-medium">${s.CustomFee ? '₹'+s.CustomFee : '-'}</td>
-            <td class="p-2 text-gray-500">${cleanDate(s.JoinDate)}</td>
-            <td class="p-2 flex gap-4">
-              <button onclick="editStudent('${s.StudentID}')" class="text-blue-500 hover:text-blue-700"><i class="fa-solid fa-pen"></i></button>
-              <button onclick="managePassword('${s.StudentID}')" class="text-orange-500 hover:text-orange-700"><i class="fa-solid fa-key"></i></button>
-            </td>
-          </tr>`;
+          sHtml += `<tr class="border-b student-row hover:bg-gray-50"><td class="p-2 stu-id text-gray-500 text-xs">${s.StudentID}</td><td class="p-2 font-medium stu-name">${s.Name}</td><td class="p-2 text-gray-600">${s.ParentName || '-'}</td><td class="p-2">${s.ParentPhone}</td><td class="p-2"><span class="bg-gray-200 text-xs px-2 py-1 rounded">${s.BatchID}</span></td><td class="p-2 text-green-600 font-medium">${s.CustomFee ? '₹'+s.CustomFee : '-'}</td><td class="p-2 text-gray-500">${cleanDate(s.JoinDate)}</td><td class="p-2 flex gap-4"><button onclick="editStudent('${s.StudentID}')" class="text-blue-500"><i class="fa-solid fa-pen"></i></button><button onclick="managePassword('${s.StudentID}')" class="text-orange-500"><i class="fa-solid fa-key"></i></button></td></tr>`;
           dlHtml += `<option value="${s.StudentID} - ${s.Name}"></option>`;
         });
         document.getElementById('studentTableBody').innerHTML = sHtml;
         document.getElementById('studentDataList').innerHTML = dlHtml;
       }
+      loadAllTests();
     };
 
-    // --- BATCHES ---
-    async function addBatch() { 
-      await fetchAPI('addBatch', {name: document.getElementById('bName').value, fee: document.getElementById('bFee').value, dueDay: document.getElementById('bDueDay').value}); 
-      window.location.reload(); 
+    // --- ACADEMICS (ATTENDANCE & MARKS) ---
+    async function fetchAttendance() {
+      const batchId = document.getElementById('attBatch').value; const date = document.getElementById('attDate').value;
+      if(!batchId || !date) return alert("Select Date and Batch");
+      const res = await fetchAPI('getAttendance', {batchId: batchId, date: date});
+      if(res.ok) {
+        let html = ''; if(res.data.length === 0) html = '<tr><td colspan="3" class="text-center p-4">No active students found in this batch.</td></tr>';
+        res.data.forEach(s => {
+          html += `<tr class="border-b att-row" data-id="${s.studentId}"><td class="p-2 font-mono text-gray-500">${s.studentId}</td><td class="p-2 font-bold">${s.name}</td><td class="p-2 text-center"><div class="flex justify-center bg-gray-100 rounded p-1 max-w-[150px] mx-auto"><label class="flex-1 text-center cursor-pointer p-1 rounded ${s.status === 'PRESENT' ? 'bg-green-500 text-white shadow' : 'text-gray-500 hover:bg-gray-200'}"><input type="radio" name="att_${s.studentId}" value="PRESENT" class="hidden" ${s.status === 'PRESENT' ? 'checked' : ''} onchange="updateRadioUI(this)"> P</label><label class="flex-1 text-center cursor-pointer p-1 rounded ${s.status === 'ABSENT' ? 'bg-red-500 text-white shadow' : 'text-gray-500 hover:bg-gray-200'}"><input type="radio" name="att_${s.studentId}" value="ABSENT" class="hidden" ${s.status === 'ABSENT' ? 'checked' : ''} onchange="updateRadioUI(this)"> A</label></div></td></tr>`;
+        });
+        document.getElementById('attendanceTableBody').innerHTML = html; document.getElementById('attendanceArea').classList.remove('hidden');
+      }
     }
     
+    function updateRadioUI(radio) {
+      const parent = radio.closest('div');
+      parent.querySelectorAll('label').forEach(lbl => { lbl.className = 'flex-1 text-center cursor-pointer p-1 rounded text-gray-500 hover:bg-gray-200'; });
+      if(radio.value === 'PRESENT') radio.parentElement.className = 'flex-1 text-center cursor-pointer p-1 rounded bg-green-500 text-white shadow';
+      else radio.parentElement.className = 'flex-1 text-center cursor-pointer p-1 rounded bg-red-500 text-white shadow';
+    }
+
+    async function saveAttendance() {
+      const batchId = document.getElementById('attBatch').value; const date = document.getElementById('attDate').value;
+      let data = [];
+      document.querySelectorAll('.att-row').forEach(r => { const sid = r.getAttribute('data-id'); const status = r.querySelector(`input[name="att_${sid}"]:checked`).value; data.push({studentId: sid, status: status}); });
+      const res = await fetchAPI('saveAttendance', {batchId: batchId, date: date, data: JSON.stringify(data)});
+      if(res.ok) alert("Attendance Saved!");
+    }
+
+    async function loadAllTests() { const res = await fetchAPI('getTests'); if(res.ok) allTests = res.data; }
+    function loadTestsForBatch() {
+      const batchId = document.getElementById('marksBatchSelect').value; const sel = document.getElementById('marksTestSelect'); sel.innerHTML = '<option value="">Select Test...</option>';
+      if(batchId) { allTests.filter(t => t.BatchID === batchId).forEach(t => { sel.innerHTML += `<option value="${t.TestID}">${t.TestName} (${cleanDate(t.Date)})</option>`; }); }
+    }
+
+    async function addTest() {
+      const name = document.getElementById('testName').value; const max = document.getElementById('testMax').value; const date = document.getElementById('testDate').value; const batchId = document.getElementById('testBatch').value;
+      if(!name || !max || !date || !batchId) return alert("Fill all Test fields");
+      const res = await fetchAPI('addTest', {testName: name, maxMarks: max, date: date, batchId: batchId});
+      if(res.ok) { alert("Test Created!"); document.getElementById('testName').value = ''; document.getElementById('testMax').value = ''; await loadAllTests(); }
+    }
+
+    async function fetchMarks() {
+      const testId = document.getElementById('marksTestSelect').value; if(!testId) return alert("Select a test first");
+      const res = await fetchAPI('getMarks', {testId: testId});
+      if(res.ok) {
+        document.getElementById('marksMaxLabel').innerText = `Max Marks: ${res.maxMarks}`;
+        let html = '';
+        res.data.forEach(s => { html += `<tr class="border-b mark-row" data-id="${s.studentId}"><td class="p-2 font-mono text-gray-500">${s.studentId}</td><td class="p-2 font-bold">${s.name}</td><td class="p-2"><input type="number" class="border p-2 rounded w-24 student-mark" value="${s.mark}"></td></tr>`; });
+        document.getElementById('marksTableBody').innerHTML = html; document.getElementById('marksArea').classList.remove('hidden');
+      }
+    }
+
+    async function saveMarks() {
+      const testId = document.getElementById('marksTestSelect').value; let data = [];
+      document.querySelectorAll('.mark-row').forEach(r => { const sid = r.getAttribute('data-id'); const mark = r.querySelector('.student-mark').value; if(mark !== '') data.push({studentId: sid, mark: mark}); });
+      const res = await fetchAPI('saveMarks', {testId: testId, data: JSON.stringify(data)});
+      if(res.ok) alert("Marks Saved!");
+    }
+
+    // --- BATCHES & STUDENTS --- 
+    async function addBatch() { await fetchAPI('addBatch', {name: document.getElementById('bName').value, fee: document.getElementById('bFee').value, dueDay: document.getElementById('bDueDay').value}); window.location.reload(); }
     function editBatch(id) {
       const b = allBatches.find(x => x.BatchID === id);
       document.getElementById('modalTitle').innerText = `Edit Batch ${id}`;
-      document.getElementById('modalBody').innerHTML = `
-        <label class="text-sm font-bold text-gray-600">Batch Name</label>
-        <input type="text" id="mBName" value="${b.BatchName}" class="w-full border p-2 rounded mb-2">
-        <label class="text-sm font-bold text-gray-600">Default Fee</label>
-        <input type="number" id="mBFee" value="${b.DefaultFee}" class="w-full border p-2 rounded mb-2">
-        <label class="text-sm font-bold text-gray-600">Due Day</label>
-        <input type="number" id="mBDue" value="${b.DueDay}" class="w-full border p-2 rounded">
-      `;
+      document.getElementById('modalBody').innerHTML = `<input type="text" id="mBName" value="${b.BatchName}" class="w-full border p-2 rounded mb-2"><input type="number" id="mBFee" value="${b.DefaultFee}" class="w-full border p-2 rounded mb-2"><input type="number" id="mBDue" value="${b.DueDay}" class="w-full border p-2 rounded">`;
       document.getElementById('editModal').classList.remove('hidden');
-      document.getElementById('modalSaveBtn').onclick = async () => { 
-        await fetchAPI('updateBatch', {batchId:id, name:document.getElementById('mBName').value, fee:document.getElementById('mBFee').value, dueDay:document.getElementById('mBDue').value}); 
-        window.location.reload(); 
-      };
+      document.getElementById('modalSaveBtn').onclick = async () => { await fetchAPI('updateBatch', {batchId:id, name:document.getElementById('mBName').value, fee:document.getElementById('mBFee').value, dueDay:document.getElementById('mBDue').value}); window.location.reload(); };
     }
 
-    // --- STUDENTS ---
     function filterStudents() {
       let filter = document.getElementById('studentSearch').value.toUpperCase();
-      let rows = document.querySelectorAll('.student-row');
-      rows.forEach(row => {
-        let id = row.querySelector('.stu-id').textContent.toUpperCase();
-        let name = row.querySelector('.stu-name').textContent.toUpperCase();
-        row.style.display = (id.indexOf(filter) > -1 || name.indexOf(filter) > -1) ? "" : "none";
-      });
+      document.querySelectorAll('.student-row').forEach(row => { row.style.display = (row.querySelector('.stu-id').textContent.toUpperCase().indexOf(filter) > -1 || row.querySelector('.stu-name').textContent.toUpperCase().indexOf(filter) > -1) ? "" : "none"; });
     }
 
     async function addStudent() {
-      const res = await fetchAPI('addStudent', { 
-        name: document.getElementById('sName').value, 
-        parentName: document.getElementById('sParent').value, 
-        parentPhone: document.getElementById('sPhone').value, 
-        customFee: document.getElementById('sFee').value, 
-        batchId: document.getElementById('sBatch').value 
-      });
+      const res = await fetchAPI('addStudent', { name: document.getElementById('sName').value, parentName: document.getElementById('sParent').value, parentPhone: document.getElementById('sPhone').value, customFee: document.getElementById('sFee').value, batchId: document.getElementById('sBatch').value });
       if(res.ok) { 
-        document.getElementById('newStudentResult').classList.remove('hidden'); 
-        document.getElementById('newStudentText').innerText = `Success! Student ID: ${res.studentId} | Password: ${res.password}`; 
+        document.getElementById('newStudentResult').classList.remove('hidden'); document.getElementById('newStudentText').innerText = `Success! ID: ${res.studentId} | Pass: ${res.password}`; 
         let phone = res.parentPhone; if(phone.length === 10) phone = '91' + phone;
-        let waMsg = encodeURIComponent(`Hi ${document.getElementById('sName').value}, your tuition portal login details are:\n\n*ID:* ${res.studentId}\n*Password:* ${res.password}\n\nPlease keep this safe.`);
-        document.getElementById('newStudentWaLink').href = `https://wa.me/${phone}?text=${waMsg}`;
+        document.getElementById('newStudentWaLink').href = `https://wa.me/${phone}?text=${encodeURIComponent(`Hi ${document.getElementById('sName').value}, your portal login:\nID: ${res.studentId}\nPass: ${res.password}`)}`;
       }
     }
     
     function editStudent(id) {
-      const s = allStudents.find(x => x.StudentID === id);
-      document.getElementById('modalTitle').innerText = `Edit Student ${id}`;
+      const s = allStudents.find(x => x.StudentID === id); document.getElementById('modalTitle').innerText = `Edit Student ${id}`;
       let bOpts = allBatches.map(b => `<option value="${b.BatchID}" ${b.BatchID===s.BatchID?'selected':''}>${b.BatchName}</option>`).join('');
-      document.getElementById('modalBody').innerHTML = `
-        <label class="text-sm font-bold text-gray-600">Name</label>
-        <input type="text" id="mSName" value="${s.Name}" class="w-full border p-2 rounded mb-2">
-        <label class="text-sm font-bold text-gray-600">Parent Phone</label>
-        <input type="text" id="mSPhone" value="${s.ParentPhone}" class="w-full border p-2 rounded mb-2">
-        <label class="text-sm font-bold text-gray-600">Custom Fee</label>
-        <input type="number" id="mSFee" value="${s.CustomFee}" placeholder="Leave blank for Batch default" class="w-full border p-2 rounded mb-2">
-        <label class="text-sm font-bold text-gray-600">Batch</label>
-        <select id="mSBatch" class="w-full border p-2 rounded">${bOpts}</select>
-      `;
+      document.getElementById('modalBody').innerHTML = `<label class="text-sm font-bold text-gray-600">Name</label><input type="text" id="mSName" value="${s.Name}" class="w-full border p-2 rounded mb-2"><label class="text-sm font-bold text-gray-600">Parent Phone</label><input type="text" id="mSPhone" value="${s.ParentPhone}" class="w-full border p-2 rounded mb-2"><label class="text-sm font-bold text-gray-600">Custom Fee</label><input type="number" id="mSFee" value="${s.CustomFee}" placeholder="Leave blank for Batch default" class="w-full border p-2 rounded mb-2"><label class="text-sm font-bold text-gray-600">Batch</label><select id="mSBatch" class="w-full border p-2 rounded">${bOpts}</select>`;
       document.getElementById('editModal').classList.remove('hidden');
-      document.getElementById('modalSaveBtn').onclick = async () => { 
-        await fetchAPI('updateStudent', {studentId:id, name:document.getElementById('mSName').value, parentPhone:document.getElementById('mSPhone').value, customFee:document.getElementById('mSFee').value, batchId:document.getElementById('mSBatch').value}); 
-        window.location.reload(); 
-      };
+      document.getElementById('modalSaveBtn').onclick = async () => { await fetchAPI('updateStudent', {studentId:id, name:document.getElementById('mSName').value, parentPhone:document.getElementById('mSPhone').value, customFee:document.getElementById('mSFee').value, batchId:document.getElementById('mSBatch').value}); window.location.reload(); };
     }
 
     function managePassword(id) {
-      const s = allStudents.find(x => x.StudentID === id);
-      document.getElementById('modalTitle').innerText = `Manage Login - ${s.Name}`;
-      let phone = String(s.ParentPhone).replace(/\D/g, ''); 
-      if(phone.length === 10) phone = '91' + phone;
-      let waMsg = encodeURIComponent(`Hi ${s.Name}, your tuition portal login details are:\n\n*ID:* ${id}\n*Password:* ${s.Password}\n\nPlease keep this safe.`);
-      document.getElementById('modalBody').innerHTML = `
-        <div class="mb-4 p-4 bg-blue-50 border border-blue-100 rounded flex justify-between items-center">
-          <div>
-            <span class="text-xs text-blue-500 font-bold uppercase">Current Password</span><br>
-            <span class="font-bold font-mono text-lg text-gray-800">${s.Password}</span>
-          </div>
-          <a href="https://wa.me/${phone}?text=${waMsg}" target="_blank" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition"><i class="fa-brands fa-whatsapp"></i></a>
-        </div>
-        <hr class="my-4">
-        <label class="text-sm font-bold text-gray-700">Change Password</label>
-        <input type="text" id="mSNewPass" placeholder="New password..." class="w-full border p-3 rounded mt-1 focus:ring-blue-200 focus:outline-none">
-      `;
+      const s = allStudents.find(x => x.StudentID === id); document.getElementById('modalTitle').innerText = `Manage Login - ${s.Name}`;
+      let phone = String(s.ParentPhone).replace(/\D/g, ''); if(phone.length === 10) phone = '91' + phone;
+      document.getElementById('modalBody').innerHTML = `<div class="mb-4 p-4 bg-blue-50 border border-blue-100 rounded flex justify-between items-center"><div><span class="text-xs text-blue-500 font-bold uppercase">Current Password</span><br><span class="font-bold font-mono text-lg text-gray-800">${s.Password}</span></div><a href="https://wa.me/${phone}?text=${encodeURIComponent(`Hi ${s.Name}, your tuition portal login:\nID: ${id}\nPass: ${s.Password}`)}" target="_blank" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition"><i class="fa-brands fa-whatsapp"></i> Share</a></div><hr class="my-4"><label class="text-sm font-bold text-gray-700">Change Password</label><input type="text" id="mSNewPass" placeholder="New password..." class="w-full border p-3 rounded mt-1">`;
       document.getElementById('editModal').classList.remove('hidden');
-      document.getElementById('modalSaveBtn').onclick = async () => {
-        const newPass = document.getElementById('mSNewPass').value.trim();
-        if(!newPass) return alert("Please enter a new password.");
-        await fetchAPI('adminChangeStudentPassword', {studentId:id, newPassword:newPass});
-        alert("Password Updated!"); 
-        window.location.reload();
-      };
+      document.getElementById('modalSaveBtn').onclick = async () => { const newPass = document.getElementById('mSNewPass').value.trim(); if(!newPass) return alert("Please enter a new password."); await fetchAPI('adminChangeStudentPassword', {studentId:id, newPassword:newPass}); alert("Updated!"); window.location.reload(); };
     }
 
     // --- MANUAL BILLING GENERATION & REMOVAL ---
     let pendingBillAction = '';
-    
     function openBillAuth(actionType) {
-      const month = document.getElementById('billMonth').value;
-      const year = document.getElementById('billYear').value;
-      
-      if(!month || !year) return alert("Please specify the Month and Year.");
-      
-      pendingBillAction = actionType;
-      document.getElementById('billAuthTitle').innerText = actionType === 'generate' ? 'Generate Bills' : 'Remove Generated Bills';
-      document.getElementById('billAdminPass').value = '';
-      
-      const btn = document.getElementById('billAuthConfirmBtn');
-      btn.className = actionType === 'generate' ? 'px-4 py-2 bg-blue-600 text-white rounded font-medium' : 'px-4 py-2 bg-red-600 text-white rounded font-medium';
-      btn.onclick = executeBillAction;
-      
+      const month = document.getElementById('billMonth').value; const year = document.getElementById('billYear').value;
+      if(!month || !year) return alert("Specify Month and Year.");
+      pendingBillAction = actionType; document.getElementById('billAuthTitle').innerText = actionType === 'generate' ? 'Generate Bills' : 'Remove Bills'; document.getElementById('billAdminPass').value = '';
+      const btn = document.getElementById('billAuthConfirmBtn'); btn.className = actionType === 'generate' ? 'px-4 py-2 bg-blue-600 text-white rounded font-medium' : 'px-4 py-2 bg-red-600 text-white rounded font-medium'; btn.onclick = executeBillAction;
       document.getElementById('billAuthModal').classList.remove('hidden');
     }
 
     async function executeBillAction() {
-      const pass = document.getElementById('billAdminPass').value;
-      if(!pass) return alert("Admin password is required.");
-      
-      const batchId = document.getElementById('billBatch').value;
-      const month = document.getElementById('billMonth').value;
-      const year = document.getElementById('billYear').value;
-      
+      const pass = document.getElementById('billAdminPass').value; if(!pass) return alert("Admin password required.");
+      const batchId = document.getElementById('billBatch').value; const month = document.getElementById('billMonth').value; const year = document.getElementById('billYear').value;
       document.getElementById('billAuthModal').classList.add('hidden');
-      
       if(pendingBillAction === 'generate') {
         const res = await fetchAPI('generateBills', {batchId: batchId, month: month, year: year, adminPass: pass});
-        if(res.ok) alert('Bills Generated Successfully');
-        else alert('Error: ' + res.msg);
+        if(res.ok) alert('Bills Generated'); else alert('Error: ' + res.msg);
       } else if(pendingBillAction === 'remove') {
         const res = await fetchAPI('deleteBills', {batchId: batchId, month: month, year: year, adminPass: pass});
-        if(res.ok) alert(`Success! Deleted ${res.count} generated bills.`);
-        else alert('Error: ' + res.msg);
+        if(res.ok) alert(`Deleted ${res.count} bills.`); else alert('Error: ' + res.msg);
       }
     }
 
-    // --- FEE COLLECTIONS ---
+    // --- SMART STUDENT SEARCH & FEES --- 
+    // NEW ONINPUT FETCHER: Helper to get selected Student ID matching typed input/datalist
+    function getSelectedFeeStudent() {
+      let rawInput = document.getElementById('feeStudentInput').value.trim();
+      if(!rawInput) return null;
+      let searchId = rawInput.split(' - ')[0].trim().toUpperCase();
+      const matchedStudent = allStudents.find(s => s.StudentID.toUpperCase() === searchId || s.Name.toLowerCase() === rawInput.toLowerCase());
+      return matchedStudent ? matchedStudent.StudentID : null;
+    }
+
     async function loadStudentBills() {
-      let input = document.getElementById('feeStudentInput').value.split(' - ')[0].trim();
-      if(!input) return;
-      // Do not show full screen loader for instant background typing fetch
-      const res = await fetchAPI('studentFees', {studentId: input}, false);
+      const validStudentId = getSelectedFeeStudent();
+      if(!validStudentId) {
+        document.getElementById('pendingBillsArea').classList.add('hidden');
+        return;
+      }
+      
+      const res = await fetchAPI('studentFees', {studentId: validStudentId}, false); // no loading screen
       if(res.ok) {
         let pending = res.bills.filter(b => b.status !== 'PAID').sort((a,b) => new Date(a.dueDate) - new Date(b.dueDate));
-        let html = '';
-        if(pending.length === 0) html = '<p class="text-green-600 text-center font-medium py-2">No pending bills!</p>';
+        let html = ''; if(pending.length === 0) html = '<p class="text-green-600 text-center font-medium py-2">No pending bills!</p>';
         pending.forEach(b => {
           let left = b.amount - b.discount - b.paid;
-          html += `<label class="flex justify-between items-center bg-white p-2 border-b hover:bg-gray-50 cursor-pointer transition">
-            <div class="flex items-center gap-3">
-              <input type="checkbox" class="bill-check h-4 w-4 text-blue-600" value="${b.billId}" checked> 
-              <span class="font-medium text-gray-700">Due: ${cleanDate(b.dueDate)}</span>
-            </div> 
-            <span class="font-bold text-red-500">₹${left}</span>
-          </label>`;
+          html += `<label class="flex justify-between items-center bg-white p-2 border-b hover:bg-gray-50 cursor-pointer transition"><div class="flex items-center gap-3"><input type="checkbox" class="bill-check h-4 w-4 text-blue-600" value="${b.billId}" checked> <span class="font-medium text-gray-700">Due: ${cleanDate(b.dueDate)}</span></div> <span class="font-bold text-red-500">₹${left}</span></label>`;
         });
-        document.getElementById('pendingBillsArea').innerHTML = html;
-        document.getElementById('pendingBillsArea').classList.remove('hidden');
+        document.getElementById('pendingBillsArea').innerHTML = html; document.getElementById('pendingBillsArea').classList.remove('hidden');
       }
     }
 
     async function collectDistributedFee() {
-      const studentId = document.getElementById('feeStudentInput').value.split(' - ')[0].trim();
-      const amount = document.getElementById('feeAmount').value;
-      if(!studentId || !amount) return alert("Enter a student and amount first.");
-      const checks = document.querySelectorAll('.bill-check:checked');
-      if(checks.length === 0) return alert("Select at least one bill to pay.");
-      
-      const res = await fetchAPI('collectMultiFee', { 
-        studentId: studentId, 
-        amount: amount, 
-        mode: document.getElementById('feeMode').value, 
-        note: document.getElementById('feeNote').value, 
-        billIds: JSON.stringify(Array.from(checks).map(c=>c.value)) 
-      });
-      if(res.ok) { 
-        alert("Payment Recorded!"); 
-        loadStudentBills(); 
-        document.getElementById('feeAmount').value=''; 
-      }
+      const studentId = getSelectedFeeStudent(); const amount = document.getElementById('feeAmount').value;
+      if(!studentId || !amount) return alert("Enter valid student and amount");
+      const checks = document.querySelectorAll('.bill-check:checked'); if(checks.length === 0) return alert("Select bill");
+      const res = await fetchAPI('collectMultiFee', { studentId: studentId, amount: amount, mode: document.getElementById('feeMode').value, note: document.getElementById('feeNote').value, billIds: JSON.stringify(Array.from(checks).map(c=>c.value)) });
+      if(res.ok) { alert("Paid!"); loadStudentBills(); document.getElementById('feeAmount').value=''; }
     }
 
     async function applyDistributedDiscount() {
-      const studentId = document.getElementById('feeStudentInput').value.split(' - ')[0].trim();
-      const amount = document.getElementById('feeAmount').value;
-      if(!studentId || !amount) return alert("Enter a student and discount amount.");
-      const checks = document.querySelectorAll('.bill-check:checked');
-      if(checks.length === 0) return alert("Select at least one bill to discount.");
-      
-      const res = await fetchAPI('applyMultiDiscount', { 
-        studentId: studentId, 
-        amount: amount, 
-        note: document.getElementById('feeNote').value, 
-        billIds: JSON.stringify(Array.from(checks).map(c=>c.value)) 
-      });
-      if(res.ok) { 
-        alert("Discount Applied!"); 
-        loadStudentBills(); 
-        document.getElementById('feeAmount').value=''; 
-        document.getElementById('feeNote').value=''; 
-      }
+      const studentId = getSelectedFeeStudent(); const amount = document.getElementById('feeAmount').value;
+      if(!studentId || !amount) return alert("Enter valid student and amount");
+      const checks = document.querySelectorAll('.bill-check:checked'); if(checks.length === 0) return alert("Select bill");
+      const res = await fetchAPI('applyMultiDiscount', { studentId: studentId, amount: amount, note: document.getElementById('feeNote').value, billIds: JSON.stringify(Array.from(checks).map(c=>c.value)) });
+      if(res.ok) { alert("Discount Applied!"); loadStudentBills(); document.getElementById('feeAmount').value=''; document.getElementById('feeNote').value=''; }
     }
 
     async function addPrevDue() {
-      const id = document.getElementById('feeStudentInput').value.split(' - ')[0].trim();
-      const amt = document.getElementById('feeAmount').value;
-      if(!id || !amt) return alert("Enter student and amount.");
-      await fetchAPI('addPrevDue', {studentId:id, amount:amt}); 
-      alert("Previous Due Added"); 
-      loadStudentBills();
+      const studentId = getSelectedFeeStudent(); const amt = document.getElementById('feeAmount').value;
+      if(!studentId || !amt) return alert("Enter valid student and amount");
+      await fetchAPI('addPrevDue', {studentId:studentId, amount:amt}); alert("Added"); loadStudentBills();
     }
 
-    // --- REPORTS ---
     async function loadBatchDues() {
       const batchId = document.getElementById('viewDueBatch').value;
+      document.getElementById('dueResults').innerHTML = '<p class="text-center py-4"><i class="fa-solid fa-spinner fa-spin text-blue-500 text-2xl"></i></p>';
       const res = await fetchAPI('batchDues', {batchId});
-      
       if(res.ok) {
-        if (res.students.length === 0) { 
-          document.getElementById('dueResults').innerHTML = `<div class="p-3 bg-green-100 text-green-800 rounded mb-4 text-center font-bold">No pending dues!</div>`; 
-          return; 
-        }
-        
-        let html = `<div class="p-4 bg-red-50 border border-red-200 text-red-800 font-bold rounded-lg mb-4 flex justify-between shadow-sm">
-          <span>Total Pending Due:</span> <span class="text-xl">₹${res.totalDue}</span>
-        </div>`;
-        
+        if (res.students.length === 0) { document.getElementById('dueResults').innerHTML = `<div class="p-3 bg-green-100 text-green-800 rounded mb-4 text-center font-bold">No pending dues!</div>`; return; }
+        let html = `<div class="p-4 bg-red-50 border border-red-200 text-red-800 font-bold rounded-lg mb-4 flex justify-between shadow-sm"><span>Total Pending Due:</span> <span class="text-xl">₹${res.totalDue}</span></div>`;
         res.students.forEach(s => { 
-          let waStr = encodeURIComponent(`Hi ${s.name}, your total pending tuition due is ₹${s.due}. Please pay as soon as possible. Thanks!`);
-          let phone = String(s.parentPhone).replace(/\D/g, ''); 
-          if(phone.length === 10) phone = '91' + phone;
-          
-          html += `
-          <div class="flex justify-between items-center p-4 border-b hover:bg-gray-50 transition">
-            <div>
-              <span class="font-semibold text-gray-800">${s.name} <span class="text-xs text-gray-400 font-normal font-mono">(${s.studentId})</span></span>
-              <span class="ml-2 text-[10px] bg-gray-200 text-gray-700 px-2 py-1 rounded tracking-wide font-bold uppercase">${s.batchName}</span>
-              <p class="text-sm text-red-500 font-bold mt-1">Due: ₹${s.due}</p>
-            </div>
-            <a href="https://wa.me/${phone}?text=${waStr}" target="_blank" class="text-green-500 text-2xl p-2 hover:text-green-600 transition">
-              <i class="fa-brands fa-whatsapp"></i>
-            </a>
-          </div>`; 
-        });
-        document.getElementById('dueResults').innerHTML = html;
+          let phone = String(s.parentPhone).replace(/\D/g, ''); if(phone.length === 10) phone = '91' + phone;
+          html += `<div class="flex justify-between items-center p-4 border-b hover:bg-gray-50 transition"><div><span class="font-semibold text-gray-800">${s.name} <span class="text-xs text-gray-400 font-mono">(${s.studentId})</span></span><span class="ml-2 text-[10px] bg-gray-200 text-gray-700 px-2 py-1 rounded font-bold uppercase">${s.batchName}</span><p class="text-sm text-red-500 font-bold mt-1">Due: ₹${s.due}</p></div><a href="https://wa.me/${phone}?text=${encodeURIComponent(`Hi ${s.name}, your total pending tuition due is ₹${s.due}. Please pay as soon as possible.`)}" target="_blank" class="text-green-500 text-2xl hover:text-green-600 p-2"><i class="fa-brands fa-whatsapp"></i></a></div>`; 
+        }); document.getElementById('dueResults').innerHTML = html;
       }
     }
 
     async function loadReport() {
       const days = document.getElementById('reportDays').value;
       const res = await fetchAPI('collectionReport', {days: days, batchId: document.getElementById('reportBatch').value});
-      
       if(res.ok) {
-        document.getElementById('reportPrintArea').classList.remove('hidden');
-        document.getElementById('reportTotal').innerText = res.total;
-        
-        const fromD = new Date(); 
-        fromD.setDate(fromD.getDate() - parseInt(days));
-        document.getElementById('reportPeriodStr').innerText = `Period: ${fromD.toLocaleDateString('en-IN')} to ${new Date().toLocaleDateString('en-IN')}`;
-        
+        document.getElementById('reportPrintArea').classList.remove('hidden'); document.getElementById('reportTotal').innerText = res.total;
+        const fromD = new Date(); fromD.setDate(fromD.getDate() - parseInt(days)); document.getElementById('reportPeriodStr').innerText = `Period: ${fromD.toLocaleDateString('en-IN')} to ${new Date().toLocaleDateString('en-IN')}`;
         let tbody = '';
-        res.rows.forEach(r => { 
-          tbody += `<tr class="border-b text-sm hover:bg-gray-50">
-            <td class="p-3">${cleanDate(r.paidOn)}</td>
-            <td class="p-3 font-medium">${r.name} <span class="text-xs text-gray-400">(${r.studentId})</span></td>
-            <td class="p-3 text-gray-500">${r.batchName}</td>
-            <td class="p-3 text-green-600 font-bold">₹${r.amount}</td>
-            <td class="p-3"><span class="bg-gray-100 px-2 py-1 rounded text-xs text-gray-600 font-medium">${r.mode}</span></td>
-          </tr>`; 
-        });
+        res.rows.forEach(r => { tbody += `<tr class="border-b text-sm hover:bg-gray-50"><td class="p-3">${cleanDate(r.paidOn)}</td><td class="p-3 font-medium">${r.name} <span class="text-xs text-gray-400">(${r.studentId})</span></td><td class="p-3 text-gray-500">${r.batchName}</td><td class="p-3 text-green-600 font-bold">₹${r.amount}</td><td class="p-3"><span class="bg-gray-100 px-2 py-1 rounded text-xs text-gray-600 font-medium">${r.mode}</span></td></tr>`; });
         document.getElementById('reportTableBody').innerHTML = tbody;
       }
     }
     
-    function downloadPDF() { 
-      const el = document.getElementById('reportPrintArea'); 
-      html2pdf().set({ 
-        margin: [0.5, 0.5], 
-        filename: 'collection_report.pdf', 
-        image: { type: 'jpeg', quality: 0.98 }, 
-        html2canvas: { scale: 2 }, 
-        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' } 
-      }).from(el).save(); 
-    }
+    function downloadPDF() { html2pdf().set({ margin: [0.5, 0.5], filename: 'collection_report.pdf', image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' } }).from(document.getElementById('reportPrintArea')).save(); }
   </script>
 </body>
 </html>
