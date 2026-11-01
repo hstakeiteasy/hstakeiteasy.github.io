@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Login - National Student Data Portal</title>
+    <!-- Google Fonts for a premium look -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        
+        body { 
+            background-color: #F4F6F9; 
+            min-height: 100vh; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            padding: 20px;
+            color: #1F2937;
+        }
+
+        .login-wrapper {
+            display: flex;
+            width: 100%;
+            max-width: 1050px;
+            background: #FFFFFF;
+            border-radius: 20px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            overflow: hidden;
+            min-height: 650px;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        /* LEFT SIDE: Branding Panel */
+        .brand-panel {
+            flex: 1;
+            background: linear-gradient(135deg, #12315A 0%, #1D4ED8 100%);
+            padding: 50px 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Decorative background shapes */
+        .brand-panel::before {
+            content: '';
+            position: absolute;
+            top: -80px;
+            right: -80px;
+            width: 300px;
+            height: 300px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 50%;
+        }
+        .brand-panel::after {
+            content: '';
+            position: absolute;
+            bottom: -100px;
+            left: -100px;
+            width: 400px;
+            height: 400px;
+            background: rgba(245, 158, 11, 0.1);
+            border-radius: 50%;
+        }
+
+        .brand-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 22px;
+            font-weight: 800;
+            z-index: 1;
+            letter-spacing: -0.5px;
+        }
+
+        .brand-logo .emblem {
+            width: 44px;
+            height: 44px;
+            background: #F59E0B;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #12315A;
+            font-size: 22px;
+            box-shadow: 0 0 20px rgba(245,158,11,0.4);
+        }
+
+        .brand-content {
+            z-index: 1;
+            margin-top: 40px;
+        }
+
+        .brand-content h2 {
+            font-size: 36px;
+            line-height: 1.2;
+            margin-bottom: 20px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        .brand-content p {
+            font-size: 15px;
+            color: #DBEAFE;
+            line-height: 1.7;
+            max-width: 95%;
+        }
+
+        .brand-footer {
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 12px;
+            color: #9CA3AF;
+            margin-top: 40px;
+        }
+
+        .hackathon-badge {
+            background: #F59E0B;
+            color: #12315A;
+            font-weight: 800;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            letter-spacing: 0.5px;
+        }
+
+        /* RIGHT SIDE: Form Panel */
+        .form-panel {
+            flex: 1.1;
+            padding: 50px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            background: #ffffff;
+        }
+
+        .form-header {
+            margin-bottom: 30px;
+        }
+
+        .form-header h1 {
+            font-size: 28px;
+            color: #12315A;
+            margin-bottom: 8px;
+            font-weight: 800;
+        }
+
+        .form-header p {
+            font-size: 14px;
+            color: #6B7280;
+        }
+
+        .role-selection {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            margin-bottom: 28px;
+        }
+
+        .role-label {
+            font-size: 12px;
+            font-weight: 700;
+            color: #374151;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .role-option {
+            display: flex;
+            align-items: center;
+            padding: 16px 20px;
+            border: 2px solid #E5E7EB;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .role-option:hover {
+            border-color: #9CA3AF;
+            background: #F9FAFB;
+            transform: translateY(-2px);
+        }
+
+        .role-option input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .role-option .icon {
+            width: 40px;
+            height: 40px;
+            background: #F3F4F6;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 16px;
+            color: #4B5563;
+            transition: all 0.2s;
+        }
+
+        .role-option .text h3 {
+            font-size: 15px;
+            font-weight: 700;
+            color: #1F2937;
+        }
+
+        .role-option .text p {
+            font-size: 12px;
+            color: #6B7280;
+            margin-top: 2px;
+        }
+
+        /* Checked State */
+        .role-option input[type="radio"]:checked ~ .icon {
+            background: #1D4ED8;
+            color: white;
+            box-shadow: 0 4px 12px rgba(29, 78, 216, 0.3);
+        }
+        .role-option input[type="radio"]:checked ~ .text h3 {
+            color: #1D4ED8;
+        }
+        .role-option:has(input[type="radio"]:checked) {
+            border-color: #1D4ED8;
+            background: #EFF6FF;
+            box-shadow: 0 0 0 1px #1D4ED8;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 16px;
+            background: #1D4ED8;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(29, 78, 216, 0.2);
+        }
+
+        .login-btn:hover {
+            background: #1E40AF;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(29, 78, 216, 0.4);
+        }
+        
+        .login-btn:active {
+            transform: scale(0.98);
+        }
+
+        .login-btn:disabled {
+            background: #93C5FD;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .demo-notice {
+            margin-top: 28px;
+            padding: 14px;
+            background: #FEF3C7;
+            border: 1px solid #FDE68A;
+            border-radius: 10px;
+            font-size: 12px;
+            color: #92400E;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            line-height: 1.5;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Spinner Animation */
+        .spin { animation: spin 1s linear infinite; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* Mobile Responsive */
+        @media (max-width: 900px) {
+            .login-wrapper {
+                flex-direction: column;
+                min-height: auto;
+            }
+            .brand-panel {
+                padding: 40px 30px;
+                text-align: center;
+            }
+            .brand-logo {
+                justify-content: center;
+            }
+            .brand-content h2 {
+                font-size: 28px;
+                margin-top: 20px;
+            }
+            .brand-content p {
+                max-width: 100%;
+                margin: 0 auto;
+            }
+            .brand-footer {
+                justify-content: center;
+                margin-top: 30px;
+            }
+            .form-panel {
+                padding: 40px 30px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body { padding: 10px; }
+            .login-wrapper { border-radius: 16px; }
+            .brand-panel { padding: 30px 20px; }
+            .brand-content h2 { font-size: 24px; }
+            .form-panel { padding: 30px 20px; }
+            .form-header h1 { font-size: 24px; }
+            .role-option { padding: 14px; }
+            .role-option .icon { width: 36px; height: 36px; margin-right: 12px; }
+            .role-option .text h3 { font-size: 14px; }
+            .role-option .text p { font-size: 11px; }
+            .login-btn { padding: 14px; font-size: 15px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="login-wrapper">
+    <!-- Left Branding Panel -->
+    <div class="brand-panel">
+        <div class="brand-logo">
+            <div class="emblem">🏛️</div>
+            <div>National Portal</div>
+        </div>
+        
+        <div class="brand-content">
+            <h2>APAAR-Based Academic Record Management</h2>
+            <p>A secure, centralized platform for students, institutions, and the AICTE to manage, verify, and analyze academic data seamlessly across India.</p>
+        </div>
+
+        <div class="brand-footer">
+            <span class="hackathon-badge">HACKATHON DEMO</span>
+            <span>Frontend Prototype Only</span>
+        </div>
+    </div>
+
+    <!-- Right Form Panel -->
+    <div class="form-panel">
+        <div class="form-header">
+            <h1>Welcome Back</h1>
+            <p>Please select your role to access the portal.</p>
+        </div>
+
+        <form id="loginForm">
+            <div class="role-selection">
+                <div class="role-label">Select Demo Role</div>
+                
+                <!-- Role: Student -->
+                <label class="role-option">
+                    <input type="radio" name="role" value="student" required>
+                    <div class="icon"><i data-lucide="graduation-cap"></i></div>
+                    <div class="text">
+                        <h3>Student</h3>
+                        <p>Check status, link DigiLocker, and view records</p>
+                    </div>
+                </label>
+
+                <!-- Role: Institution -->
+                <label class="role-option">
+                    <input type="radio" name="role" value="institute" required>
+                    <div class="icon"><i data-lucide="building-2"></i></div>
+                    <div class="text">
+                        <h3>Institution Administrator</h3>
+                        <p>Manage students, upload bulk data, and verify</p>
+                    </div>
+                </label>
+
+                <!-- Role: AICTE -->
+                <label class="role-option">
+                    <input type="radio" name="role" value="aicte" required>
+                    <div class="icon"><i data-lucide="shield-check"></i></div>
+                    <div class="text">
+                        <h3>AICTE Administrator</h3>
+                        <p>View national analytics, audit logs, and validation</p>
+                    </div>
+                </label>
+            </div>
+
+            <button type="submit" class="login-btn" id="submitBtn">
+                Secure Login <i data-lucide="arrow-right"></i>
+            </button>
+        </form>
+
+        <div class="demo-notice">
+            <i data-lucide="info" style="width:18px; flex-shrink:0;"></i>
+            <span>This is a hackathon demo. No real credentials are required. All data is stored locally in your browser.</span>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Initialize Icons
+    lucide.createIcons();
+
+    const defaultBtnHTML = 'Secure Login <i data-lucide="arrow-right"></i>';
+    const submitBtn = document.getElementById('submitBtn');
+
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const selectedRole = document.querySelector('input[name="role"]:checked');
+        
+        if (selectedRole) {
+            const role = selectedRole.value;
+            
+            // Change button state to show loading
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i data-lucide="loader" class="spin"></i> Authenticating...';
+            lucide.createIcons();
+
+            // Save role to localStorage to simulate a session
+            localStorage.setItem('demo_role', role);
+            
+            // Simulate network delay for realism
+            setTimeout(() => {
+                if (role === 'student') {
+                    window.location.href = 'student.html';
+                } else if (role === 'institute') {
+                    window.location.href = 'institute.html';
+                } else if (role === 'aicte') {
+                    window.location.href = 'aicte.html';
+                }
+            }, 800);
+        } else {
+            alert("Please select a role to continue.");
+        }
+    });
+
+    // FIX FOR BACK BUTTON / BFCACHE ISSUE
+    window.addEventListener('pageshow', function(event) {
+        if (event.persisted) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = defaultBtnHTML;
+            lucide.createIcons();
+        }
+    });
+</script>
+</body>
+</html>
