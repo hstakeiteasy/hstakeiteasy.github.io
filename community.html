@@ -8,27 +8,28 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <style>
     body { background-color: #f8fafc; padding-bottom: 90px; }
-    .page-section { display: none; }
-    .page-section.active { display: block; animation: fadeIn 0.3s ease-in-out; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
     .nav-center-btn { transform: translateY(-20px); box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.4); }
     textarea, input[type="text"], input[type="password"] { -webkit-appearance: none; }
+    .comment-box { display: none; }
+    .comment-box.open { display: block; animation: slideDown 0.25s ease; }
+    @keyframes slideDown { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+    .btn-loading { pointer-events: none; opacity: 0.8; }
   </style>
 </head>
 <body class="text-gray-800">
 
-  <!-- Loading overlay -->
   <div id="globalLoader" class="fixed inset-0 bg-black bg-opacity-60 z-[100] hidden flex-col justify-center items-center">
     <i class="fa-solid fa-circle-notch fa-spin text-white text-5xl mb-4"></i>
     <p class="text-white font-semibold tracking-wider text-lg">Loading...</p>
   </div>
 
-  <!-- Header -->
   <div class="bg-blue-600 text-white p-6 rounded-b-[2rem] shadow-lg">
     <div class="flex justify-between items-center mb-2">
       <a href="student.html" class="text-white text-xl"><i class="fa-solid fa-arrow-left"></i></a>
       <h1 class="text-lg font-bold tracking-wide">Community</h1>
-      <div class="w-6"></div>
+      <button onclick="logoutCommunity()" id="logoutBtn" class="text-white text-lg hidden" title="Log out">
+        <i class="fa-solid fa-right-from-bracket"></i>
+      </button>
     </div>
     <p id="communityWho" class="text-blue-100 text-xs font-mono tracking-widest mt-2">Not signed in</p>
   </div>
@@ -45,17 +46,16 @@
         class="w-full border border-gray-200 rounded-xl p-3 mb-2 text-sm focus:outline-none focus:border-blue-500">
       <input id="cLoginPass" type="password" placeholder="Password" autocomplete="current-password"
         class="w-full border border-gray-200 rounded-xl p-3 mb-3 text-sm focus:outline-none focus:border-blue-500">
-      <button onclick="communityLogin()"
+      <button id="loginBtn" onclick="communityLogin()"
         class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl active:scale-95 transition">
         Sign In
       </button>
       <p id="cLoginErr" class="text-red-500 text-xs mt-2 hidden"></p>
     </div>
 
-    <!-- Feed area (hidden until login) -->
+    <!-- Feed area -->
     <div id="communityMain" class="hidden space-y-4">
 
-      <!-- New post -->
       <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
         <textarea id="cPostText" rows="3" placeholder="What's on your mind?"
           class="w-full border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:border-blue-500"></textarea>
@@ -67,21 +67,19 @@
           </label>
         </div>
         <img id="cPostPreview" class="mt-2 max-h-40 rounded-lg hidden">
-        <button onclick="communityPost()"
+        <button id="postBtn" onclick="communityPost()"
           class="w-full mt-3 bg-blue-600 text-white font-bold py-3 rounded-xl active:scale-95 transition">
           Post
         </button>
         <p id="cPostErr" class="text-red-500 text-xs mt-2 hidden"></p>
       </div>
 
-      <!-- Feed -->
       <div id="cFeed" class="space-y-3">
         <p class="text-gray-400 text-center py-4 text-sm"><i class="fa-solid fa-spinner fa-spin"></i> Loading feed...</p>
       </div>
     </div>
   </div>
 
-  <!-- Bottom nav (matches dashboard) -->
   <div class="fixed bottom-0 w-full bg-white flex justify-between items-end px-2 pb-safe shadow-[0_-10px_20px_-5px_rgba(0,0,0,0.05)] rounded-t-2xl border-t border-gray-100 z-40">
     <div class="flex w-2/5 justify-evenly pb-2 pt-3">
       <a href="student.html" class="flex flex-col items-center text-gray-400 hover:text-blue-500 transition">
@@ -111,13 +109,12 @@
   </div>
 
   <script>
-    // ===== CONFIG =====
     const COMMUNITY_API = 'https://script.google.com/macros/s/AKfycbwUcfo-HIwXdMZN6bDNe9A90p0ceX_reb59p5K6jLyXeUkCPgMMSkTkEH5uI9FAkvtR4w/exec';
+    const STORAGE_KEY = 'community_auth';
 
-    // ===== STATE =====
     let cStudentId = null;
 
-    // ===== HELPERS =====
+    // ===== Helpers =====
     function escapeHtml(s) {
       return String(s == null ? '' : s)
         .replace(/&/g,'&amp;').replace(/</g,'&lt;')
@@ -143,29 +140,87 @@
       return isNaN(d) ? '' : d.toLocaleString();
     }
 
-    // ===== LOGIN =====
+    // ===== Login persistence =====
+    function saveLogin(studentId) {
+      // Save in BOTH storages so it survives tab close (local) and refreshes (session).
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({ studentId: studentId, ts: Date.now() }));
+        sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ studentId: studentId, ts: Date.now() }));
+      } catch (e) { /* private mode may block; ignore */ }
+    }
+    function loadLogin() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY) || sessionStorage.getItem(STORAGE_KEY);
+        if (!raw) return null;
+        const obj = JSON.parse(raw);
+        if (!obj || !obj.studentId) return null;
+        return obj.studentId;
+      } catch (e) { return null; }
+    }
+    function clearLogin() {
+      try {
+        localStorage.removeItem(STORAGE_KEY);
+        sessionStorage.removeItem(STORAGE_KEY);
+      } catch (e) {}
+    }
+
+    // ===== UI state helpers =====
+    function showLoggedIn(studentId) {
+      cStudentId = studentId;
+      document.getElementById('loginGate').classList.add('hidden');
+      document.getElementById('communityMain').classList.remove('hidden');
+      document.getElementById('logoutBtn').classList.remove('hidden');
+      document.getElementById('communityWho').textContent = 'Signed in as ' + studentId;
+      loadFeed();
+    }
+
+    function showLoggedOut() {
+      cStudentId = null;
+      document.getElementById('loginGate').classList.remove('hidden');
+      document.getElementById('communityMain').classList.add('hidden');
+      document.getElementById('logoutBtn').classList.add('hidden');
+      document.getElementById('communityWho').textContent = 'Not signed in';
+    }
+
+    function logoutCommunity() {
+      clearLogin();
+      showLoggedOut();
+    }
+
+    // ===== Login =====
     async function communityLogin() {
       const id = document.getElementById('cLoginId').value.trim();
       const pw = document.getElementById('cLoginPass').value.trim();
+      const btn = document.getElementById('loginBtn');
       if (!id || !pw) return showErr('cLoginErr', 'Enter Student ID and password.');
+
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin mr-2"></i>Verifying...';
 
       try {
         const res = await fetch(
           `${COMMUNITY_API}?action=login&studentId=${encodeURIComponent(id)}&password=${encodeURIComponent(pw)}`
         );
         const data = await res.json();
-        if (!data.success) return showErr('cLoginErr', data.error || 'Login failed.');
-        cStudentId = data.studentId;
-        document.getElementById('loginGate').classList.add('hidden');
-        document.getElementById('communityMain').classList.remove('hidden');
-        document.getElementById('communityWho').textContent = 'Signed in as ' + data.studentId;
-        loadFeed();
+        if (!data.success) {
+          showErr('cLoginErr', data.error || 'Login failed.');
+          btn.disabled = false;
+          btn.textContent = 'Sign In';
+          return;
+        }
+        saveLogin(data.studentId);
+        document.getElementById('cLoginPass').value = '';
+        showLoggedIn(data.studentId);
+        btn.disabled = false;
+        btn.textContent = 'Sign In';
       } catch (e) {
         showErr('cLoginErr', 'Network error: ' + e.message);
+        btn.disabled = false;
+        btn.textContent = 'Sign In';
       }
     }
 
-    // ===== POST =====
+    // ===== New post =====
     document.getElementById('cPostFile').addEventListener('change', function (e) {
       const p = document.getElementById('cPostPreview');
       const f = e.target.files[0];
@@ -179,8 +234,9 @@
       const file = document.getElementById('cPostFile').files[0];
       if (!text && !file) return showErr('cPostErr', 'Write something or add an image.');
 
-      const btn = document.querySelector('#communityMain button[onclick="communityPost()"]');
-      btn.disabled = true; btn.textContent = 'Posting...';
+      const btn = document.getElementById('postBtn');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin mr-2"></i>Posting...';
 
       try {
         let b64 = null;
@@ -204,11 +260,12 @@
       } catch (e) {
         showErr('cPostErr', e.message);
       } finally {
-        btn.disabled = false; btn.textContent = 'Post';
+        btn.disabled = false;
+        btn.textContent = 'Post';
       }
     }
 
-    // ===== FEED =====
+    // ===== Feed =====
     async function loadFeed() {
       const box = document.getElementById('cFeed');
       try {
@@ -237,7 +294,10 @@
         ? `<img src="${escapeHtml(p.imageUrl)}" class="w-full rounded-lg mb-2" loading="lazy" alt="post image">`
         : '';
 
-      const comments = (p.comments || []).map(c => {
+      const commentCount = (p.comments || []).length;
+      const safeId = String(p.id || '').replace(/[^a-zA-Z0-9-]/g, '');
+
+      const commentsHtml = (p.comments || []).map(c => {
         const ctag = c.studentId
           ? `<span class="inline-block bg-gray-200 text-gray-600 text-[10px] font-bold px-2 py-0.5 rounded-full mb-1">${escapeHtml(c.studentId)}</span>`
           : '';
@@ -246,21 +306,28 @@
         return `<div class="bg-gray-100 rounded-lg p-2 mb-1">${ctag}${ctxt}${cimg}</div>`;
       }).join('');
 
-      const safeId = String(p.id || '').replace(/[^a-zA-Z0-9-]/g, '');
-
       return `
         <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
           ${tag}${txt}${img}
           <p class="text-[10px] text-gray-400 mb-2">${formatTime(p.timestamp)}</p>
-          <div class="border-t pt-2 mt-1">
-            ${comments}
+
+          <!-- Comment toggle -->
+          <button id="ctoggle-${safeId}" onclick="toggleComments('${safeId}')"
+            class="w-full flex items-center justify-center gap-2 text-xs font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 active:bg-blue-100 py-2 rounded-lg transition">
+            <i class="fa-regular fa-comment"></i>
+            <span>Comments (${commentCount})</span>
+          </button>
+
+          <!-- Hidden comment box -->
+          <div id="cbox-${safeId}" class="comment-box mt-2 border-t pt-2">
+            ${commentsHtml || '<p class="text-xs text-gray-400 text-center py-2">No comments yet.</p>'}
             <div class="mt-2">
               <input type="text" id="ct-${safeId}" placeholder="Write a comment..."
                 class="w-full border border-gray-200 rounded-lg p-2 text-xs mb-1 focus:outline-none focus:border-blue-500">
               <input type="file" id="cf-${safeId}" accept="image/*" class="text-[10px] text-gray-500 mb-1">
-              <button onclick="submitComment('${p.id}')"
-                class="w-full bg-gray-100 text-gray-700 font-bold py-2 rounded-lg text-xs active:scale-95 transition">
-                Comment
+              <button id="cbtn-${safeId}" onclick="submitComment('${p.id}', '${safeId}')"
+                class="w-full bg-blue-50 text-blue-600 font-bold py-2 rounded-lg text-xs active:scale-95 transition">
+                <i class="fa-regular fa-paper-plane mr-1"></i> Comment
               </button>
               <p id="ce-${safeId}" class="text-red-500 text-xs mt-1 hidden"></p>
             </div>
@@ -268,15 +335,39 @@
         </div>`;
     }
 
-    // ===== COMMENT =====
-    async function submitComment(postId) {
+    // ===== Comment toggle =====
+    function toggleComments(safeId) {
+      const box = document.getElementById('cbox-' + safeId);
+      const btn = document.getElementById('ctoggle-' + safeId);
+      if (!box) return;
+      const isOpen = box.classList.toggle('open');
+      // change toggle button color when open
+      if (isOpen) {
+        btn.classList.remove('bg-gray-100', 'text-gray-600', 'hover:bg-gray-200');
+        btn.classList.add('bg-blue-100', 'text-blue-700');
+      } else {
+        btn.classList.remove('bg-blue-100', 'text-blue-700');
+        btn.classList.add('bg-gray-100', 'text-gray-600', 'hover:bg-gray-200');
+      }
+    }
+
+    // ===== Submit comment =====
+    async function submitComment(postId, safeId) {
       if (!cStudentId) return alert('Not logged in.');
-      const safeId = String(postId).replace(/[^a-zA-Z0-9-]/g, '');
       const textEl = document.getElementById('ct-' + safeId);
       const fileEl = document.getElementById('cf-' + safeId);
+      const btn = document.getElementById('cbtn-' + safeId);
       const text = textEl.value.trim();
       const file = fileEl.files[0];
       if (!text && !file) return showErr('ce-' + safeId, 'Write or add image.');
+
+      // Visual feedback: change to blue solid + spinner
+      const oldHtml = btn.innerHTML;
+      btn.disabled = true;
+      btn.classList.add('btn-loading');
+      btn.classList.remove('bg-blue-50', 'text-blue-600');
+      btn.classList.add('bg-blue-600', 'text-white');
+      btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin mr-1"></i> Posting...';
 
       try {
         let b64 = null;
@@ -294,20 +385,33 @@
         });
         const data = await res.json();
         if (!data.success) throw new Error(data.error || 'Comment failed.');
-        loadFeed();
+
+        // Success: green flash then reload feed
+        btn.classList.remove('bg-blue-600');
+        btn.classList.add('bg-green-500');
+        btn.innerHTML = '<i class="fa-solid fa-check mr-1"></i> Posted!';
+        setTimeout(() => loadFeed(), 600);
+        return;
       } catch (e) {
         showErr('ce-' + safeId, e.message);
+        // Revert on error
+        btn.disabled = false;
+        btn.classList.remove('btn-loading', 'bg-blue-600', 'text-white');
+        btn.classList.add('bg-blue-50', 'text-blue-600');
+        btn.innerHTML = oldHtml;
       }
     }
 
-    // ===== INIT =====
-    // If the user is already logged into the dashboard, reuse that session.
+    // ===== Init =====
     window.addEventListener('load', () => {
-      const dashId = localStorage.getItem('studentId') || sessionStorage.getItem('studentId');
-      if (dashId) {
-        // Prefill but still require password — community verifies separately.
-        const inp = document.getElementById('cLoginId');
-        if (inp) inp.value = dashId;
+      const saved = loadLogin();
+      if (saved) {
+        // Auto-login from cache — no password prompt, no server round-trip.
+        showLoggedIn(saved);
+      } else {
+        // Prefill ID from dashboard's session if available
+        const dashId = localStorage.getItem('studentId') || sessionStorage.getItem('studentId');
+        if (dashId) document.getElementById('cLoginId').value = dashId;
       }
     });
   </script>
