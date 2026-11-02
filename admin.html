@@ -5,17 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Portal</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Updated FontAwesome to ensure all icons load properly -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-  <style> body { background-color: #f1f5f9; } .tab-content { display: none; } .tab-content.active { display: block; } </style>
+  <style> 
+    body { background-color: #f1f5f9; } 
+    .tab-content { display: none; } 
+    .tab-content.active { display: block; } 
+  </style>
 </head>
 <body class="text-gray-800">
 
   <!-- GLOBAL LOADING SPINNER OVERLAY -->
   <div id="globalLoader" class="fixed inset-0 bg-black bg-opacity-60 z-[100] hidden flex-col justify-center items-center">
     <i class="fa-solid fa-circle-notch fa-spin text-white text-5xl mb-4"></i>
-    <p class="text-white font-semibold tracking-wider text-lg">Processing...</p>
+    <p class="text-white font-semibold tracking-wider text-lg mt-3">Processing...</p>
   </div>
 
   <!-- Admin Navbar -->
@@ -43,7 +46,6 @@
       <button onclick="switchTab('marks')" class="w-full text-left p-3 rounded hover:bg-blue-50 font-medium"><i class="fa-solid fa-award w-6 text-yellow-500"></i> Marks & Tests</button>
       <button onclick="switchTab('dues')" class="w-full text-left p-3 rounded hover:bg-blue-50 font-medium"><i class="fa-solid fa-file-invoice-dollar w-6 text-green-500"></i> Dues & Billing</button>
       <button onclick="switchTab('reports')" class="w-full text-left p-3 rounded hover:bg-blue-50 font-medium"><i class="fa-solid fa-chart-line w-6 text-gray-500"></i> Reports</button>
-      <!-- NEW MORE BUTTON -->
       <button onclick="window.location.href='more.html'" class="w-full text-left p-3 rounded hover:bg-blue-50 font-medium"><i class="fa-solid fa-ellipsis w-6 text-indigo-500"></i> More</button>
       <button onclick="logout()" class="w-full text-left p-3 rounded hover:bg-red-50 text-red-600 font-medium md:hidden mt-10"><i class="fa-solid fa-power-off w-6"></i> Logout</button>
     </div>
@@ -163,7 +165,7 @@
         <h2 class="text-2xl font-bold">Dues & Billing</h2>
         
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <!-- Monthly Bills (With Password Protection) -->
+          <!-- Monthly Bills -->
           <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
             <h3 class="text-lg font-semibold mb-3"><i class="fa-solid fa-file-invoice text-blue-500"></i> Manage Monthly Bills</h3>
             <select id="billBatch" class="p-2 border rounded w-full mb-3 batch-dropdown"><option value="">All Batches</option></select>
@@ -180,7 +182,13 @@
           <!-- Fee Collection -->
           <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
             <h3 class="text-lg font-semibold mb-3"><i class="fa-solid fa-hand-holding-dollar text-green-500"></i> Fee Actions</h3>
-            <input type="text" id="feeStudentInput" list="studentDataList" placeholder="Search Student ID or Name..." oninput="loadStudentBills()" class="p-2 border rounded w-full mb-2">
+            
+            <div class="flex gap-2 mb-2">
+              <input type="text" id="feeStudentInput" list="studentDataList" placeholder="Search Student ID or Name..." oninput="loadStudentBills()" class="p-2 border rounded w-full">
+              <button onclick="manualRefreshBills(this)" class="bg-blue-50 text-blue-600 border border-blue-100 px-3 rounded hover:bg-blue-100 transition focus:outline-none" title="Refresh Selected Student's Bills">
+                <i class="fa-solid fa-rotate-right"></i>
+              </button>
+            </div>
             <datalist id="studentDataList"></datalist>
             
             <div id="pendingBillsArea" class="bg-gray-50 p-2 rounded mb-3 max-h-40 overflow-y-auto hidden text-sm"></div>
@@ -277,7 +285,9 @@
   </div>
 
   <script>
+    // --- REPLACE THIS URL WITH YOUR NEW DEPLOYMENT URL ---
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby7Q4nKX35FU54JgLEyj7HSCRktuHOWX6MCNcHpTcNKLJs_TIfCCEDAvcteRM0sXcWBkw/exec";
+    
     const token = localStorage.getItem('token') || sessionStorage.getItem('token');
     
     if(!token || (localStorage.getItem('role') && localStorage.getItem('role') !== 'admin')) window.location.href = 'login.html';
@@ -287,12 +297,23 @@
     function switchTab(tabId) { document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active')); document.getElementById(tabId).classList.add('active'); if(window.innerWidth < 768) { toggleSidebar(); } }
     function cleanDate(isoString) { if(!isoString) return ''; const d = new Date(isoString); return d.toLocaleDateString('en-IN', {day:'2-digit', month:'2-digit', year:'numeric'}); }
 
+    // FETCH API WITH CACHE BUSTER
     async function fetchAPI(action, params = {}, showLoader = true) {
       if(showLoader) document.getElementById('globalLoader').classList.remove('hidden');
-      let url = `${SCRIPT_URL}?action=${action}&token=${token}`;
+      
+      let url = `${SCRIPT_URL}?action=${action}&token=${token}&_t=${new Date().getTime()}`;
       Object.keys(params).forEach(k => url += `&${k}=${encodeURIComponent(params[k])}`);
-      try { const res = await fetch(url); const data = await res.json(); if(showLoader) document.getElementById('globalLoader').classList.add('hidden'); return data; } 
-      catch(err) { if(showLoader) document.getElementById('globalLoader').classList.add('hidden'); alert("Network Error."); return {ok: false}; }
+      
+      try { 
+        const res = await fetch(url); 
+        const data = await res.json(); 
+        if(showLoader) document.getElementById('globalLoader').classList.add('hidden'); 
+        return data; 
+      } catch(err) { 
+        if(showLoader) document.getElementById('globalLoader').classList.add('hidden'); 
+        alert("Network Error."); 
+        return {ok: false}; 
+      }
     }
 
     let allBatches = [], allStudents = [], allTests = [];
@@ -307,7 +328,7 @@
         document.querySelectorAll('.batch-dropdown-strict').forEach(s => { s.innerHTML = '<option value="">Select Batch...</option>'; });
         allBatches.forEach(b => {
           document.querySelectorAll('.batch-dropdown, .batch-dropdown-strict').forEach(s => s.innerHTML += `<option value="${b.BatchID}">${b.BatchName}</option>`);
-          bHtml += `<tr class="border-b"><td class="p-2">${b.BatchID}</td><td class="p-2">${b.BatchName}</td><td class="p-2">₹${b.DefaultFee}</td><td class="p-2">${b.DueDay}</td><td class="p-2"><button onclick="editBatch('${b.BatchID}')" class="text-blue-500"><i class="fa-solid fa-pen"></i></button></td></tr>`;
+          bHtml += `<tr class="border-b"><td class="p-2">${b.BatchID}</td><td class="p-2">${b.BatchName}</td><td class="p-2">₹${b.DefaultFee}</td><td class="p-2">${b.DueDay}</td><td class="p-2"><button onclick="editBatch('${b.BatchID}')" class="text-blue-500 hover:text-blue-700"><i class="fa-solid fa-pen"></i></button></td></tr>`;
         });
         document.getElementById('batchTableBody').innerHTML = bHtml;
       }
@@ -317,7 +338,6 @@
         allStudents = sRes.data;
         let sHtml = '', dlHtml = '';
         allStudents.forEach(s => {
-          // Badges for Active/Inactive
           const statusBadge = s.Status === 'ACTIVE' ? `<span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-bold">ACTIVE</span>` : `<span class="bg-red-100 text-red-700 px-2 py-1 rounded text-xs font-bold">INACTIVE</span>`;
           const statusBtnIcon = s.Status === 'ACTIVE' ? `<button onclick="promptStatusChange('${s.StudentID}', 'INACTIVE')" class="text-red-500 hover:text-red-700" title="Make Inactive"><i class="fa-solid fa-power-off"></i></button>` : `<button onclick="promptStatusChange('${s.StudentID}', 'ACTIVE')" class="text-green-500 hover:text-green-700" title="Make Active"><i class="fa-solid fa-power-off"></i></button>`;
 
@@ -384,7 +404,7 @@
         parentPhone: document.getElementById('sPhone').value, 
         customFee: document.getElementById('sFee').value, 
         batchId: document.getElementById('sBatch').value,
-        prevDue: document.getElementById('sPrevDue').value // NEW: Send previous due
+        prevDue: document.getElementById('sPrevDue').value 
       });
       if(res.ok) { 
         document.getElementById('newStudentResult').classList.remove('hidden'); 
@@ -406,7 +426,7 @@
     function managePassword(id) {
       const s = allStudents.find(x => x.StudentID === id); document.getElementById('modalTitle').innerText = `Manage Login - ${s.Name}`;
       let phone = String(s.ParentPhone).replace(/\D/g, ''); if(phone.length === 10) phone = '91' + phone;
-      document.getElementById('modalBody').innerHTML = `<div class="mb-4 p-4 bg-blue-50 border border-blue-100 rounded flex justify-between items-center"><div><span class="text-xs text-blue-500 font-bold uppercase">Current Password</span><br><span class="font-bold font-mono text-lg text-gray-800">${s.Password}</span></div><a href="https://wa.me/${phone}?text=${encodeURIComponent(`Hi ${s.Name}, your tuition portal login:\nID: ${id}\nPass: ${s.Password}`)}" target="_blank" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition"><i class="fa-brands fa-whatsapp"></i> Share</a></div><hr class="my-4"><label class="text-sm font-bold text-gray-700">Change Password</label><input type="text" id="mSNewPass" placeholder="New password..." class="w-full border p-3 rounded mt-1">`;
+      document.getElementById('modalBody').innerHTML = `<div class="mb-4 p-4 bg-blue-50 border border-blue-100 rounded flex justify-between items-center"><div><span class="text-xs text-blue-500 font-bold uppercase">Current Password</span><br><span class="font-bold font-mono text-lg text-gray-800">${s.Password}</span></div><a href="https://wa.me/${phone}?text=${encodeURIComponent(`Hi ${s.Name}, your tuition portal login:\nID: ${id}\nPass: ${s.Password}`)}" target="_blank" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition"><i class="fa-brands fa-whatsapp"></i> Share</a></div><hr class="my-4"><label class="text-sm font-bold text-gray-700">Change Password</label><input type="text" id="mSNewPass" placeholder="New password..." class="w-full border p-3 rounded mt-1 focus:ring-blue-200 focus:outline-none">`;
       document.getElementById('editModal').classList.remove('hidden');
       document.getElementById('modalSaveBtn').onclick = async () => { const newPass = document.getElementById('mSNewPass').value.trim(); if(!newPass) return alert("Please enter a new password."); await fetchAPI('adminChangeStudentPassword', {studentId:id, newPassword:newPass}); alert("Updated!"); window.location.reload(); };
     }
@@ -498,14 +518,20 @@
     function getSelectedFeeStudent() {
       let rawInput = document.getElementById('feeStudentInput').value.trim();
       if(!rawInput) return null;
-      let searchId = rawInput.split(' - ')[0].trim().toUpperCase();
-      const matchedStudent = allStudents.find(s => s.StudentID.toUpperCase() === searchId || s.Name.toLowerCase() === rawInput.toLowerCase());
+      
+      if (rawInput.includes(' - ')) {
+        return rawInput.split(' - ')[0].trim().toUpperCase();
+      }
+      
+      let searchStr = rawInput.toUpperCase();
+      const matchedStudent = allStudents.find(s => String(s.StudentID).toUpperCase() === searchStr || String(s.Name).toUpperCase() === searchStr);
       return matchedStudent ? matchedStudent.StudentID : null;
     }
 
     async function loadStudentBills() {
       const validStudentId = getSelectedFeeStudent();
       if(!validStudentId) { document.getElementById('pendingBillsArea').classList.add('hidden'); return; }
+      
       const res = await fetchAPI('studentFees', {studentId: validStudentId}, false); 
       if(res.ok) {
         let pending = res.bills.filter(b => b.status !== 'PAID').sort((a,b) => new Date(a.dueDate) - new Date(b.dueDate));
@@ -516,6 +542,13 @@
         });
         document.getElementById('pendingBillsArea').innerHTML = html; document.getElementById('pendingBillsArea').classList.remove('hidden');
       }
+    }
+
+    async function manualRefreshBills(btn) {
+      const icon = btn.querySelector('i');
+      icon.classList.add('fa-spin');
+      await loadStudentBills();
+      setTimeout(() => icon.classList.remove('fa-spin'), 300); 
     }
 
     async function collectDistributedFee() {
