@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Student Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     body { background-color: #f8fafc; padding-bottom: 90px; }
     .page-section { display: none; }
@@ -19,7 +19,7 @@
   <!-- GLOBAL LOADING SPINNER -->
   <div id="globalLoader" class="fixed inset-0 bg-black bg-opacity-60 z-[100] hidden flex-col justify-center items-center">
     <i class="fa-solid fa-circle-notch fa-spin text-white text-5xl mb-4"></i>
-    <p class="text-white font-semibold tracking-wider text-lg">Loading Dashboard...</p>
+    <p class="text-white font-semibold tracking-wider text-lg mt-2">Loading Dashboard...</p>
   </div>
 
   <!-- Header -->
@@ -53,7 +53,7 @@
 
       <div class="grid grid-cols-2 gap-4">
         <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center">
-          <div class="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 mb-2"><i class="fa-solid fa fa-calendar text-xl"></i></div>
+          <div class="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 mb-2"><i class="fa-solid fa-clipboard-user text-xl"></i></div>
           <p class="text-xs text-gray-500 font-semibold uppercase tracking-wider mb-1">Attendance</p>
           <h3 id="homeAttendance" class="text-2xl font-black text-gray-800">--%</h3>
           <p class="text-[10px] text-gray-400 mt-1">Since Joining</p>
@@ -68,34 +68,37 @@
 
       <h3 class="font-bold text-gray-800 ml-1 mb-2 mt-4">Quick Links</h3>
       <div class="grid grid-cols-3 gap-3">
-
-  <!-- Grammar -->
-  <a href="https://hstakeiteasy.github.io/community"
-     target="_blank"
-     rel="noopener noreferrer"
-     class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center hover:bg-gray-50 transition active:scale-95">
-
-    <i class="fa-solid fa-book-open text-blue-500 text-2xl mb-2"></i>
-    <span class="text-xs font-bold text-gray-700">Grammar</span>
-  </a>
-
-  <!-- Writing -->
-  <button onclick="alert('Writing Page Coming Soon!')"
-    class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center hover:bg-gray-50 transition active:scale-95">
-
-    <i class="fa-solid fa-pen-nib text-green-500 text-2xl mb-2"></i>
-    <span class="text-xs font-bold text-gray-700">Writing</span>
-  </button>
-
-  <!-- Resources -->
-  <button onclick="alert('Resources Page Coming Soon!')"
-    class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center hover:bg-gray-50 transition active:scale-95">
-
-    <i class="fa-solid fa-folder-open text-orange-500 text-2xl mb-2"></i>
-    <span class="text-xs font-bold text-gray-700">Resources</span>
-  </button>
-
-</div>
+        <!-- 1. Community Link -->
+        <button onclick="window.open('https://hstakeiteasy.github.io/community', '_blank')" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center hover:bg-gray-50 transition active:scale-95">
+          <i class="fa-solid fa-users text-blue-500 text-2xl mb-2"></i>
+          <span class="text-xs font-bold text-gray-700">Community</span>
+        </button>
+        <!-- 2. Materials Drive Link -->
+        <button onclick="window.open('https://drive.google.com/', '_blank')" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center hover:bg-gray-50 transition active:scale-95">
+          <i class="fa-brands fa-google-drive text-green-500 text-2xl mb-2"></i>
+          <span class="text-xs font-bold text-gray-700">Materials</span>
+        </button>
+        <!-- 3. Resources Drive Link -->
+        <button onclick="window.open('https://drive.google.com/', '_blank')" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center hover:bg-gray-50 transition active:scale-95">
+          <i class="fa-solid fa-folder-open text-orange-500 text-2xl mb-2"></i>
+          <span class="text-xs font-bold text-gray-700">Resources</span>
+        </button>
+        <!-- 4. Fees Link -->
+        <button onclick="nav('fees')" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center hover:bg-gray-50 transition active:scale-95">
+          <i class="fa-solid fa-wallet text-red-500 text-2xl mb-2"></i>
+          <span class="text-xs font-bold text-gray-700">Fees</span>
+        </button>
+        <!-- 5. Academics Link -->
+        <button onclick="nav('marks')" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center hover:bg-gray-50 transition active:scale-95">
+          <i class="fa-solid fa-award text-yellow-500 text-2xl mb-2"></i>
+          <span class="text-xs font-bold text-gray-700">Academics</span>
+        </button>
+        <!-- 6. Tests Link -->
+        <button onclick="window.location.href='test.html'" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center hover:bg-gray-50 transition active:scale-95">
+          <i class="fa-solid fa-pen-clip text-indigo-500 text-2xl mb-2"></i>
+          <span class="text-xs font-bold text-gray-700">Tests</span>
+        </button>
+      </div>
     </div>
 
     <!-- FEES PAGE -->
@@ -113,46 +116,35 @@
 
     <!-- ACADEMICS PAGE (Marks & Attendance Toggle) -->
     <div id="page-marks" class="page-section">
-      
-      <!-- Top Toggle Switch -->
       <div class="flex justify-center mb-6">
         <div class="bg-white rounded-full p-1 shadow-sm border border-gray-100 flex w-full max-w-sm">
           <button id="btnMarksView" onclick="toggleAcademicView('marks')" class="flex-1 py-2 text-sm font-bold rounded-full bg-blue-600 text-white shadow transition-all">Marks</button>
           <button id="btnAttView" onclick="toggleAcademicView('attendance')" class="flex-1 py-2 text-sm font-bold rounded-full text-gray-500 hover:text-gray-800 transition-all">Attendance</button>
         </div>
       </div>
-
-      <!-- Marks View Area -->
       <div id="view-marks">
-        <div id="marksHistoryList" class="space-y-3 mb-8">
-          <p class="text-gray-400 text-center py-4"><i class="fa-solid fa-spinner fa-spin"></i> Loading marks...</p>
-        </div>
+        <div id="marksHistoryList" class="space-y-3 mb-8"><p class="text-gray-400 text-center py-4"><i class="fa-solid fa-spinner fa-spin"></i> Loading marks...</p></div>
       </div>
-
-      <!-- Attendance View Area -->
       <div id="view-attendance" class="hidden">
-        <div id="attendanceHistoryList" class="space-y-2">
-          <p class="text-gray-400 text-center py-4"><i class="fa-solid fa-spinner fa-spin"></i> Loading attendance...</p>
-        </div>
+        <div id="attendanceHistoryList" class="space-y-2"><p class="text-gray-400 text-center py-4"><i class="fa-solid fa-spinner fa-spin"></i> Loading attendance...</p></div>
       </div>
-
     </div>
 
-    <!-- TESTS PAGE -->
+    <!-- TESTS PAGE (Placeholder for direct URL load prevention issues) -->
     <div id="page-tests" class="page-section">
       <div class="bg-white p-10 rounded-2xl shadow-sm border border-gray-100 text-center">
         <i class="fa-solid fa-file-contract text-5xl text-indigo-400 mb-4"></i>
         <h3 class="text-xl font-bold">Upcoming Tests</h3>
-        <p class="text-gray-500 mt-2 text-sm">Test calendar coming soon!</p>
+        <p class="text-gray-500 mt-2 text-sm">Redirecting to tests...</p>
       </div>
     </div>
 
-    <!-- NOTICE PAGE -->
+    <!-- NOTICE PAGE (Placeholder) -->
     <div id="page-notice" class="page-section">
       <div class="bg-white p-10 rounded-2xl shadow-sm border border-gray-100 text-center">
         <i class="fa-solid fa-bullhorn text-5xl text-purple-400 mb-4"></i>
         <h3 class="text-xl font-bold">Notice Board</h3>
-        <p class="text-gray-500 mt-2 text-sm">No new notices at this time.</p>
+        <p class="text-gray-500 mt-2 text-sm">Redirecting to notices...</p>
       </div>
     </div>
 
@@ -168,8 +160,8 @@
       <button onclick="nav('home')" class="nav-btn nav-center-btn bg-blue-600 text-white w-14 h-14 rounded-full flex flex-col items-center justify-center transition active:scale-95" data-target="home"><i class="fa-solid fa-house text-xl"></i></button>
     </div>
     <div class="flex w-2/5 justify-evenly pb-2 pt-3">
-      <button onclick="nav('tests')" class="nav-btn flex flex-col items-center text-gray-400 hover:text-blue-500 transition" data-target="tests"><i class="fa-solid fa-pen-clip text-xl mb-1"></i><span class="text-[10px] font-bold tracking-wide">TESTS</span></button>
-      <button onclick="nav('notice')" class="nav-btn flex flex-col items-center text-gray-400 hover:text-blue-500 transition" data-target="notice"><i class="fa-solid fa-bullhorn text-xl mb-1"></i><span class="text-[10px] font-bold tracking-wide">NOTICE</span></button>
+      <button onclick="window.location.href='test.html'" class="flex flex-col items-center text-gray-400 hover:text-blue-500 transition"><i class="fa-solid fa-pen-clip text-xl mb-1"></i><span class="text-[10px] font-bold tracking-wide">TESTS</span></button>
+      <button onclick="window.open('https://drive.google.com/', '_blank')" class="flex flex-col items-center text-gray-400 hover:text-blue-500 transition"><i class="fa-solid fa-bullhorn text-xl mb-1"></i><span class="text-[10px] font-bold tracking-wide">NOTICE</span></button>
     </div>
   </div>
 
@@ -210,11 +202,12 @@
       });
       
       const activeBtn = document.querySelector(`.nav-btn[data-target="${pageId}"]`);
-      if(!activeBtn.classList.contains('nav-center-btn')) { activeBtn.classList.remove('text-gray-400'); activeBtn.classList.add('text-blue-600'); } 
-      else { activeBtn.classList.remove('bg-gray-200', 'text-gray-500'); activeBtn.classList.add('bg-blue-600', 'text-white'); }
+      if(activeBtn) {
+        if(!activeBtn.classList.contains('nav-center-btn')) { activeBtn.classList.remove('text-gray-400'); activeBtn.classList.add('text-blue-600'); } 
+        else { activeBtn.classList.remove('bg-gray-200', 'text-gray-500'); activeBtn.classList.add('bg-blue-600', 'text-white'); }
+      }
     }
 
-    // Toggle Academic Views (Marks vs Attendance)
     function toggleAcademicView(view) {
       if(view === 'marks') {
         document.getElementById('view-marks').classList.remove('hidden');
@@ -239,14 +232,14 @@
       document.getElementById('globalLoader').classList.remove('hidden');
       
       try {
-        const meRes = await fetch(`${SCRIPT_URL}?action=me&token=${token}&role=student`);
+        const meRes = await fetch(`${SCRIPT_URL}?action=me&token=${token}&role=student&_t=${new Date().getTime()}`);
         const meData = await meRes.json();
         if(meData.ok) {
           document.getElementById('studentName').innerText = meData.name;
           document.getElementById('studentIdDisplay').innerText = `ID: ${meData.studentId}`;
         }
 
-        const acaRes = await fetch(`${SCRIPT_URL}?action=studentAcademicStats&token=${token}&studentId=${studentId}`);
+        const acaRes = await fetch(`${SCRIPT_URL}?action=studentAcademicStats&token=${token}&studentId=${studentId}&_t=${new Date().getTime()}`);
         const acaData = await acaRes.json();
         if(acaData.ok) {
           document.getElementById('homeAttendance').innerText = `${acaData.attendance}%`;
@@ -256,7 +249,7 @@
           }
         }
 
-        const feeRes = await fetch(`${SCRIPT_URL}?action=studentFees&token=${token}&studentId=${studentId}`);
+        const feeRes = await fetch(`${SCRIPT_URL}?action=studentFees&token=${token}&studentId=${studentId}&_t=${new Date().getTime()}`);
         const feeData = await feeRes.json();
         if(feeData.ok) {
           document.getElementById('totalDueAmount').innerText = `₹${feeData.totalDue}`;
@@ -271,10 +264,9 @@
           document.getElementById('billsList').innerHTML = billsHtml;
         }
 
-        const histRes = await fetch(`${SCRIPT_URL}?action=studentHistory&token=${token}&studentId=${studentId}`);
+        const histRes = await fetch(`${SCRIPT_URL}?action=studentHistory&token=${token}&studentId=${studentId}&_t=${new Date().getTime()}`);
         const histData = await histRes.json();
         if(histData.ok) {
-          
           let mHtml = '';
           if(histData.marks.length === 0) mHtml = '<p class="text-gray-500 text-sm text-center bg-gray-100 p-3 rounded-lg">No test records found.</p>';
           histData.marks.forEach(m => {
