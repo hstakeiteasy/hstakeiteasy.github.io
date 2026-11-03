@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact Us - HsTakeItEasy</title>
+  <link rel="icon" href="https://i.ibb.co/RGjnSG5z/image.png" type="image/png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body { font-family: 'Inter', sans-serif; scroll-behavior: smooth; }
+    .hero-bg { background: linear-gradient(135deg, #eff6ff 0%, #e0e7ff 100%); }
+  </style>
+</head>
+<body class="text-gray-800 bg-gray-50 flex flex-col min-h-screen">
+
+  <!-- Navbar -->
+  <nav class="fixed w-full bg-white/90 backdrop-blur-md shadow-sm z-50 transition-all">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-20 gap-2">
+        <a href="index.html" class="flex items-center gap-2 md:gap-3 shrink-0 min-w-0">
+          <img src="https://i.ibb.co/RGjnSG5z/image.png" alt="HsTakeItEasy Logo" class="h-9 w-9 sm:h-12 sm:w-12 rounded-xl shadow-md border border-gray-100 object-cover shrink-0">
+          <span class="font-extrabold text-xl md:text-2xl text-blue-700 tracking-tight truncate">HsTakeItEasy</span>
+        </a>
+        <div class="hidden md:flex items-center space-x-8 shrink-0">
+          <a href="index.html" class="text-gray-600 hover:text-blue-600 font-medium transition">Home</a>
+          <a href="app.html" class="text-gray-600 hover:text-blue-600 font-medium transition">Get App</a>
+          <a href="login.html" class="bg-blue-600 text-white px-6 py-2.5 rounded-full font-bold hover:bg-blue-700 transition shadow-lg shadow-blue-600/30">Student Login</a>
+        </div>
+        <div class="md:hidden flex items-center gap-3 shrink-0">
+          <a href="app.html" class="text-blue-600 font-bold text-[13px] sm:text-sm flex items-center"><i class="fa-brands fa-google-play mr-1"></i> App</a>
+          <a href="login.html" class="bg-blue-600 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-full font-bold hover:bg-blue-700 transition text-[13px] sm:text-sm">Login</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Content Section -->
+  <main class="flex-grow pt-28 pb-16">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-12">
+        <h1 class="text-4xl font-black text-gray-900 mb-4">Contact Us</h1>
+        <p class="text-lg text-gray-600 font-medium">Have questions about our tuition batches or need help with the portal? Reach out to us!</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Phone Card -->
+        <a href="tel:+919933572457" class="bg-white p-8 rounded-3xl border border-gray-100 hover:shadow-lg transition hover:-translate-y-1 text-center group block">
+          <div class="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center text-blue-600 mx-auto mb-6 group-hover:bg-blue-600 group-hover:text-white transition">
+            <i class="fa-solid fa-phone text-2xl"></i>
+          </div>
+          <h3 class="text-lg font-bold text-gray-900 mb-2">Call Us</h3>
+          <p class="text-blue-600 font-bold">+91 9933572457</p>
+        </a>
+
+        <!-- Email Card -->
+        <a href="mailto:hstakeiteasy007@gmail.com" class="bg-white p-8 rounded-3xl border border-gray-100 hover:shadow-lg transition hover:-translate-y-1 text-center group block">
+          <div class="bg-indigo-100 w-16 h-16 rounded-full flex items-center justify-center text-indigo-600 mx-auto mb-6 group-hover:bg-indigo-600 group-hover:text-white transition">
+            <i class="fa-solid fa-envelope text-2xl"></i>
+          </div>
+          <h3 class="text-lg font-bold text-gray-900 mb-2">Email Us</h3>
+          <p class="text-indigo-600 font-bold text-sm">hstakeiteasy007@gmail.com</p>
+        </a>
+
+        <!-- Location Card -->
+        <div class="bg-white p-8 rounded-3xl border border-gray-100 hover:shadow-lg transition hover:-translate-y-1 text-center">
+          <div class="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center text-green-600 mx-auto mb-6">
+            <i class="fa-solid fa-location-dot text-2xl"></i>
+          </div>
+          <h3 class="text-lg font-bold text-gray-900 mb-2">Visit Us</h3>
+          <p class="text-gray-600 text-sm leading-relaxed">Samudragarh<br>Purba Bardhaman<br>West Bengal - 713519</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-gray-900 text-white py-8 border-t border-gray-800 mt-auto">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center flex flex-col md:flex-row justify-between items-center gap-4">
+      <p class="text-gray-500 text-sm font-medium">© 2026 Hasibul Sir's English Tuition. All rights reserved.</p>
+      <div class="flex gap-4">
+        <a href="privacy.html" class="text-gray-400 hover:text-white text-sm transition">Privacy Policy</a>
+      </div>
+      <p class="text-gray-400 text-sm font-medium">
+        Made with <i class="fa-solid fa-heart text-red-500 mx-1"></i> by <span class="text-white font-bold">Sumit Haldar</span>
+      </p>
+    </div>
+  </footer>
+</body>
+</html>
