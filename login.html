@@ -3,96 +3,146 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tuition Management - Login</title>
+  <title>Login - HsTakeItEasy Portal</title>
+  <link rel="icon" href="https://i.ibb.co/RGjnSG5z/image.png" type="image/png">
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    body { background-color: #f8fafc; }
+    body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #f8fafc 0%, #eff6ff 100%); }
   </style>
 </head>
-<body class="flex items-center justify-center min-h-screen">
+<body class="flex items-center justify-center min-h-screen p-4">
 
-  <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
-    <div class="text-center mb-8">
-      <h1 class="text-2xl font-bold text-gray-800"><i class="fa-solid fa-graduation-cap text-blue-600"></i> Tuition Portal</h1>
-      <p class="text-gray-500 mt-2">Sign in to your account</p>
+  <div class="bg-white p-8 md:p-10 rounded-[2.5rem] shadow-2xl w-full max-w-md border border-white/50 relative overflow-hidden">
+    
+    <!-- Decorative background blobs -->
+    <div class="absolute top-[-50px] right-[-50px] w-32 h-32 bg-blue-100 rounded-full blur-3xl opacity-60 pointer-events-none"></div>
+    <div class="absolute bottom-[-50px] left-[-50px] w-32 h-32 bg-indigo-100 rounded-full blur-3xl opacity-60 pointer-events-none"></div>
+
+    <div class="relative z-10">
+      <!-- Back to Home -->
+      <a href="index.html" class="absolute -top-2 -left-2 w-8 h-8 flex items-center justify-center text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-full transition">
+        <i class="fa-solid fa-arrow-left"></i>
+      </a>
+
+      <!-- Logo & Title -->
+      <div class="text-center mb-8 pt-4">
+        <img src="https://i.ibb.co/RGjnSG5z/image.png" alt="HsTakeItEasy Logo" class="w-20 h-20 mx-auto rounded-2xl shadow-md border border-gray-100 object-cover mb-4">
+        <h1 class="text-2xl font-black text-gray-900 tracking-tight">HsTakeItEasy Portal</h1>
+        <p class="text-sm text-gray-500 font-medium mt-1">Sign in to continue</p>
+      </div>
+
+      <!-- Login Form -->
+      <form id="loginForm" onsubmit="doLogin(event)" class="space-y-5">
+        
+        <!-- Role Selection -->
+        <div>
+          <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 ml-1">Select Role</label>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400">
+              <i class="fa-solid fa-users"></i>
+            </div>
+            <select id="role" class="w-full pl-11 pr-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition appearance-none">
+              <!-- Defaulted to Student as requested -->
+              <option value="student" selected>Student</option>
+              <option value="admin">Admin</option>
+            </select>
+            <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-gray-400">
+              <i class="fa-solid fa-chevron-down text-xs"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Username / Student ID -->
+        <div>
+          <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 ml-1">Username / ID</label>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400">
+              <i class="fa-solid fa-user"></i>
+            </div>
+            <input type="text" id="username" required placeholder="Enter your ID (e.g., TIE1)" 
+              class="w-full pl-11 pr-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition">
+          </div>
+        </div>
+
+        <!-- Password -->
+        <div>
+          <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 ml-1">Password</label>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400">
+              <i class="fa-solid fa-lock"></i>
+            </div>
+            <input type="password" id="password" required placeholder="Enter password" 
+              class="w-full pl-11 pr-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition">
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" class="w-full bg-blue-600 text-white font-bold text-lg py-4 rounded-xl shadow-lg shadow-blue-600/30 hover:bg-blue-700 transition active:scale-95 flex items-center justify-center mt-2">
+          <span id="loginBtnText">Sign In</span>
+          <i id="loginSpinner" class="fa-solid fa-circle-notch fa-spin hidden"></i>
+        </button>
+
+      </form>
+      
+      <!-- Support Link -->
+      <p class="text-center text-xs text-gray-400 mt-8 font-medium">
+        Having trouble logging in? <a href="contact.html" class="text-blue-600 hover:underline">Contact Support</a>
+      </p>
+
     </div>
-
-    <form id="loginForm" class="space-y-5">
-      <div>
-        <label class="block text-sm font-medium text-gray-700">Role</label>
-        <select id="role" class="mt-1 block w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
-          <option value="admin">Admin</option>
-          <option value="student">Student</option>
-        </select>
-      </div>
-
-      <div>
-        <label class="block text-sm font-medium text-gray-700">Username / Student ID</label>
-        <input type="text" id="username" required class="mt-1 block w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="admin_user or TIE1">
-      </div>
-
-      <div>
-        <label class="block text-sm font-medium text-gray-700">Password</label>
-        <input type="password" id="password" required class="mt-1 block w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="••••••••">
-      </div>
-
-      <div class="flex items-center">
-        <input id="keepSignedIn" type="checkbox" class="h-4 w-4 text-blue-600 border-gray-300 rounded">
-        <label for="keepSignedIn" class="ml-2 block text-sm text-gray-900">Keep me signed in</label>
-      </div>
-
-      <button type="submit" id="loginBtn" class="w-full bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 transition font-medium flex justify-center items-center">
-        <span>Sign In</span> <i class="fa-solid fa-arrow-right-to-bracket ml-2"></i>
-      </button>
-      <p id="errorMsg" class="text-red-500 text-sm text-center hidden"></p>
-    </form>
   </div>
 
   <script>
+    // --- REPLACE THIS URL WITH YOUR DEPLOYMENT URL ---
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby7Q4nKX35FU54JgLEyj7HSCRktuHOWX6MCNcHpTcNKLJs_TIfCCEDAvcteRM0sXcWBkw/exec";
 
-    // Auto-redirect if already logged in
-    window.onload = () => {
-      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-      const role = localStorage.getItem('role') || sessionStorage.getItem('role');
-      if (token && role) window.location.href = role === 'admin' ? 'admin.html' : 'student.html';
-    };
+    // If already logged in, redirect
+    if(localStorage.getItem('token')) {
+      const role = localStorage.getItem('role');
+      if(role === 'admin') window.location.href = 'admin.html';
+      if(role === 'student') window.location.href = 'student.html';
+    }
 
-    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    async function doLogin(e) {
       e.preventDefault();
-      const btn = document.getElementById('loginBtn');
-      const err = document.getElementById('errorMsg');
-      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing...';
-      btn.disabled = true;
-      err.classList.add('hidden');
-
+      
+      const btnText = document.getElementById('loginBtnText');
+      const spinner = document.getElementById('loginSpinner');
+      
+      btnText.classList.add('hidden');
+      spinner.classList.remove('hidden');
+      
       const role = document.getElementById('role').value;
-      const user = document.getElementById('username').value;
-      const pass = document.getElementById('password').value;
-      const keep = document.getElementById('keepSignedIn').checked;
-
+      const user = document.getElementById('username').value.trim();
+      const pass = document.getElementById('password').value.trim();
+      
       try {
-        const res = await fetch(`${SCRIPT_URL}?action=login&role=${role}&username=${encodeURIComponent(user)}&password=${encodeURIComponent(pass)}`);
+        const res = await fetch(`${SCRIPT_URL}?action=login&role=${role}&username=${encodeURIComponent(user)}&password=${encodeURIComponent(pass)}&_t=${new Date().getTime()}`);
         const data = await res.json();
-
-        if (data.ok) {
-          const storage = keep ? localStorage : sessionStorage;
-          storage.setItem('token', data.token);
-          storage.setItem('role', data.role);
-          if (data.studentId) storage.setItem('studentId', data.studentId);
-          window.location.href = data.role === 'admin' ? 'admin.html' : 'student.html';
+        
+        if(data.ok) {
+          localStorage.setItem('token', data.token);
+          localStorage.setItem('role', data.role);
+          
+          if(data.role === 'student') {
+            localStorage.setItem('studentId', data.studentId);
+            window.location.href = 'student.html';
+          } else {
+            window.location.href = 'admin.html';
+          }
         } else {
-          err.innerText = data.msg;
-          err.classList.remove('hidden');
+          alert(data.msg || "Invalid credentials. Please try again.");
+          btnText.classList.remove('hidden');
+          spinner.classList.add('hidden');
         }
-      } catch (error) {
-        err.innerText = "Network error. Please try again.";
-        err.classList.remove('hidden');
+      } catch(err) {
+        console.error(err);
+        alert("Network Error. Please check your internet connection.");
+        btnText.classList.remove('hidden');
+        spinner.classList.add('hidden');
       }
-      btn.innerHTML = '<span>Sign In</span> <i class="fa-solid fa-arrow-right-to-bracket ml-2"></i>';
-      btn.disabled = false;
-    });
+    }
   </script>
 </body>
 </html>
