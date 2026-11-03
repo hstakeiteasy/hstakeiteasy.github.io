@@ -16,7 +16,7 @@
 </head>
 <body class="text-gray-800">
 
-  <!-- BEAUTIFUL GLOBAL LOADING SCREEN -->
+  <!-- BEAUTIFUL GLOBAL LOADING SCREEN (Now active by default for overall page load) -->
   <div id="globalLoader" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex flex-col justify-center items-center px-4 transition-opacity duration-300">
     <div class="bg-white p-8 rounded-[2rem] shadow-2xl flex flex-col items-center max-w-sm w-full relative overflow-hidden border border-white/20">
       
@@ -43,9 +43,9 @@
         <div id="loaderProgressFill" class="bg-gradient-to-r from-blue-500 to-indigo-600 h-3 rounded-full w-0"></div>
       </div>
       
-      <!-- 20s Countdown Timer -->
+      <!-- 30s Countdown Timer -->
       <p class="text-xs font-bold text-gray-400 uppercase tracking-widest">
-        Time Left: <span id="countdownTimer" class="text-blue-600 font-black text-sm">20</span>s
+        Time Left: <span id="countdownTimer" class="text-blue-600 font-black text-sm">30</span>s
       </p>
 
     </div>
@@ -80,10 +80,10 @@
       <div class="relative w-full rounded-2xl overflow-hidden shadow-sm border border-gray-100" style="aspect-ratio: 16/9;">
         <div id="carouselInner" class="flex w-full h-full transition-transform duration-500 ease-in-out">
           
-          <!-- IMAGE 1: Replace src with your link -->
+          <!-- IMAGE 1 -->
           <img src="https://raw.githubusercontent.com/hstakeiteasy/hstakeiteasy.github.io/refs/heads/main/static/qe4.png" alt="Slide 1" class="w-full h-full object-cover flex-shrink-0">
           
-          <!-- IMAGE 2: Replace src with your link -->
+          <!-- IMAGE 2 -->
           <img src="https://raw.githubusercontent.com/hstakeiteasy/hstakeiteasy.github.io/refs/heads/main/static/qe5.png" alt="Slide 2" class="w-full h-full object-cover flex-shrink-0">
           
         </div>
@@ -304,15 +304,15 @@
     setInterval(() => {
       const inner = document.getElementById('carouselInner');
       if(inner && document.getElementById('page-home').classList.contains('active')) {
-        currentSlide = (currentSlide + 1) % 2; // 2 slides total
+        currentSlide = (currentSlide + 1) % 2; 
         goToSlide(currentSlide);
       }
-    }, 4000); // Swipes every 4 seconds
+    }, 4000); 
 
 
-    // --- BEAUTIFUL 20s LOADER LOGIC ---
+    // --- BEAUTIFUL 30s LOADER LOGIC ---
     let loaderInterval;
-    let secondsLeft = 20;
+    let secondsLeft = 30; // Updated to 30 seconds
     const loaderMessages = [
       "Connecting to secure portal...",
       "Fetching your attendance...",
@@ -325,7 +325,7 @@
     startLoader();
 
     function startLoader() {
-      secondsLeft = 20;
+      secondsLeft = 30;
       const timerElem = document.getElementById('countdownTimer');
       if(timerElem) timerElem.innerText = secondsLeft;
       
@@ -348,11 +348,12 @@
           
           document.getElementById('countdownTimer').innerText = secondsLeft;
           
-          const percent = ((20 - secondsLeft) / 20) * 100;
+          // Updated to calculate progress out of 30 seconds
+          const percent = ((30 - secondsLeft) / 30) * 100;
           fill.style.width = percent + '%';
           bar.style.width = percent + '%';
           
-          if (secondsLeft % 3 === 0 && msgIdx < loaderMessages.length - 1 && secondsLeft > 2) {
+          if (secondsLeft % 5 === 0 && msgIdx < loaderMessages.length - 1 && secondsLeft > 2) { // Updates text every 5s
             msgIdx++;
             msg.style.opacity = '0';
             setTimeout(() => {
