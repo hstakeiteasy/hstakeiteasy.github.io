@@ -18,44 +18,36 @@
 </head>
 <body class="text-gray-800">
 
-  <div id="globalLoader" class="fixed inset-0 bg-black bg-opacity-60 z-[100] hidden flex-col justify-center items-center">
-    <i class="fa-solid fa-circle-notch fa-spin text-white text-5xl mb-4"></i>
-    <p class="text-white font-semibold tracking-wider text-lg">Loading...</p>
-  </div>
-
+  <!-- Header -->
   <div class="bg-blue-600 text-white p-6 rounded-b-[2rem] shadow-lg">
     <div class="flex justify-between items-center mb-2">
       <a href="student.html" class="text-white text-xl"><i class="fa-solid fa-arrow-left"></i></a>
       <h1 class="text-lg font-bold tracking-wide">Community</h1>
-      <button onclick="logoutCommunity()" id="logoutBtn" class="text-white text-lg hidden" title="Log out">
-        <i class="fa-solid fa-right-from-bracket"></i>
-      </button>
+      <div class="w-6"></div> <!-- spacer for centering -->
     </div>
-    <p id="communityWho" class="text-blue-100 text-xs font-mono tracking-widest mt-2">Not signed in</p>
+    <p id="communityWho" class="text-blue-100 text-xs font-mono tracking-widest mt-2 flex items-center gap-1">
+      <i class="fa-solid fa-circle-notch fa-spin"></i> Authenticating secure session...
+    </p>
   </div>
 
   <div class="p-5">
 
-    <!-- Login gate -->
-    <div id="loginGate" class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
-      <p class="text-sm text-gray-500 mb-3">
-        <i class="fa-solid fa-lock text-blue-500 mr-1"></i>
-        Sign in with your Student ID and password to post and comment.
+    <!-- Auth Error Gate (Only shows if dashboard token is missing/expired) -->
+    <div id="loginGate" class="bg-white p-6 rounded-2xl shadow-sm border border-red-100 hidden text-center">
+      <i class="fa-solid fa-lock text-4xl text-red-400 mb-3"></i>
+      <h3 class="text-lg font-bold text-gray-800">Session Expired</h3>
+      <p class="text-sm text-gray-500 mb-4 mt-1">
+        Please return to the main login page to re-authenticate your secure session.
       </p>
-      <input id="cLoginId" type="text" placeholder="Student ID" autocomplete="username"
-        class="w-full border border-gray-200 rounded-xl p-3 mb-2 text-sm focus:outline-none focus:border-blue-500">
-      <input id="cLoginPass" type="password" placeholder="Password" autocomplete="current-password"
-        class="w-full border border-gray-200 rounded-xl p-3 mb-3 text-sm focus:outline-none focus:border-blue-500">
-      <button id="loginBtn" onclick="communityLogin()"
-        class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl active:scale-95 transition">
-        Sign In
+      <button onclick="window.location.href='login.html'" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl active:scale-95 transition">
+        Go to Login
       </button>
-      <p id="cLoginErr" class="text-red-500 text-xs mt-2 hidden"></p>
     </div>
 
     <!-- Feed area -->
     <div id="communityMain" class="hidden space-y-4">
 
+      <!-- Create Post Box -->
       <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
         <textarea id="cPostText" rows="3" placeholder="What's on your mind?"
           class="w-full border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:border-blue-500"></textarea>
@@ -74,19 +66,21 @@
         <p id="cPostErr" class="text-red-500 text-xs mt-2 hidden"></p>
       </div>
 
+      <!-- Feed List -->
       <div id="cFeed" class="space-y-3">
         <p class="text-gray-400 text-center py-4 text-sm"><i class="fa-solid fa-spinner fa-spin"></i> Loading feed...</p>
       </div>
     </div>
   </div>
 
+  <!-- Bottom Navigation -->
   <div class="fixed bottom-0 w-full bg-white flex justify-between items-end px-2 pb-safe shadow-[0_-10px_20px_-5px_rgba(0,0,0,0.05)] rounded-t-2xl border-t border-gray-100 z-40">
     <div class="flex w-2/5 justify-evenly pb-2 pt-3">
       <a href="student.html" class="flex flex-col items-center text-gray-400 hover:text-blue-500 transition">
         <i class="fa-solid fa-house text-xl mb-1"></i>
         <span class="text-[10px] font-bold tracking-wide">HOME</span>
       </a>
-      <a href="student.html#fees" class="flex flex-col items-center text-gray-400 hover:text-blue-500 transition">
+      <a href="student.html" class="flex flex-col items-center text-gray-400 hover:text-blue-500 transition">
         <i class="fa-solid fa-wallet text-xl mb-1"></i>
         <span class="text-[10px] font-bold tracking-wide">FEES</span>
       </a>
@@ -97,22 +91,24 @@
       </div>
     </div>
     <div class="flex w-2/5 justify-evenly pb-2 pt-3">
-      <a href="student.html#marks" class="flex flex-col items-center text-gray-400 hover:text-blue-500 transition">
+      <a href="student.html" class="flex flex-col items-center text-gray-400 hover:text-blue-500 transition">
         <i class="fa-solid fa-award text-xl mb-1"></i>
         <span class="text-[10px] font-bold tracking-wide">ACADEMICS</span>
       </a>
-      <a href="student.html#notice" class="flex flex-col items-center text-gray-400 hover:text-blue-500 transition">
+      <button onclick="window.open('https://drive.google.com/drive/folders/1NrHIK8OBWpmWZhycweMdZF5Bz1Ujv6uA?usp=sharing', '_blank')" class="flex flex-col items-center text-gray-400 hover:text-blue-500 transition">
         <i class="fa-solid fa-bullhorn text-xl mb-1"></i>
         <span class="text-[10px] font-bold tracking-wide">NOTICE</span>
-      </a>
+      </button>
     </div>
   </div>
 
   <script>
+    // --- REPLACE THIS WITH YOUR COMMUNITY SCRIPT URL ---
     const COMMUNITY_API = 'https://script.google.com/macros/s/AKfycbwUcfo-HIwXdMZN6bDNe9A90p0ceX_reb59p5K6jLyXeUkCPgMMSkTkEH5uI9FAkvtR4w/exec';
-    const STORAGE_KEY = 'community_auth';
-
-    let cStudentId = null;
+    
+    // Auto-fetch credentials generated by student.html / login.html
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    const studentId = localStorage.getItem('studentId') || sessionStorage.getItem('studentId');
 
     // ===== Helpers =====
     function escapeHtml(s) {
@@ -120,12 +116,14 @@
         .replace(/&/g,'&amp;').replace(/</g,'&lt;')
         .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
     }
+    
     function showErr(id, msg) {
       const el = document.getElementById(id);
       if (!el) return;
       el.textContent = msg; el.classList.remove('hidden');
       setTimeout(() => el.classList.add('hidden'), 6000);
     }
+    
     function fileToBase64(file) {
       return new Promise((res, rej) => {
         const r = new FileReader();
@@ -134,93 +132,48 @@
         r.readAsDataURL(file);
       });
     }
+    
     function formatTime(iso) {
       if (!iso) return '';
       const d = new Date(iso);
       return isNaN(d) ? '' : d.toLocaleString();
     }
 
-    // ===== Login persistence =====
-    function saveLogin(studentId) {
-      // Save in BOTH storages so it survives tab close (local) and refreshes (session).
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify({ studentId: studentId, ts: Date.now() }));
-        sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ studentId: studentId, ts: Date.now() }));
-      } catch (e) { /* private mode may block; ignore */ }
-    }
-    function loadLogin() {
-      try {
-        const raw = localStorage.getItem(STORAGE_KEY) || sessionStorage.getItem(STORAGE_KEY);
-        if (!raw) return null;
-        const obj = JSON.parse(raw);
-        if (!obj || !obj.studentId) return null;
-        return obj.studentId;
-      } catch (e) { return null; }
-    }
-    function clearLogin() {
-      try {
-        localStorage.removeItem(STORAGE_KEY);
-        sessionStorage.removeItem(STORAGE_KEY);
-      } catch (e) {}
+    // ===== UI State =====
+    function showLoggedOut() {
+      document.getElementById('communityWho').innerHTML = '<i class="fa-solid fa-triangle-exclamation text-red-400"></i> Unauthorized';
+      document.getElementById('loginGate').classList.remove('hidden');
+      document.getElementById('communityMain').classList.add('hidden');
     }
 
-    // ===== UI state helpers =====
-    function showLoggedIn(studentId) {
-      cStudentId = studentId;
+    function showLoggedIn() {
+      document.getElementById('communityWho').innerHTML = `<i class="fa-solid fa-shield-check text-green-300 mr-1"></i> Secure Session: ${studentId}`;
       document.getElementById('loginGate').classList.add('hidden');
       document.getElementById('communityMain').classList.remove('hidden');
-      document.getElementById('logoutBtn').classList.remove('hidden');
-      document.getElementById('communityWho').textContent = 'Signed in as ' + studentId;
       loadFeed();
     }
 
-    function showLoggedOut() {
-      cStudentId = null;
-      document.getElementById('loginGate').classList.remove('hidden');
-      document.getElementById('communityMain').classList.add('hidden');
-      document.getElementById('logoutBtn').classList.add('hidden');
-      document.getElementById('communityWho').textContent = 'Not signed in';
-    }
-
-    function logoutCommunity() {
-      clearLogin();
-      showLoggedOut();
-    }
-
-    // ===== Login =====
-    async function communityLogin() {
-      const id = document.getElementById('cLoginId').value.trim();
-      const pw = document.getElementById('cLoginPass').value.trim();
-      const btn = document.getElementById('loginBtn');
-      if (!id || !pw) return showErr('cLoginErr', 'Enter Student ID and password.');
-
-      btn.disabled = true;
-      btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin mr-2"></i>Verifying...';
-
+    // ===== Auth Engine =====
+    async function verifyCommunitySession() {
+      if (!token || !studentId) {
+        showLoggedOut();
+        return;
+      }
       try {
-        const res = await fetch(
-          `${COMMUNITY_API}?action=login&studentId=${encodeURIComponent(id)}&password=${encodeURIComponent(pw)}`
-        );
+        const res = await fetch(`${COMMUNITY_API}?action=login&studentId=${encodeURIComponent(studentId)}&token=${encodeURIComponent(token)}`);
         const data = await res.json();
-        if (!data.success) {
-          showErr('cLoginErr', data.error || 'Login failed.');
-          btn.disabled = false;
-          btn.textContent = 'Sign In';
-          return;
+        if (data.success) {
+          showLoggedIn();
+        } else {
+          showLoggedOut();
         }
-        saveLogin(data.studentId);
-        document.getElementById('cLoginPass').value = '';
-        showLoggedIn(data.studentId);
-        btn.disabled = false;
-        btn.textContent = 'Sign In';
-      } catch (e) {
-        showErr('cLoginErr', 'Network error: ' + e.message);
-        btn.disabled = false;
-        btn.textContent = 'Sign In';
+      } catch (err) {
+        console.error("Auth check failed:", err);
+        showLoggedOut();
       }
     }
 
-    // ===== New post =====
+    // ===== New post handler =====
     document.getElementById('cPostFile').addEventListener('change', function (e) {
       const p = document.getElementById('cPostPreview');
       const f = e.target.files[0];
@@ -229,7 +182,6 @@
     });
 
     async function communityPost() {
-      if (!cStudentId) return showErr('cPostErr', 'Not logged in.');
       const text = document.getElementById('cPostText').value.trim();
       const file = document.getElementById('cPostFile').files[0];
       if (!text && !file) return showErr('cPostErr', 'Write something or add an image.');
@@ -241,6 +193,7 @@
       try {
         let b64 = null;
         if (file) b64 = await fileToBase64(file);
+        
         const res = await fetch(COMMUNITY_API, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -248,11 +201,14 @@
             action: 'createPost',
             text: text,
             base64Image: b64,
-            studentId: cStudentId
+            studentId: studentId,
+            token: token
           })
         });
+        
         const data = await res.json();
         if (!data.success) throw new Error(data.error || 'Post failed.');
+        
         document.getElementById('cPostText').value = '';
         document.getElementById('cPostFile').value = '';
         document.getElementById('cPostPreview').classList.add('hidden');
@@ -265,13 +221,14 @@
       }
     }
 
-    // ===== Feed =====
+    // ===== Feed Rendering =====
     async function loadFeed() {
       const box = document.getElementById('cFeed');
       try {
         const res = await fetch(`${COMMUNITY_API}?action=feed`);
         const data = await res.json();
         if (!data.ok) throw new Error(data.error || 'Feed load failed.');
+        
         const posts = data.posts || [];
         if (!posts.length) {
           box.innerHTML = '<p class="text-gray-400 text-center py-4 text-sm">No posts yet. Be the first to share!</p>';
@@ -335,13 +292,13 @@
         </div>`;
     }
 
-    // ===== Comment toggle =====
+    // ===== Comment toggle & submission =====
     function toggleComments(safeId) {
       const box = document.getElementById('cbox-' + safeId);
       const btn = document.getElementById('ctoggle-' + safeId);
       if (!box) return;
       const isOpen = box.classList.toggle('open');
-      // change toggle button color when open
+      
       if (isOpen) {
         btn.classList.remove('bg-gray-100', 'text-gray-600', 'hover:bg-gray-200');
         btn.classList.add('bg-blue-100', 'text-blue-700');
@@ -351,17 +308,15 @@
       }
     }
 
-    // ===== Submit comment =====
     async function submitComment(postId, safeId) {
-      if (!cStudentId) return alert('Not logged in.');
       const textEl = document.getElementById('ct-' + safeId);
       const fileEl = document.getElementById('cf-' + safeId);
       const btn = document.getElementById('cbtn-' + safeId);
+      
       const text = textEl.value.trim();
       const file = fileEl.files[0];
       if (!text && !file) return showErr('ce-' + safeId, 'Write or add image.');
 
-      // Visual feedback: change to blue solid + spinner
       const oldHtml = btn.innerHTML;
       btn.disabled = true;
       btn.classList.add('btn-loading');
@@ -372,6 +327,7 @@
       try {
         let b64 = null;
         if (file) b64 = await fileToBase64(file);
+        
         const res = await fetch(COMMUNITY_API, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -380,21 +336,20 @@
             postId: postId,
             text: text,
             base64Image: b64,
-            studentId: cStudentId
+            studentId: studentId,
+            token: token
           })
         });
+        
         const data = await res.json();
         if (!data.success) throw new Error(data.error || 'Comment failed.');
 
-        // Success: green flash then reload feed
         btn.classList.remove('bg-blue-600');
         btn.classList.add('bg-green-500');
         btn.innerHTML = '<i class="fa-solid fa-check mr-1"></i> Posted!';
         setTimeout(() => loadFeed(), 600);
-        return;
       } catch (e) {
         showErr('ce-' + safeId, e.message);
-        // Revert on error
         btn.disabled = false;
         btn.classList.remove('btn-loading', 'bg-blue-600', 'text-white');
         btn.classList.add('bg-blue-50', 'text-blue-600');
@@ -402,18 +357,8 @@
       }
     }
 
-    // ===== Init =====
-    window.addEventListener('load', () => {
-      const saved = loadLogin();
-      if (saved) {
-        // Auto-login from cache — no password prompt, no server round-trip.
-        showLoggedIn(saved);
-      } else {
-        // Prefill ID from dashboard's session if available
-        const dashId = localStorage.getItem('studentId') || sessionStorage.getItem('studentId');
-        if (dashId) document.getElementById('cLoginId').value = dashId;
-      }
-    });
+    // Kick off verification instantly
+    window.addEventListener('load', verifyCommunitySession);
   </script>
 </body>
 </html>
