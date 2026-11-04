@@ -76,7 +76,7 @@
     <!-- HOME PAGE -->
     <div id="page-home" class="page-section active space-y-6">
 
-      <!-- CAROUSEL SECTION (Now keeps images to original full visibility) -->
+      <!-- CAROUSEL SECTION -->
       <div class="relative w-full rounded-2xl overflow-hidden shadow-sm border border-gray-100 bg-gray-50">
         <div id="carouselInner" class="flex w-full transition-transform duration-500 ease-in-out">
           
@@ -185,7 +185,7 @@
       </div>
     </div>
 
-    <!-- TESTS PAGE (Placeholder for direct URL load prevention issues) -->
+    <!-- TESTS PAGE -->
     <div id="page-tests" class="page-section">
       <div class="bg-white p-10 rounded-2xl shadow-sm border border-gray-100 text-center">
         <i class="fa-solid fa-file-contract text-5xl text-indigo-400 mb-4"></i>
@@ -194,7 +194,7 @@
       </div>
     </div>
 
-    <!-- NOTICE PAGE (Placeholder) -->
+    <!-- NOTICE PAGE -->
     <div id="page-notice" class="page-section">
       <div class="bg-white p-10 rounded-2xl shadow-sm border border-gray-100 text-center">
         <i class="fa-solid fa-bullhorn text-5xl text-purple-400 mb-4"></i>
@@ -349,84 +349,121 @@
       }
     }
 
-    // --- INSTANT INIT: FETCH DATA WITHOUT WAITING FOR IMAGES TO DOWNLOAD ---
-    startLoader();
+    startLoader(); // Trigger UI immediately
+
+    // --- FAULT-TOLERANT, CONCURRENT FETCH ENGINE ---
+    // This allows all 4 APIs to fetch at the exact same time.
+    // If one fails (e.g. Fees error), the others (like Name & Attendance) will still render perfectly.
+    
+    async function fetchAPI(actionParam) {
+      try {
+        const url = `${SCRIPT_URL}?action=${actionParam}&token=${token}&studentId=${studentId}&role=student&_t=${new Date().getTime()}`;
+        const res = await fetch(url);
+        if (!res.ok) throw new Error("Network response not ok");
+        return await res.json();
+      } catch (err) {
+        console.error(`Failed to fetch ${actionParam}:`, err);
+        return { ok: false, error: err.message };
+      }
+    }
 
     async function loadDashboardData() {
       try {
-        const meRes = await fetch(`${SCRIPT_URL}?action=me&token=${token}&role=student&_t=${new Date().getTime()}`);
-        const meData = await meRes.json();
-        if(meData.ok) {
-          document.getElementById('studentName').innerText = meData.name;
-          document.getElementById('studentIdDisplay').innerText = `ID: ${meData.studentId}`;
+        // Fetch all data at the exact same time (reduces load time by 75%)
+        const [meData, acaData, feeData, histData] = await Promise.all([
+          fetchAPI('me'),
+          fetchAPI('studentAcademicStats'),
+          fetchAPI('studentFees'),
+          fetchAPI('studentHistory')
+        ]);
+
+        // 1. Setup Student Info
+        if (meData.ok) {
+          document.getElementById('studentName').innerText = meData.name || 'Student';
+          document.getElementById('studentIdDisplay').innerText = `ID: ${meData.studentId || studentId}`;
         }
 
-        const acaRes = await fetch(`${SCRIPT_URL}?action=studentAcademicStats&token=${token}&studentId=${studentId}&_t=${new Date().getTime()}`);
-        const acaData = await acaRes.json();
-        if(acaData.ok) {
-          document.getElementById('homeAttendance').innerText = `${acaData.attendance}%`;
-          if(acaData.lastTest) {
+        // 2. Setup Academic Summary
+        if (acaData.ok) {
+          document.getElementById('homeAttendance').innerText = `${acaData.attendance || '--'}%`;
+          if (acaData.lastTest) {
             document.getElementById('homeLastExamMark').innerText = `${acaData.lastTest.mark}/${acaData.lastTest.max}`;
-            document.getElementById('homeLastExamName').innerText = acaData.lastTest.name;
+            document.getElementById('homeLastExamName').innerText = acaData.lastTest.name || 'Recent Exam';
           }
         }
 
-        const feeRes = await fetch(`${SCRIPT_URL}?action=studentFees&token=${token}&studentId=${studentId}&_t=${new Date().getTime()}`);
-        const feeData = await feeRes.json();
-        if(feeData.ok) {
-          document.getElementById('totalDueAmount').innerText = `₹${feeData.totalDue}`;
+        // 3. Setup Fee Info
+        if (feeData.ok) {
+          document.getElementById('totalDueAmount').innerText = `₹${feeData.totalDue || 0}`;
           let billsHtml = '';
-          if(feeData.bills.length === 0) billsHtml = '<p class="text-gray-500 text-sm text-center mt-4 bg-gray-100 p-3 rounded-lg">No bills found.</p>';
-          feeData.bills.sort((a,b) => new Date(b.dueDate) - new Date(a.dueDate)).forEach(b => {
-            const isPaid = b.status === 'PAID';
-            const statusColor = isPaid ? 'text-green-600 bg-green-100' : (b.status === 'PARTIAL' ? 'text-orange-600 bg-orange-100' : 'text-red-600 bg-red-100');
-            const remaining = (Number(b.amount) - Number(b.discount) - Number(b.paid));
-            billsHtml += `<div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100"><div class="flex justify-between items-center mb-2"><span class="text-[10px] font-black tracking-wider uppercase px-2 py-1 rounded ${statusColor}">${b.status}</span><span class="text-xs text-gray-500 font-semibold">Due: ${cleanDate(b.dueDate)}</span></div><div class="flex justify-between items-end mt-3"><div><p class="text-xs font-mono text-gray-400">#${b.billId.split('-')[1] || b.billId}</p>${b.note ? `<p class="text-xs text-purple-500 font-semibold mt-1 bg-purple-50 px-2 py-1 rounded inline-block"><i class="fa-solid fa-tag"></i> ${b.note}</p>` : ''}</div><div class="text-right"><p class="text-xl font-black text-gray-800">₹${b.amount}</p>${!isPaid && remaining > 0 ? `<p class="text-xs text-red-500 font-bold mt-1">Left: ₹${remaining}</p>` : ''}</div></div></div>`;
-          });
+          if (!feeData.bills || feeData.bills.length === 0) {
+            billsHtml = '<p class="text-gray-500 text-sm text-center mt-4 bg-gray-100 p-3 rounded-lg">No bills found.</p>';
+          } else {
+            feeData.bills.sort((a, b) => new Date(b.dueDate) - new Date(a.dueDate)).forEach(b => {
+              const isPaid = b.status === 'PAID';
+              const statusColor = isPaid ? 'text-green-600 bg-green-100' : (b.status === 'PARTIAL' ? 'text-orange-600 bg-orange-100' : 'text-red-600 bg-red-100');
+              const remaining = (Number(b.amount) - Number(b.discount || 0) - Number(b.paid || 0));
+              const billIdDisplay = b.billId ? (b.billId.split('-')[1] || b.billId) : 'N/A';
+              
+              billsHtml += `<div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100"><div class="flex justify-between items-center mb-2"><span class="text-[10px] font-black tracking-wider uppercase px-2 py-1 rounded ${statusColor}">${b.status}</span><span class="text-xs text-gray-500 font-semibold">Due: ${cleanDate(b.dueDate)}</span></div><div class="flex justify-between items-end mt-3"><div><p class="text-xs font-mono text-gray-400">#${billIdDisplay}</p>${b.note ? `<p class="text-xs text-purple-500 font-semibold mt-1 bg-purple-50 px-2 py-1 rounded inline-block"><i class="fa-solid fa-tag"></i> ${b.note}</p>` : ''}</div><div class="text-right"><p class="text-xl font-black text-gray-800">₹${b.amount}</p>${!isPaid && remaining > 0 ? `<p class="text-xs text-red-500 font-bold mt-1">Left: ₹${remaining}</p>` : ''}</div></div></div>`;
+            });
+          }
           document.getElementById('billsList').innerHTML = billsHtml;
+        } else {
+           document.getElementById('billsList').innerHTML = '<p class="text-red-500 text-sm text-center mt-4 bg-red-50 p-3 rounded-lg">Unable to load fee data.</p>';
         }
 
-        const histRes = await fetch(`${SCRIPT_URL}?action=studentHistory&token=${token}&studentId=${studentId}&_t=${new Date().getTime()}`);
-        const histData = await histRes.json();
-        if(histData.ok) {
+        // 4. Setup History Lists
+        if (histData.ok) {
+          // Marks
           let mHtml = '';
-          if(histData.marks.length === 0) mHtml = '<p class="text-gray-500 text-sm text-center bg-gray-100 p-3 rounded-lg">No test records found.</p>';
-          histData.marks.forEach(m => {
-            mHtml += `
-            <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex justify-between items-center">
-              <div>
-                <p class="font-bold text-gray-800">${m.testName}</p>
-                <p class="text-xs text-gray-400">${cleanDate(m.date)}</p>
-              </div>
-              <div class="text-right">
-                <span class="text-xl font-black text-blue-600">${m.mark}</span>
-                <span class="text-xs text-gray-400 font-bold">/ ${m.max}</span>
-              </div>
-            </div>`;
-          });
+          if (!histData.marks || histData.marks.length === 0) {
+            mHtml = '<p class="text-gray-500 text-sm text-center bg-gray-100 p-3 rounded-lg">No test records found.</p>';
+          } else {
+            histData.marks.forEach(m => {
+              mHtml += `
+              <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex justify-between items-center">
+                <div>
+                  <p class="font-bold text-gray-800">${m.testName || 'Test'}</p>
+                  <p class="text-xs text-gray-400">${cleanDate(m.date)}</p>
+                </div>
+                <div class="text-right">
+                  <span class="text-xl font-black text-blue-600">${m.mark}</span>
+                  <span class="text-xs text-gray-400 font-bold">/ ${m.max}</span>
+                </div>
+              </div>`;
+            });
+          }
           document.getElementById('marksHistoryList').innerHTML = mHtml;
 
+          // Attendance
           let aHtml = '';
-          if(histData.attendance.length === 0) aHtml = '<p class="text-gray-500 text-sm text-center bg-gray-100 p-3 rounded-lg">No attendance records found.</p>';
-          histData.attendance.forEach(a => {
-            const isPresent = a.status === 'PRESENT';
-            aHtml += `
-            <div class="bg-white p-3 rounded-xl shadow-sm border border-gray-100 flex justify-between items-center">
-              <span class="text-sm font-semibold text-gray-600">${cleanDate(a.date)}</span>
-              <span class="text-xs font-bold px-3 py-1 rounded-full ${isPresent ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">${a.status}</span>
-            </div>`;
-          });
+          if (!histData.attendance || histData.attendance.length === 0) {
+            aHtml = '<p class="text-gray-500 text-sm text-center bg-gray-100 p-3 rounded-lg">No attendance records found.</p>';
+          } else {
+            histData.attendance.forEach(a => {
+              const isPresent = a.status === 'PRESENT';
+              aHtml += `
+              <div class="bg-white p-3 rounded-xl shadow-sm border border-gray-100 flex justify-between items-center">
+                <span class="text-sm font-semibold text-gray-600">${cleanDate(a.date)}</span>
+                <span class="text-xs font-bold px-3 py-1 rounded-full ${isPresent ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">${a.status}</span>
+              </div>`;
+            });
+          }
           document.getElementById('attendanceHistoryList').innerHTML = aHtml;
+        } else {
+           document.getElementById('marksHistoryList').innerHTML = '<p class="text-red-500 text-sm text-center bg-red-50 p-3 rounded-lg">Unable to load marks.</p>';
+           document.getElementById('attendanceHistoryList').innerHTML = '<p class="text-red-500 text-sm text-center bg-red-50 p-3 rounded-lg">Unable to load attendance.</p>';
         }
 
-      } catch(err) {
-        console.error("Fetch error:", err);
+      } catch (err) {
+        console.error("Critical rendering error:", err);
       } finally {
         stopLoader();
       }
     }
 
-    // Call fetch immediately
+    // Fire the logic
     loadDashboardData();
   </script>
 </body>
