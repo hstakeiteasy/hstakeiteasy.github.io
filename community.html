@@ -147,7 +147,7 @@
     }
 
     function showLoggedIn() {
-      document.getElementById('communityWho').innerHTML = `<i class="fa-solid fa-shield-check text-green-300 mr-1"></i> Secure Session: ${studentId}`;
+      document.getElementById('communityWho').innerHTML = `<i class="fa-solid fa-shield-check text-green-300 mr-1"></i> Secure Session: ${escapeHtml(studentId)}`;
       document.getElementById('loginGate').classList.add('hidden');
       document.getElementById('communityMain').classList.remove('hidden');
       loadFeed();
@@ -160,7 +160,7 @@
         return;
       }
       try {
-        const res = await fetch(`${COMMUNITY_API}?action=login&studentId=${encodeURIComponent(studentId)}&token=${encodeURIComponent(token)}`);
+        const res = await fetch(`${COMMUNITY_API}?action=login&studentId=${encodeURIComponent(studentId)}&token=${encodeURIComponent(token)}&_t=${Date.now()}`);
         const data = await res.json();
         if (data.success) {
           showLoggedIn();
@@ -224,8 +224,10 @@
     // ===== Feed Rendering =====
     async function loadFeed() {
       const box = document.getElementById('cFeed');
+      box.innerHTML = '<p class="text-gray-400 text-center py-4 text-sm"><i class="fa-solid fa-spinner fa-spin"></i> Loading feed...</p>';
+      
       try {
-        const res = await fetch(`${COMMUNITY_API}?action=feed`);
+        const res = await fetch(`${COMMUNITY_API}?action=feed&_t=${Date.now()}`);
         const data = await res.json();
         if (!data.ok) throw new Error(data.error || 'Feed load failed.');
         
@@ -236,7 +238,7 @@
         }
         box.innerHTML = posts.map(renderPost).join('');
       } catch (e) {
-        box.innerHTML = `<p class="text-red-500 text-center py-4 text-sm">${escapeHtml(e.message)}</p>`;
+        box.innerHTML = `<p class="text-red-500 text-center py-4 text-sm"><i class="fa-solid fa-circle-exclamation mr-1"></i> ${escapeHtml(e.message)}</p>`;
       }
     }
 
