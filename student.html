@@ -76,15 +76,15 @@
     <!-- HOME PAGE -->
     <div id="page-home" class="page-section active space-y-6">
 
-      <!-- CAROUSEL SECTION -->
-      <div class="relative w-full rounded-2xl overflow-hidden shadow-sm border border-gray-100 bg-gray-50 flex items-center">
+      <!-- CAROUSEL SECTION (Now keeps images to original full visibility) -->
+      <div class="relative w-full rounded-2xl overflow-hidden shadow-sm border border-gray-100 bg-gray-50">
         <div id="carouselInner" class="flex w-full transition-transform duration-500 ease-in-out">
           
           <!-- IMAGE 1 -->
-          <img src="https://raw.githubusercontent.com/hstakeiteasy/hstakeiteasy.github.io/refs/heads/main/static/qe4.png" alt="Slide 1" class="w-full h-auto object-contain flex-shrink-0">
+          <img src="https://raw.githubusercontent.com/hstakeiteasy/hstakeiteasy.github.io/refs/heads/main/static/qe4.png" alt="Slide 1" class="w-full h-auto object-contain flex-shrink-0 block">
           
           <!-- IMAGE 2 -->
-          <img src="https://raw.githubusercontent.com/hstakeiteasy/hstakeiteasy.github.io/refs/heads/main/static/qe5.png" alt="Slide 2" class="w-full h-auto object-contain flex-shrink-0">
+          <img src="https://raw.githubusercontent.com/hstakeiteasy/hstakeiteasy.github.io/refs/heads/main/static/qe5.png" alt="Slide 2" class="w-full h-auto object-contain flex-shrink-0 block">
           
         </div>
         <!-- Carousel Indicators -->
@@ -309,98 +309,50 @@
       }
     }, 4000); 
 
-
     // --- BEAUTIFUL 30s LOADER LOGIC ---
     let loaderInterval;
-    let secondsLeft = 30; // Updated to 30 seconds
-    const loaderMessages = [
-      "Connecting to secure portal...",
-      "Fetching your attendance...",
-      "Calculating test marks...",
-      "Loading pending fees...",
-      "Organizing your dashboard...",
-      "Almost ready..."
-    ];
-
-    startLoader();
+    let secondsLeft = 30;
 
     function startLoader() {
-      secondsLeft = 30;
-      const timerElem = document.getElementById('countdownTimer');
-      if(timerElem) timerElem.innerText = secondsLeft;
-      
       const fill = document.getElementById('loaderProgressFill');
       const bar = document.getElementById('loaderProgressBar');
       const msg = document.getElementById('loaderMessage');
+      const timerElem = document.getElementById('countdownTimer');
       
       if(fill && bar && msg) {
         fill.style.transition = 'width 1s linear';
         bar.style.transition = 'width 1s linear';
         fill.style.width = '0%';
         bar.style.width = '0%';
-        msg.innerText = loaderMessages[0];
-        
-        let msgIdx = 0;
         
         loaderInterval = setInterval(() => {
           secondsLeft--;
           if (secondsLeft <= 0) { secondsLeft = 0; }
+          if (timerElem) timerElem.innerText = secondsLeft;
           
-          document.getElementById('countdownTimer').innerText = secondsLeft;
-          
-          // Updated to calculate progress out of 30 seconds
           const percent = ((30 - secondsLeft) / 30) * 100;
           fill.style.width = percent + '%';
           bar.style.width = percent + '%';
-          
-          if (secondsLeft % 5 === 0 && msgIdx < loaderMessages.length - 1 && secondsLeft > 2) { // Updates text every 5s
-            msgIdx++;
-            msg.style.opacity = '0';
-            setTimeout(() => {
-              msg.innerText = loaderMessages[msgIdx];
-              msg.style.opacity = '1';
-            }, 200);
-          }
         }, 1000);
       }
     }
 
     function stopLoader() {
       clearInterval(loaderInterval);
-      const fill = document.getElementById('loaderProgressFill');
-      const bar = document.getElementById('loaderProgressBar');
-      const msg = document.getElementById('loaderMessage');
-      
-      if(fill && bar && msg) {
-        fill.style.transition = 'width 0.3s ease-out';
-        bar.style.transition = 'width 0.3s ease-out';
-        fill.style.width = '100%';
-        bar.style.width = '100%';
-        
-        document.getElementById('countdownTimer').innerText = "0";
-        
-        msg.style.opacity = '0';
+      const loader = document.getElementById('globalLoader');
+      if(loader) {
+        loader.style.opacity = '0';
         setTimeout(() => {
-          msg.innerText = "Dashboard Ready!";
-          msg.style.opacity = '1';
-        }, 150);
+          loader.classList.add('hidden');
+          loader.classList.remove('flex');
+        }, 300);
       }
-      
-      setTimeout(() => {
-        const loader = document.getElementById('globalLoader');
-        if(loader) {
-          loader.style.opacity = '0';
-          setTimeout(() => {
-            loader.classList.add('hidden');
-            loader.classList.remove('flex');
-            loader.style.opacity = '1';
-          }, 300);
-        }
-      }, 600);
     }
 
-    // --- MAIN INITIALIZATION ---
-    window.onload = async () => {
+    // --- INSTANT INIT: FETCH DATA WITHOUT WAITING FOR IMAGES TO DOWNLOAD ---
+    startLoader();
+
+    async function loadDashboardData() {
       try {
         const meRes = await fetch(`${SCRIPT_URL}?action=me&token=${token}&role=student&_t=${new Date().getTime()}`);
         const meData = await meRes.json();
@@ -468,11 +420,14 @@
         }
 
       } catch(err) {
-        console.error(err);
+        console.error("Fetch error:", err);
       } finally {
         stopLoader();
       }
-    };
+    }
+
+    // Call fetch immediately
+    loadDashboardData();
   </script>
 </body>
 </html>
