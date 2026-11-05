@@ -66,7 +66,16 @@
         </div>
         <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100 overflow-x-auto">
           <table class="w-full text-left border-collapse whitespace-nowrap">
-            <thead><tr class="bg-gray-100"><th class="p-2">ID</th><th class="p-2">Name</th><th class="p-2">Fee</th><th class="p-2">Due Day</th><th class="p-2">Action</th></tr></thead>
+            <thead>
+              <tr class="bg-gray-100">
+                <th class="p-2">ID</th>
+                <th class="p-2">Name</th>
+                <th class="p-2">Fee</th>
+                <th class="p-2">Due Day</th>
+                <th class="p-2">Students</th> <!-- NEW COLUMN FOR COUNT -->
+                <th class="p-2">Action</th>
+              </tr>
+            </thead>
             <tbody id="batchTableBody"></tbody>
           </table>
         </div>
@@ -320,22 +329,39 @@
     document.getElementById('attDate').valueAsDate = new Date(); document.getElementById('testDate').valueAsDate = new Date();
 
     window.onload = async () => {
+      // Fetch both arrays first so we can calculate the counts
       const bRes = await fetchAPI('getBatches');
+      const sRes = await fetchAPI('getStudents');
+      
+      if(bRes.ok) allBatches = bRes.data;
+      if(sRes.ok) allStudents = sRes.data;
+
+      // Render Batches with Student Count
       if(bRes.ok) {
-        allBatches = bRes.data;
         let bHtml = '';
         document.querySelectorAll('.batch-dropdown').forEach(s => { s.innerHTML = '<option value="">All Batches / Select</option>'; });
         document.querySelectorAll('.batch-dropdown-strict').forEach(s => { s.innerHTML = '<option value="">Select Batch...</option>'; });
+        
         allBatches.forEach(b => {
           document.querySelectorAll('.batch-dropdown, .batch-dropdown-strict').forEach(s => s.innerHTML += `<option value="${b.BatchID}">${b.BatchName}</option>`);
-          bHtml += `<tr class="border-b"><td class="p-2">${b.BatchID}</td><td class="p-2">${b.BatchName}</td><td class="p-2">₹${b.DefaultFee}</td><td class="p-2">${b.DueDay}</td><td class="p-2"><button onclick="editBatch('${b.BatchID}')" class="text-blue-500 hover:text-blue-700"><i class="fa-solid fa-pen"></i></button></td></tr>`;
+          
+          // Calculate student count
+          const studentCount = allStudents.filter(s => String(s.BatchID) === String(b.BatchID)).length;
+          
+          bHtml += `<tr class="border-b">
+            <td class="p-2">${b.BatchID}</td>
+            <td class="p-2">${b.BatchName}</td>
+            <td class="p-2">₹${b.DefaultFee}</td>
+            <td class="p-2">${b.DueDay}</td>
+            <td class="p-2"><span class="bg-indigo-100 text-indigo-700 text-xs font-bold px-2 py-1 rounded"><i class="fa-solid fa-users mr-1"></i> ${studentCount}</span></td>
+            <td class="p-2"><button onclick="editBatch('${b.BatchID}')" class="text-blue-500 hover:text-blue-700"><i class="fa-solid fa-pen"></i></button></td>
+          </tr>`;
         });
         document.getElementById('batchTableBody').innerHTML = bHtml;
       }
 
-      const sRes = await fetchAPI('getStudents');
+      // Render Students
       if(sRes.ok) {
-        allStudents = sRes.data;
         let sHtml = '', dlHtml = '';
         allStudents.forEach(s => {
           const statusBadge = s.Status === 'ACTIVE' ? `<span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-bold">ACTIVE</span>` : `<span class="bg-red-100 text-red-700 px-2 py-1 rounded text-xs font-bold">INACTIVE</span>`;
