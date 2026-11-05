@@ -55,8 +55,6 @@
       
       <!-- BATCHES TAB -->
       <div id="batches" class="tab-content active space-y-6">
-        
-        <!-- HEADER WITH OVERALL STUDENT COUNT -->
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
           <h2 class="text-2xl font-bold">Manage Batches</h2>
           <div class="bg-indigo-50 border border-indigo-200 text-indigo-800 px-5 py-2 rounded-xl shadow-sm flex items-center gap-3">
@@ -80,12 +78,7 @@
           <table class="w-full text-left border-collapse whitespace-nowrap">
             <thead>
               <tr class="bg-gray-100">
-                <th class="p-2">ID</th>
-                <th class="p-2">Name</th>
-                <th class="p-2">Fee</th>
-                <th class="p-2">Due Day</th>
-                <th class="p-2">Students</th>
-                <th class="p-2">Action</th>
+                <th class="p-2">ID</th><th class="p-2">Name</th><th class="p-2">Fee</th><th class="p-2">Due Day</th><th class="p-2">Students</th><th class="p-2">Action</th>
               </tr>
             </thead>
             <tbody id="batchTableBody"></tbody>
@@ -95,8 +88,6 @@
 
       <!-- STUDENTS TAB -->
       <div id="students" class="tab-content space-y-6">
-        
-        <!-- HEADER WITH OVERALL STUDENT COUNT -->
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
           <h2 class="text-2xl font-bold">Manage Students</h2>
           <div class="bg-indigo-50 border border-indigo-200 text-indigo-800 px-5 py-2 rounded-xl shadow-sm flex items-center gap-3">
@@ -109,14 +100,19 @@
         </div>
 
         <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-          <div class="grid grid-cols-1 md:grid-cols-5 gap-2">
-            <input type="text" id="sName" placeholder="Student Name" class="p-2 border rounded">
-            <input type="text" id="sParent" placeholder="Parent Name" class="p-2 border rounded">
+          <div class="grid grid-cols-1 md:grid-cols-6 gap-3">
+            <input type="text" id="sName" placeholder="Student Name" class="p-2 border rounded md:col-span-2">
+            <select id="sGender" class="p-2 border rounded focus:outline-none focus:border-blue-500">
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+            </select>
+            <input type="text" id="sParent" placeholder="Parent Name" class="p-2 border rounded md:col-span-2">
             <input type="text" id="sPhone" placeholder="Parent Phone" class="p-2 border rounded">
-            <input type="number" id="sFee" placeholder="Custom Fee (Opt)" class="p-2 border rounded">
+            
+            <input type="number" id="sFee" placeholder="Custom Fee (Opt)" class="p-2 border rounded md:col-span-2">
             <input type="number" id="sPrevDue" placeholder="Previous Due (Opt)" class="p-2 border rounded">
-            <select id="sBatch" class="p-2 border rounded batch-dropdown col-span-1 md:col-span-3"><option value="">Select Batch</option></select>
-            <button onclick="addStudent()" class="bg-blue-600 text-white p-2 rounded col-span-1 md:col-span-2">Add Student</button>
+            <select id="sBatch" class="p-2 border rounded batch-dropdown md:col-span-2"><option value="">Select Batch</option></select>
+            <button onclick="addStudent()" class="bg-blue-600 text-white p-2 rounded font-bold shadow-sm hover:bg-blue-700">Add Student</button>
           </div>
           <div id="newStudentResult" class="mt-4 p-4 bg-green-50 border border-green-200 rounded hidden">
             <p class="text-green-800 font-medium" id="newStudentText"></p>
@@ -127,11 +123,18 @@
         </div>
         
         <div class="bg-white p-4 md:p-6 rounded-lg shadow-sm border border-gray-100 overflow-x-auto">
-          <input type="text" id="studentSearch" onkeyup="filterStudents()" placeholder="🔍 Search by Name or ID..." class="w-full p-3 border border-gray-300 rounded mb-4 focus:outline-none focus:border-blue-500">
+          <div class="flex gap-2 mb-4">
+            <input type="text" id="studentSearch" onkeyup="filterStudents()" placeholder="🔍 Search by Name or ID..." class="w-full p-3 border border-gray-300 rounded focus:outline-none focus:border-blue-500">
+            <select id="studentGenderFilter" onchange="filterStudents()" class="p-3 border border-gray-300 rounded focus:outline-none bg-gray-50 text-gray-700 font-medium">
+              <option value="ALL">All Genders</option>
+              <option value="Male">Male Only</option>
+              <option value="Female">Female Only</option>
+            </select>
+          </div>
           <table class="w-full text-left border-collapse whitespace-nowrap" id="studentTable">
             <thead>
               <tr class="bg-gray-100 text-sm">
-                <th class="p-2">ID</th><th class="p-2">Name</th><th class="p-2">Parent Name</th>
+                <th class="p-2">ID</th><th class="p-2">Name</th><th class="p-2">Gender</th><th class="p-2">Parent Name</th>
                 <th class="p-2">Phone</th><th class="p-2">Batch</th><th class="p-2">Custom Fee</th>
                 <th class="p-2">Status</th><th class="p-2">Actions</th>
               </tr>
@@ -150,7 +153,6 @@
             <select id="attBatch" class="p-2 border rounded batch-dropdown-strict w-full md:w-1/3"><option value="">Select Batch</option></select>
             <button onclick="fetchAttendance()" class="bg-blue-600 text-white px-4 py-2 rounded w-full md:w-auto">Fetch Active Roster</button>
           </div>
-          
           <div id="attendanceArea" class="hidden">
             <table class="w-full text-left border-collapse whitespace-nowrap mt-4">
               <thead><tr class="bg-gray-100 text-sm"><th class="p-2">ID</th><th class="p-2 w-full">Name</th><th class="p-2 text-center">Status</th></tr></thead>
@@ -197,7 +199,6 @@
       <div id="dues" class="tab-content space-y-6">
         <h2 class="text-2xl font-bold mb-2">Dues & Billing</h2>
         
-        <!-- Toggle Buttons -->
         <div class="flex justify-center mb-6">
           <div class="bg-white rounded-lg p-1 shadow-sm border border-gray-100 flex w-full max-w-3xl flex-col md:flex-row">
             <button id="btnViewFeeAction" onclick="toggleDuesView('feeAction')" class="flex-1 py-2 px-1 text-sm font-bold rounded-md bg-blue-600 text-white shadow transition-all m-1">Fee Action</button>
@@ -206,27 +207,20 @@
           </div>
         </div>
 
-        <!-- 1. Fee Collection Section -->
+        <!-- 1. Fee Collection -->
         <div id="view-feeAction" class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
           <h3 class="text-lg font-semibold mb-4"><i class="fa-solid fa-hand-holding-dollar text-green-500"></i> Fee Collection & Actions</h3>
-          
           <div class="flex gap-2 mb-1">
             <div class="relative w-full">
               <input type="text" id="feeStudentInput" autocomplete="off" placeholder="Search Student ID or Name..." oninput="handleStudentSearch()" class="p-2 border rounded w-full focus:outline-none focus:border-blue-500">
-              <!-- Smart Dropdown replacing datalist -->
               <div id="studentSearchDropdown" class="absolute left-0 right-0 bg-white border border-gray-200 w-full max-h-48 overflow-y-auto hidden z-50 rounded-b shadow-xl"></div>
             </div>
             <button onclick="manualRefreshBills(this)" class="bg-blue-50 text-blue-600 border border-blue-100 px-3 rounded hover:bg-blue-100 transition focus:outline-none flex-shrink-0" title="Refresh Selected Student's Bills">
               <i class="fa-solid fa-rotate-right"></i>
             </button>
           </div>
-          
-          <!-- Student Details Line (Batch, Parent, Phone) -->
           <div id="feeStudentDetails" class="hidden text-xs text-gray-500 mb-4 px-1 py-2 bg-gray-50 rounded border"></div>
-
-          <!-- Pending Bills Area -->
           <div id="pendingBillsArea" class="bg-gray-50 p-2 rounded mb-4 max-h-40 overflow-y-auto hidden text-sm border border-gray-200"></div>
-
           <div class="flex gap-2 mb-3 mt-4">
             <input type="number" id="feeAmount" placeholder="Amount (₹)" class="p-2 border rounded w-full focus:outline-none focus:border-blue-500">
             <select id="feeMode" class="p-2 border rounded w-1/2 focus:outline-none">
@@ -242,7 +236,7 @@
           </div>
         </div>
 
-        <!-- 2. Generate Monthly Bills Section -->
+        <!-- 2. Generate Bills -->
         <div id="view-genBill" class="hidden bg-white p-6 rounded-lg shadow-sm border border-gray-100">
           <h3 class="text-lg font-semibold mb-4"><i class="fa-solid fa-file-invoice text-blue-500"></i> Generate Monthly Bills</h3>
           <p class="text-sm text-gray-500 mb-4">Create bills for an entire batch at once. Active students only.</p>
@@ -257,7 +251,7 @@
           </div>
         </div>
 
-        <!-- 3. Check Batch Dues Section -->
+        <!-- 3. Check Batch Dues -->
         <div id="view-batchDues" class="hidden bg-white p-6 rounded-lg shadow-sm border border-gray-100">
           <h3 class="text-lg font-semibold mb-4"><i class="fa-solid fa-magnifying-glass-dollar text-gray-700"></i> Check Batch Dues</h3>
           <div class="flex gap-2 mb-4">
@@ -266,7 +260,6 @@
           </div>
           <div id="dueResults" class="space-y-2"></div>
         </div>
-
       </div>
 
       <!-- REPORTS TAB -->
@@ -298,7 +291,6 @@
       <div id="more" class="tab-content space-y-6">
         <h2 class="text-2xl font-bold">Settings & Resources</h2>
         
-        <!-- Global Resources -->
         <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
           <h3 class="text-lg font-bold mb-2"><i class="fa-brands fa-google-drive text-blue-500"></i> Common Resource Folder</h3>
           <p class="text-sm text-gray-500 mb-4">This folder will be visible to ALL students in their Material section.</p>
@@ -308,15 +300,10 @@
           </div>
         </div>
 
-        <!-- Batch Wise Folders -->
         <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
           <h3 class="text-lg font-bold mb-2"><i class="fa-solid fa-folder-tree text-green-500"></i> Batch-Wise Class Folders</h3>
-          <p class="text-sm text-gray-500 mb-4">Map a specific Google Drive folder (e.g. Class 5, Class 12) to each batch. Students will only see the folder assigned to their batch.</p>
-          
-          <div id="batchFolderContainer" class="space-y-3 mb-6">
-            <p class="text-gray-400 text-sm italic">Loading batches...</p>
-          </div>
-          
+          <p class="text-sm text-gray-500 mb-4">Map a specific Google Drive folder to each batch. Students will only see the folder assigned to their batch.</p>
+          <div id="batchFolderContainer" class="space-y-3 mb-6"><p class="text-gray-400 text-sm italic">Loading batches...</p></div>
           <button onclick="saveFolderSettings()" class="bg-blue-600 text-white font-bold px-6 py-3 rounded-lg shadow-md w-full md:w-auto"><i class="fa-solid fa-floppy-disk"></i> Save Folder Mappings</button>
         </div>
       </div>
@@ -404,11 +391,14 @@
       if(bRes.ok) allBatches = bRes.data;
       if(sRes.ok) allStudents = sRes.data;
 
-      // Populate Top Totals
+      // 🛡️ POPULATE TOP TOTALS WITH MALE/FEMALE STATS
       if(sRes.ok) {
         const totalStu = allStudents.length;
         const activeStu = allStudents.filter(s => s.Status === 'ACTIVE').length;
-        const countText = `${totalStu} <span class="text-xs font-medium text-indigo-400">(${activeStu} Active)</span>`;
+        const femaleCount = allStudents.filter(s => s.Gender === 'Female').length;
+        const maleCount = totalStu - femaleCount; 
+
+        const countText = `${totalStu} <span class="text-xs font-medium text-indigo-500 bg-indigo-100 px-2 py-1 rounded ml-1 tracking-normal">(${activeStu} Active | <span class="text-blue-600 font-bold">${maleCount} M</span> <span class="text-indigo-300">/</span> <span class="text-pink-500 font-bold">${femaleCount} F</span>)</span>`;
         
         if(document.getElementById('topTotalStudents1')) document.getElementById('topTotalStudents1').innerHTML = countText;
         if(document.getElementById('topTotalStudents2')) document.getElementById('topTotalStudents2').innerHTML = countText;
@@ -422,7 +412,6 @@
         allBatches.forEach(b => {
           document.querySelectorAll('.batch-dropdown, .batch-dropdown-strict').forEach(s => s.innerHTML += `<option value="${b.BatchID}">${b.BatchName}</option>`);
           
-          // Count Students in this batch
           const studentCount = allStudents.filter(s => String(s.BatchID) === String(b.BatchID)).length;
           
           bHtml += `<tr class="border-b hover:bg-gray-50 transition">
@@ -441,16 +430,24 @@
       if(sRes.ok) {
         let sHtml = '';
         allStudents.forEach(s => {
-          const statusBadge = s.Status === 'ACTIVE' ? `<span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-bold">ACTIVE</span>` : `<span class="bg-red-100 text-red-700 px-2 py-1 rounded text-xs font-bold">INACTIVE</span>`;
+          const statusBadge = s.Status === 'ACTIVE' ? `<span class="bg-green-100 text-green-700 px-2 py-1 rounded text-[10px] font-bold">ACTIVE</span>` : `<span class="bg-red-100 text-red-700 px-2 py-1 rounded text-[10px] font-bold">INACTIVE</span>`;
           const statusBtnIcon = s.Status === 'ACTIVE' ? `<button onclick="promptStatusChange('${s.StudentID}', 'INACTIVE')" class="text-red-500 hover:text-red-700" title="Make Inactive"><i class="fa-solid fa-power-off"></i></button>` : `<button onclick="promptStatusChange('${s.StudentID}', 'ACTIVE')" class="text-green-500 hover:text-green-700" title="Make Active"><i class="fa-solid fa-power-off"></i></button>`;
 
-          sHtml += `<tr class="border-b student-row hover:bg-gray-50">
+          // 🛡️ Gender Badge Rendering
+          const isFemale = s.Gender === 'Female';
+          const genderStr = isFemale ? 'Female' : 'Male';
+          const genderBadge = isFemale 
+            ? `<span class="bg-pink-100 text-pink-700 border border-pink-200 px-2 py-0.5 rounded text-[10px] font-bold shadow-sm"><i class="fa-solid fa-venus mr-1"></i>F</span>` 
+            : `<span class="bg-blue-100 text-blue-700 border border-blue-200 px-2 py-0.5 rounded text-[10px] font-bold shadow-sm"><i class="fa-solid fa-mars mr-1"></i>M</span>`;
+
+          sHtml += `<tr class="border-b student-row hover:bg-gray-50 transition">
             <td class="p-2 stu-id text-gray-500 text-xs font-mono">${s.StudentID}</td>
             <td class="p-2 font-medium stu-name">${s.Name}</td>
-            <td class="p-2 text-gray-600">${s.ParentName || '-'}</td>
-            <td class="p-2">${s.ParentPhone}</td>
-            <td class="p-2"><span class="bg-gray-200 text-gray-800 text-xs px-2 py-1 rounded">${s.BatchID}</span></td>
-            <td class="p-2 text-green-600 font-medium">${s.CustomFee ? '₹'+s.CustomFee : '-'}</td>
+            <td class="p-2 stu-gender" data-gender="${genderStr}">${genderBadge}</td>
+            <td class="p-2 text-gray-600 text-xs">${s.ParentName || '-'}</td>
+            <td class="p-2 text-xs">${s.ParentPhone}</td>
+            <td class="p-2"><span class="bg-gray-200 text-gray-800 text-[10px] px-2 py-1 rounded font-bold uppercase">${s.BatchID}</span></td>
+            <td class="p-2 text-green-600 font-bold">${s.CustomFee ? '₹'+s.CustomFee : '-'}</td>
             <td class="p-2">${statusBadge}</td>
             <td class="p-2 flex gap-4">
               <button onclick="editStudent('${s.StudentID}')" class="text-blue-500 hover:text-blue-700" title="Edit"><i class="fa-solid fa-pen"></i></button>
@@ -464,7 +461,77 @@
       loadAllTests();
     };
 
-    // --- FOLDERS & RESOURCES ---
+    // --- SMART SEARCH & GENDER FILTER ---
+    function filterStudents() {
+      let searchFilter = document.getElementById('studentSearch').value.toUpperCase();
+      let genderFilter = document.getElementById('studentGenderFilter').value;
+
+      document.querySelectorAll('.student-row').forEach(row => { 
+        let textMatch = row.querySelector('.stu-id').textContent.toUpperCase().indexOf(searchFilter) > -1 || row.querySelector('.stu-name').textContent.toUpperCase().indexOf(searchFilter) > -1;
+        let rowGender = row.querySelector('.stu-gender').getAttribute('data-gender');
+        let genderMatch = genderFilter === 'ALL' || rowGender === genderFilter;
+        
+        row.style.display = (textMatch && genderMatch) ? "" : "none"; 
+      });
+    }
+
+    async function addStudent() {
+      const res = await fetchAPI('addStudent', { 
+        name: document.getElementById('sName').value, 
+        parentName: document.getElementById('sParent').value, 
+        parentPhone: document.getElementById('sPhone').value, 
+        gender: document.getElementById('sGender').value,
+        customFee: document.getElementById('sFee').value, 
+        batchId: document.getElementById('sBatch').value,
+        prevDue: document.getElementById('sPrevDue').value 
+      });
+      if(res.ok) { 
+        document.getElementById('newStudentResult').classList.remove('hidden'); 
+        document.getElementById('newStudentText').innerText = `Success! ID: ${res.studentId} | Pass: ${res.password}`; 
+        let phone = res.parentPhone; if(phone.length === 10) phone = '91' + phone;
+        document.getElementById('newStudentWaLink').href = `https://wa.me/${phone}?text=${encodeURIComponent(`Hi ${document.getElementById('sName').value}, your portal login:\nID: ${res.studentId}\nPass: ${res.password}`)}`;
+        setTimeout(()=>window.location.reload(), 3000);
+      }
+    }
+    
+    function editStudent(id) {
+      const s = allStudents.find(x => x.StudentID === id); document.getElementById('modalTitle').innerText = `Edit Student ${id}`;
+      let bOpts = allBatches.map(b => `<option value="${b.BatchID}" ${b.BatchID===s.BatchID?'selected':''}>${b.BatchName}</option>`).join('');
+      
+      const isFemale = s.Gender === 'Female';
+
+      document.getElementById('modalBody').innerHTML = `
+        <label class="text-sm font-bold text-gray-600">Student Name</label>
+        <input type="text" id="mSName" value="${s.Name}" class="w-full border p-2 rounded mb-2">
+        <label class="text-sm font-bold text-gray-600">Gender</label>
+        <select id="mSGender" class="w-full border p-2 rounded mb-2 focus:outline-none">
+          <option value="Male" ${!isFemale ? 'selected' : ''}>Male</option>
+          <option value="Female" ${isFemale ? 'selected' : ''}>Female</option>
+        </select>
+        <label class="text-sm font-bold text-gray-600">Parent Name</label>
+        <input type="text" id="mSParent" value="${s.ParentName || ''}" class="w-full border p-2 rounded mb-2">
+        <label class="text-sm font-bold text-gray-600">Parent Phone</label>
+        <input type="text" id="mSPhone" value="${s.ParentPhone}" class="w-full border p-2 rounded mb-2">
+        <label class="text-sm font-bold text-gray-600">Custom Fee</label>
+        <input type="number" id="mSFee" value="${s.CustomFee}" placeholder="Leave blank for Batch default" class="w-full border p-2 rounded mb-2">
+        <label class="text-sm font-bold text-gray-600">Batch</label>
+        <select id="mSBatch" class="w-full border p-2 rounded">${bOpts}</select>`;
+      
+      document.getElementById('editModal').classList.remove('hidden');
+      document.getElementById('modalSaveBtn').onclick = async () => { 
+        await fetchAPI('updateStudent', {
+          studentId:id, 
+          name:document.getElementById('mSName').value, 
+          parentName:document.getElementById('mSParent').value, 
+          parentPhone:document.getElementById('mSPhone').value, 
+          gender:document.getElementById('mSGender').value,
+          customFee:document.getElementById('mSFee').value, 
+          batchId:document.getElementById('mSBatch').value
+        }); 
+        window.location.reload(); 
+      };
+    }
+
     async function loadFolderSettings() {
       const res = await fetchAPI('getFolderLinks', {}, false);
       if (res.ok) {
@@ -596,7 +663,6 @@
       }
     }
 
-    // --- STATUS TOGGLE LOGIC ---
     let pendingStatusChange = {};
     function promptStatusChange(id, newStatus) {
       pendingStatusChange = { id: id, newStatus: newStatus };
@@ -614,7 +680,6 @@
       else alert("Error: " + res.msg);
     }
 
-    // --- BATCHES ---
     async function addBatch() { await fetchAPI('addBatch', {name: document.getElementById('bName').value, fee: document.getElementById('bFee').value, dueDay: document.getElementById('bDueDay').value}); window.location.reload(); }
     function editBatch(id) {
       const b = allBatches.find(x => x.BatchID === id);
@@ -622,58 +687,6 @@
       document.getElementById('modalBody').innerHTML = `<label class="text-sm font-bold text-gray-600">Batch Name</label><input type="text" id="mBName" value="${b.BatchName}" class="w-full border p-2 rounded mb-2"><label class="text-sm font-bold text-gray-600">Default Fee</label><input type="number" id="mBFee" value="${b.DefaultFee}" class="w-full border p-2 rounded mb-2"><label class="text-sm font-bold text-gray-600">Due Day</label><input type="number" id="mBDue" value="${b.DueDay}" class="w-full border p-2 rounded">`;
       document.getElementById('editModal').classList.remove('hidden');
       document.getElementById('modalSaveBtn').onclick = async () => { await fetchAPI('updateBatch', {batchId:id, name:document.getElementById('mBName').value, fee:document.getElementById('mBFee').value, dueDay:document.getElementById('mBDue').value}); window.location.reload(); };
-    }
-
-    // --- STUDENTS ---
-    function filterStudents() {
-      let filter = document.getElementById('studentSearch').value.toUpperCase();
-      document.querySelectorAll('.student-row').forEach(row => { row.style.display = (row.querySelector('.stu-id').textContent.toUpperCase().indexOf(filter) > -1 || row.querySelector('.stu-name').textContent.toUpperCase().indexOf(filter) > -1) ? "" : "none"; });
-    }
-
-    async function addStudent() {
-      const res = await fetchAPI('addStudent', { 
-        name: document.getElementById('sName').value, 
-        parentName: document.getElementById('sParent').value, 
-        parentPhone: document.getElementById('sPhone').value, 
-        customFee: document.getElementById('sFee').value, 
-        batchId: document.getElementById('sBatch').value,
-        prevDue: document.getElementById('sPrevDue').value 
-      });
-      if(res.ok) { 
-        document.getElementById('newStudentResult').classList.remove('hidden'); 
-        document.getElementById('newStudentText').innerText = `Success! ID: ${res.studentId} | Pass: ${res.password}`; 
-        let phone = res.parentPhone; if(phone.length === 10) phone = '91' + phone;
-        document.getElementById('newStudentWaLink').href = `https://wa.me/${phone}?text=${encodeURIComponent(`Hi ${document.getElementById('sName').value}, your portal login:\nID: ${res.studentId}\nPass: ${res.password}`)}`;
-        setTimeout(()=>window.location.reload(), 3000);
-      }
-    }
-    
-    function editStudent(id) {
-      const s = allStudents.find(x => x.StudentID === id); document.getElementById('modalTitle').innerText = `Edit Student ${id}`;
-      let bOpts = allBatches.map(b => `<option value="${b.BatchID}" ${b.BatchID===s.BatchID?'selected':''}>${b.BatchName}</option>`).join('');
-      document.getElementById('modalBody').innerHTML = `
-        <label class="text-sm font-bold text-gray-600">Student Name</label>
-        <input type="text" id="mSName" value="${s.Name}" class="w-full border p-2 rounded mb-2">
-        <label class="text-sm font-bold text-gray-600">Parent Name</label>
-        <input type="text" id="mSParent" value="${s.ParentName || ''}" class="w-full border p-2 rounded mb-2">
-        <label class="text-sm font-bold text-gray-600">Parent Phone</label>
-        <input type="text" id="mSPhone" value="${s.ParentPhone}" class="w-full border p-2 rounded mb-2">
-        <label class="text-sm font-bold text-gray-600">Custom Fee</label>
-        <input type="number" id="mSFee" value="${s.CustomFee}" placeholder="Leave blank for Batch default" class="w-full border p-2 rounded mb-2">
-        <label class="text-sm font-bold text-gray-600">Batch</label>
-        <select id="mSBatch" class="w-full border p-2 rounded">${bOpts}</select>`;
-      document.getElementById('editModal').classList.remove('hidden');
-      document.getElementById('modalSaveBtn').onclick = async () => { 
-        await fetchAPI('updateStudent', {
-          studentId:id, 
-          name:document.getElementById('mSName').value, 
-          parentName:document.getElementById('mSParent').value, 
-          parentPhone:document.getElementById('mSPhone').value, 
-          customFee:document.getElementById('mSFee').value, 
-          batchId:document.getElementById('mSBatch').value
-        }); 
-        window.location.reload(); 
-      };
     }
 
     function managePassword(id) {
@@ -684,7 +697,6 @@
       document.getElementById('modalSaveBtn').onclick = async () => { const newPass = document.getElementById('mSNewPass').value.trim(); if(!newPass) return alert("Please enter a new password."); await fetchAPI('adminChangeStudentPassword', {studentId:id, newPassword:newPass}); alert("Updated!"); window.location.reload(); };
     }
 
-    // --- ACADEMICS (ATTENDANCE & MARKS) ---
     async function fetchAttendance() {
       const batchId = document.getElementById('attBatch').value; const date = document.getElementById('attDate').value;
       if(!batchId || !date) return alert("Select Date and Batch");
@@ -744,7 +756,6 @@
       if(res.ok) alert("Marks Saved!");
     }
 
-    // --- MANUAL BILLING GENERATION & REMOVAL ---
     let pendingBillAction = '';
     function openBillAuth(actionType) {
       const month = document.getElementById('billMonth').value; const year = document.getElementById('billYear').value;
