@@ -418,9 +418,29 @@
     function editStudent(id) {
       const s = allStudents.find(x => x.StudentID === id); document.getElementById('modalTitle').innerText = `Edit Student ${id}`;
       let bOpts = allBatches.map(b => `<option value="${b.BatchID}" ${b.BatchID===s.BatchID?'selected':''}>${b.BatchName}</option>`).join('');
-      document.getElementById('modalBody').innerHTML = `<label class="text-sm font-bold text-gray-600">Name</label><input type="text" id="mSName" value="${s.Name}" class="w-full border p-2 rounded mb-2"><label class="text-sm font-bold text-gray-600">Parent Phone</label><input type="text" id="mSPhone" value="${s.ParentPhone}" class="w-full border p-2 rounded mb-2"><label class="text-sm font-bold text-gray-600">Custom Fee</label><input type="number" id="mSFee" value="${s.CustomFee}" placeholder="Leave blank for Batch default" class="w-full border p-2 rounded mb-2"><label class="text-sm font-bold text-gray-600">Batch</label><select id="mSBatch" class="w-full border p-2 rounded">${bOpts}</select>`;
+      document.getElementById('modalBody').innerHTML = `
+        <label class="text-sm font-bold text-gray-600">Student Name</label>
+        <input type="text" id="mSName" value="${s.Name}" class="w-full border p-2 rounded mb-2">
+        <label class="text-sm font-bold text-gray-600">Parent Name</label>
+        <input type="text" id="mSParent" value="${s.ParentName || ''}" class="w-full border p-2 rounded mb-2">
+        <label class="text-sm font-bold text-gray-600">Parent Phone</label>
+        <input type="text" id="mSPhone" value="${s.ParentPhone}" class="w-full border p-2 rounded mb-2">
+        <label class="text-sm font-bold text-gray-600">Custom Fee</label>
+        <input type="number" id="mSFee" value="${s.CustomFee}" placeholder="Leave blank for Batch default" class="w-full border p-2 rounded mb-2">
+        <label class="text-sm font-bold text-gray-600">Batch</label>
+        <select id="mSBatch" class="w-full border p-2 rounded">${bOpts}</select>`;
       document.getElementById('editModal').classList.remove('hidden');
-      document.getElementById('modalSaveBtn').onclick = async () => { await fetchAPI('updateStudent', {studentId:id, name:document.getElementById('mSName').value, parentPhone:document.getElementById('mSPhone').value, customFee:document.getElementById('mSFee').value, batchId:document.getElementById('mSBatch').value}); window.location.reload(); };
+      document.getElementById('modalSaveBtn').onclick = async () => { 
+        await fetchAPI('updateStudent', {
+          studentId:id, 
+          name:document.getElementById('mSName').value, 
+          parentName:document.getElementById('mSParent').value, 
+          parentPhone:document.getElementById('mSPhone').value, 
+          customFee:document.getElementById('mSFee').value, 
+          batchId:document.getElementById('mSBatch').value
+        }); 
+        window.location.reload(); 
+      };
     }
 
     function managePassword(id) {
