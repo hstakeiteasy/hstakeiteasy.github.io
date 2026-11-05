@@ -55,7 +55,19 @@
       
       <!-- BATCHES TAB -->
       <div id="batches" class="tab-content active space-y-6">
-        <h2 class="text-2xl font-bold">Manage Batches</h2>
+        
+        <!-- HEADER WITH OVERALL STUDENT COUNT -->
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+          <h2 class="text-2xl font-bold">Manage Batches</h2>
+          <div class="bg-indigo-50 border border-indigo-200 text-indigo-800 px-5 py-2 rounded-xl shadow-sm flex items-center gap-3">
+            <i class="fa-solid fa-users-rays text-indigo-500 text-2xl"></i>
+            <div>
+              <p class="text-[10px] uppercase font-bold text-indigo-400 tracking-wider">Total Center Strength</p>
+              <p class="text-xl font-black leading-tight" id="topTotalStudents1">--</p>
+            </div>
+          </div>
+        </div>
+
         <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
           <div class="grid grid-cols-1 md:grid-cols-4 gap-2">
             <input type="text" id="bName" placeholder="Batch Name" class="p-2 border rounded">
@@ -83,7 +95,19 @@
 
       <!-- STUDENTS TAB -->
       <div id="students" class="tab-content space-y-6">
-        <h2 class="text-2xl font-bold">Manage Students</h2>
+        
+        <!-- HEADER WITH OVERALL STUDENT COUNT -->
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+          <h2 class="text-2xl font-bold">Manage Students</h2>
+          <div class="bg-indigo-50 border border-indigo-200 text-indigo-800 px-5 py-2 rounded-xl shadow-sm flex items-center gap-3">
+            <i class="fa-solid fa-users-rays text-indigo-500 text-2xl"></i>
+            <div>
+              <p class="text-[10px] uppercase font-bold text-indigo-400 tracking-wider">Total Center Strength</p>
+              <p class="text-xl font-black leading-tight" id="topTotalStudents2">--</p>
+            </div>
+          </div>
+        </div>
+
         <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
           <div class="grid grid-cols-1 md:grid-cols-5 gap-2">
             <input type="text" id="sName" placeholder="Student Name" class="p-2 border rounded">
@@ -380,6 +404,16 @@
       if(bRes.ok) allBatches = bRes.data;
       if(sRes.ok) allStudents = sRes.data;
 
+      // Populate Top Totals
+      if(sRes.ok) {
+        const totalStu = allStudents.length;
+        const activeStu = allStudents.filter(s => s.Status === 'ACTIVE').length;
+        const countText = `${totalStu} <span class="text-xs font-medium text-indigo-400">(${activeStu} Active)</span>`;
+        
+        if(document.getElementById('topTotalStudents1')) document.getElementById('topTotalStudents1').innerHTML = countText;
+        if(document.getElementById('topTotalStudents2')) document.getElementById('topTotalStudents2').innerHTML = countText;
+      }
+
       if(bRes.ok) {
         let bHtml = '';
         document.querySelectorAll('.batch-dropdown').forEach(s => { s.innerHTML = '<option value="">All Batches / Select</option>'; });
@@ -387,15 +421,17 @@
         
         allBatches.forEach(b => {
           document.querySelectorAll('.batch-dropdown, .batch-dropdown-strict').forEach(s => s.innerHTML += `<option value="${b.BatchID}">${b.BatchName}</option>`);
+          
+          // Count Students in this batch
           const studentCount = allStudents.filter(s => String(s.BatchID) === String(b.BatchID)).length;
           
-          bHtml += `<tr class="border-b">
+          bHtml += `<tr class="border-b hover:bg-gray-50 transition">
             <td class="p-2">${b.BatchID}</td>
-            <td class="p-2">${b.BatchName}</td>
+            <td class="p-2 font-bold">${b.BatchName}</td>
             <td class="p-2">₹${b.DefaultFee}</td>
             <td class="p-2">${b.DueDay}</td>
-            <td class="p-2"><span class="bg-indigo-100 text-indigo-700 text-xs font-bold px-2 py-1 rounded"><i class="fa-solid fa-users mr-1"></i> ${studentCount}</span></td>
-            <td class="p-2"><button onclick="editBatch('${b.BatchID}')" class="text-blue-500 hover:text-blue-700"><i class="fa-solid fa-pen"></i></button></td>
+            <td class="p-2"><span class="bg-green-100 text-green-700 text-sm font-black px-3 py-1.5 rounded-lg shadow-sm border border-green-200"><i class="fa-solid fa-users mr-1"></i> ${studentCount}</span></td>
+            <td class="p-2"><button onclick="editBatch('${b.BatchID}')" class="text-blue-500 hover:text-blue-700 p-2"><i class="fa-solid fa-pen"></i></button></td>
           </tr>`;
         });
         document.getElementById('batchTableBody').innerHTML = bHtml;
@@ -497,7 +533,6 @@
       const matches = allStudents.filter(s => String(s.StudentID).toUpperCase().includes(input) || String(s.Name).toUpperCase().includes(input));
       if(matches.length === 0) { dropdown.classList.add('hidden'); return; }
       
-      // Limit to max 6 to prevent keyboard overlap on mobile
       matches.slice(0, 6).forEach(s => {
         const div = document.createElement('div');
         div.className = 'p-3 border-b hover:bg-blue-50 cursor-pointer text-sm font-medium text-gray-700 transition';
@@ -512,7 +547,6 @@
       dropdown.classList.remove('hidden');
     }
 
-    // Hide dropdown if clicked outside
     document.addEventListener('click', function(e) {
       if(!e.target.closest('#feeStudentInput') && !e.target.closest('#studentSearchDropdown')) {
         const dd = document.getElementById('studentSearchDropdown');
@@ -540,7 +574,6 @@
         return; 
       }
       
-      // Setup Student Details Info
       const student = allStudents.find(s => s.StudentID === validStudentId);
       if(student) {
         const batch = allBatches.find(b => b.BatchID === student.BatchID);
