@@ -55,6 +55,7 @@
       
       <!-- BATCHES TAB -->
       <div id="batches" class="tab-content active space-y-6">
+        
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
           <h2 class="text-2xl font-bold">Manage Batches</h2>
           <div class="bg-indigo-50 border border-indigo-200 text-indigo-800 px-5 py-2 rounded-xl shadow-sm flex items-center gap-3">
@@ -88,6 +89,7 @@
 
       <!-- STUDENTS TAB -->
       <div id="students" class="tab-content space-y-6">
+        
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
           <h2 class="text-2xl font-bold">Manage Students</h2>
           <div class="bg-indigo-50 border border-indigo-200 text-indigo-800 px-5 py-2 rounded-xl shadow-sm flex items-center gap-3">
@@ -102,10 +104,14 @@
         <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
           <div class="grid grid-cols-1 md:grid-cols-6 gap-3">
             <input type="text" id="sName" placeholder="Student Name" class="p-2 border rounded md:col-span-2">
+            
+            <!-- 🛡️ NEW: DEFAULT BLANK GENDER -->
             <select id="sGender" class="p-2 border rounded focus:outline-none focus:border-blue-500">
+              <option value="" disabled selected>Select Gender</option>
               <option value="Male">Male</option>
               <option value="Female">Female</option>
             </select>
+            
             <input type="text" id="sParent" placeholder="Parent Name" class="p-2 border rounded md:col-span-2">
             <input type="text" id="sPhone" placeholder="Parent Phone" class="p-2 border rounded">
             
@@ -195,7 +201,7 @@
         </div>
       </div>
 
-      <!-- DUES & BILLING TAB (CLEAN VERSION) -->
+      <!-- DUES & BILLING TAB -->
       <div id="dues" class="tab-content space-y-6">
         <h2 class="text-2xl font-bold mb-2">Dues & Billing</h2>
         
@@ -207,7 +213,6 @@
           </div>
         </div>
 
-        <!-- 1. Fee Collection -->
         <div id="view-feeAction" class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
           <h3 class="text-lg font-semibold mb-4"><i class="fa-solid fa-hand-holding-dollar text-green-500"></i> Fee Collection & Actions</h3>
           <div class="flex gap-2 mb-1">
@@ -236,7 +241,6 @@
           </div>
         </div>
 
-        <!-- 2. Generate Bills -->
         <div id="view-genBill" class="hidden bg-white p-6 rounded-lg shadow-sm border border-gray-100">
           <h3 class="text-lg font-semibold mb-4"><i class="fa-solid fa-file-invoice text-blue-500"></i> Generate Monthly Bills</h3>
           <p class="text-sm text-gray-500 mb-4">Create bills for an entire batch at once. Active students only.</p>
@@ -251,7 +255,6 @@
           </div>
         </div>
 
-        <!-- 3. Check Batch Dues -->
         <div id="view-batchDues" class="hidden bg-white p-6 rounded-lg shadow-sm border border-gray-100">
           <h3 class="text-lg font-semibold mb-4"><i class="fa-solid fa-magnifying-glass-dollar text-gray-700"></i> Check Batch Dues</h3>
           <div class="flex gap-2 mb-4">
@@ -362,13 +365,10 @@
     function switchTab(tabId) { document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active')); document.getElementById(tabId).classList.add('active'); if(window.innerWidth < 768) { toggleSidebar(); } }
     function cleanDate(isoString) { if(!isoString) return ''; const d = new Date(isoString); return d.toLocaleDateString('en-IN', {day:'2-digit', month:'2-digit', year:'numeric'}); }
 
-    // FETCH API WITH CACHE BUSTER
     async function fetchAPI(action, params = {}, showLoader = true) {
       if(showLoader) document.getElementById('globalLoader').classList.remove('hidden');
-      
       let url = `${SCRIPT_URL}?action=${action}&token=${token}&_t=${new Date().getTime()}`;
       Object.keys(params).forEach(k => url += `&${k}=${encodeURIComponent(params[k])}`);
-      
       try { 
         const res = await fetch(url); 
         const data = await res.json(); 
@@ -395,8 +395,9 @@
       if(sRes.ok) {
         const totalStu = allStudents.length;
         const activeStu = allStudents.filter(s => s.Status === 'ACTIVE').length;
+        
         const femaleCount = allStudents.filter(s => s.Gender === 'Female').length;
-        const maleCount = totalStu - femaleCount; 
+        const maleCount = allStudents.filter(s => s.Gender === 'Male').length; 
 
         const countText = `${totalStu} <span class="text-xs font-medium text-indigo-500 bg-indigo-100 px-2 py-1 rounded ml-1 tracking-normal">(${activeStu} Active | <span class="text-blue-600 font-bold">${maleCount} M</span> <span class="text-indigo-300">/</span> <span class="text-pink-500 font-bold">${femaleCount} F</span>)</span>`;
         
@@ -412,14 +413,23 @@
         allBatches.forEach(b => {
           document.querySelectorAll('.batch-dropdown, .batch-dropdown-strict').forEach(s => s.innerHTML += `<option value="${b.BatchID}">${b.BatchName}</option>`);
           
-          const studentCount = allStudents.filter(s => String(s.BatchID) === String(b.BatchID)).length;
+          const batchStudents = allStudents.filter(s => String(s.BatchID) === String(b.BatchID));
+          const studentCount = batchStudents.length;
+          const mCount = batchStudents.filter(s => s.Gender === 'Male').length;
+          const fCount = batchStudents.filter(s => s.Gender === 'Female').length;
           
+          // 🛡️ NEW BATCH WISE MALE/FEMALE COUNT UI
           bHtml += `<tr class="border-b hover:bg-gray-50 transition">
             <td class="p-2">${b.BatchID}</td>
             <td class="p-2 font-bold">${b.BatchName}</td>
             <td class="p-2">₹${b.DefaultFee}</td>
             <td class="p-2">${b.DueDay}</td>
-            <td class="p-2"><span class="bg-green-100 text-green-700 text-sm font-black px-3 py-1.5 rounded-lg shadow-sm border border-green-200"><i class="fa-solid fa-users mr-1"></i> ${studentCount}</span></td>
+            <td class="p-2">
+              <span class="bg-green-100 text-green-700 text-sm font-black px-3 py-1.5 rounded-lg shadow-sm border border-green-200">
+                <i class="fa-solid fa-users mr-1"></i> ${studentCount} 
+                <span class="text-[10px] text-green-600 font-bold ml-1 opacity-90">(${mCount} M / ${fCount} F)</span>
+              </span>
+            </td>
             <td class="p-2"><button onclick="editBatch('${b.BatchID}')" class="text-blue-500 hover:text-blue-700 p-2"><i class="fa-solid fa-pen"></i></button></td>
           </tr>`;
         });
@@ -435,10 +445,17 @@
 
           // 🛡️ Gender Badge Rendering
           const isFemale = s.Gender === 'Female';
-          const genderStr = isFemale ? 'Female' : 'Male';
-          const genderBadge = isFemale 
-            ? `<span class="bg-pink-100 text-pink-700 border border-pink-200 px-2 py-0.5 rounded text-[10px] font-bold shadow-sm"><i class="fa-solid fa-venus mr-1"></i>F</span>` 
-            : `<span class="bg-blue-100 text-blue-700 border border-blue-200 px-2 py-0.5 rounded text-[10px] font-bold shadow-sm"><i class="fa-solid fa-mars mr-1"></i>M</span>`;
+          const isMale = s.Gender === 'Male';
+          const genderStr = isFemale ? 'Female' : (isMale ? 'Male' : 'None');
+          
+          let genderBadge = '';
+          if (isFemale) {
+            genderBadge = `<span class="bg-pink-100 text-pink-700 border border-pink-200 px-2 py-0.5 rounded text-[10px] font-bold shadow-sm"><i class="fa-solid fa-venus mr-1"></i>F</span>`;
+          } else if (isMale) {
+            genderBadge = `<span class="bg-blue-100 text-blue-700 border border-blue-200 px-2 py-0.5 rounded text-[10px] font-bold shadow-sm"><i class="fa-solid fa-mars mr-1"></i>M</span>`;
+          } else {
+            genderBadge = `<span class="bg-gray-100 text-gray-500 border border-gray-200 px-2 py-0.5 rounded text-[10px] font-bold shadow-sm">-</span>`;
+          }
 
           sHtml += `<tr class="border-b student-row hover:bg-gray-50 transition">
             <td class="p-2 stu-id text-gray-500 text-xs font-mono">${s.StudentID}</td>
@@ -476,15 +493,19 @@
     }
 
     async function addStudent() {
+      const genderVal = document.getElementById('sGender').value;
+      if (!genderVal) return alert("Please select a Gender.");
+
       const res = await fetchAPI('addStudent', { 
         name: document.getElementById('sName').value, 
         parentName: document.getElementById('sParent').value, 
         parentPhone: document.getElementById('sPhone').value, 
-        gender: document.getElementById('sGender').value,
+        gender: genderVal,
         customFee: document.getElementById('sFee').value, 
         batchId: document.getElementById('sBatch').value,
         prevDue: document.getElementById('sPrevDue').value 
       });
+      
       if(res.ok) { 
         document.getElementById('newStudentResult').classList.remove('hidden'); 
         document.getElementById('newStudentText').innerText = `Success! ID: ${res.studentId} | Pass: ${res.password}`; 
@@ -499,13 +520,15 @@
       let bOpts = allBatches.map(b => `<option value="${b.BatchID}" ${b.BatchID===s.BatchID?'selected':''}>${b.BatchName}</option>`).join('');
       
       const isFemale = s.Gender === 'Female';
+      const isMale = s.Gender === 'Male';
 
       document.getElementById('modalBody').innerHTML = `
         <label class="text-sm font-bold text-gray-600">Student Name</label>
         <input type="text" id="mSName" value="${s.Name}" class="w-full border p-2 rounded mb-2">
         <label class="text-sm font-bold text-gray-600">Gender</label>
         <select id="mSGender" class="w-full border p-2 rounded mb-2 focus:outline-none">
-          <option value="Male" ${!isFemale ? 'selected' : ''}>Male</option>
+          <option value="" ${!isFemale && !isMale ? 'selected' : ''}>Select Gender</option>
+          <option value="Male" ${isMale ? 'selected' : ''}>Male</option>
           <option value="Female" ${isFemale ? 'selected' : ''}>Female</option>
         </select>
         <label class="text-sm font-bold text-gray-600">Parent Name</label>
@@ -542,7 +565,7 @@
           html += `
             <div class="flex flex-col md:flex-row gap-2 items-center">
               <div class="w-full md:w-1/4 font-semibold text-gray-700 bg-gray-50 p-3 border rounded text-sm">${b.BatchName} <span class="text-xs text-gray-400 font-normal">(${b.BatchID})</span></div>
-              <input type="url" id="folder_${b.BatchID}" value="${link}" placeholder="Google Drive Folder Link for ${b.BatchName}" class="flex-1 p-3 border rounded focus:outline-none focus:border-blue-500 w-full">
+              <input type="url" id="folder_${b.BatchID}" value="${link}" placeholder="Google Drive Folder Link for ${b.BatchName}" class="flex-1 p-3 border rounded focus:outline-none focus:border-blue-50 w-full">
               <button onclick="testDriveLink('folder_${b.BatchID}')" class="bg-gray-100 text-gray-700 px-4 py-3 rounded hover:bg-gray-200 w-full md:w-auto" title="Test Link"><i class="fa-solid fa-arrow-up-right-from-square"></i></button>
             </div>
           `;
@@ -568,7 +591,6 @@
       else alert("Please paste a link first.");
     }
 
-    // --- DUES TOGGLE LOGIC ---
     function toggleDuesView(view) {
       document.getElementById('view-genBill').classList.add('hidden');
       document.getElementById('view-feeAction').classList.add('hidden');
@@ -589,7 +611,6 @@
       }
     }
 
-    // --- SMART SEARCH DROPDOWN FOR FEES ---
     function handleStudentSearch() {
       const input = document.getElementById('feeStudentInput').value.toUpperCase();
       const dropdown = document.getElementById('studentSearchDropdown');
