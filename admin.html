@@ -169,63 +169,80 @@
         </div>
       </div>
 
-      <!-- DUES & BILLING TAB -->
+      <!-- DUES & BILLING TAB (CLEAN VERSION) -->
       <div id="dues" class="tab-content space-y-6">
-        <h2 class="text-2xl font-bold">Dues & Billing</h2>
+        <h2 class="text-2xl font-bold mb-2">Dues & Billing</h2>
         
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <!-- Monthly Bills -->
-          <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-            <h3 class="text-lg font-semibold mb-3"><i class="fa-solid fa-file-invoice text-blue-500"></i> Manage Monthly Bills</h3>
-            <select id="billBatch" class="p-2 border rounded w-full mb-3 batch-dropdown"><option value="">All Batches</option></select>
-            <div class="flex gap-2 mb-3">
-              <input type="number" id="billMonth" placeholder="Month (1-12)" class="p-2 border rounded w-full">
-              <input type="number" id="billYear" placeholder="Year" class="p-2 border rounded w-full">
-            </div>
-            <div class="grid grid-cols-2 gap-2 mt-3">
-              <button onclick="openBillAuth('generate')" class="bg-blue-600 text-white p-2 rounded w-full">Generate for Active</button>
-              <button onclick="openBillAuth('remove')" class="bg-red-500 text-white p-2 rounded w-full">Remove Stack</button>
-            </div>
-          </div>
-
-          <!-- Fee Collection -->
-          <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-            <h3 class="text-lg font-semibold mb-3"><i class="fa-solid fa-hand-holding-dollar text-green-500"></i> Fee Actions</h3>
-            
-            <div class="flex gap-2 mb-2">
-              <input type="text" id="feeStudentInput" list="studentDataList" placeholder="Search Student ID or Name..." oninput="loadStudentBills()" class="p-2 border rounded w-full">
-              <button onclick="manualRefreshBills(this)" class="bg-blue-50 text-blue-600 border border-blue-100 px-3 rounded hover:bg-blue-100 transition focus:outline-none" title="Refresh Selected Student's Bills">
-                <i class="fa-solid fa-rotate-right"></i>
-              </button>
-            </div>
-            <datalist id="studentDataList"></datalist>
-            
-            <div id="pendingBillsArea" class="bg-gray-50 p-2 rounded mb-3 max-h-40 overflow-y-auto hidden text-sm"></div>
-
-            <div class="flex gap-2 mb-2">
-              <input type="number" id="feeAmount" placeholder="Amount (₹)" class="p-2 border rounded w-full">
-              <select id="feeMode" class="p-2 border rounded w-1/2">
-                <option value="CASH">CASH</option><option value="UPI">UPI</option><option value="BANK">BANK</option>
-              </select>
-            </div>
-            <input type="text" id="feeNote" placeholder="Note (For Discounts or Records)" class="p-2 border rounded w-full mb-3">
-            
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-              <button onclick="collectDistributedFee()" class="bg-green-500 text-white p-2 rounded text-sm"><i class="fa-solid fa-check"></i> Collect</button>
-              <button onclick="applyDistributedDiscount()" class="bg-purple-500 text-white p-2 rounded text-sm"><i class="fa-solid fa-tag"></i> Discount</button>
-              <button onclick="addPrevDue()" class="bg-yellow-500 text-white p-2 rounded text-sm"><i class="fa-solid fa-plus"></i> Add Due</button>
-            </div>
+        <!-- Toggle Buttons -->
+        <div class="flex justify-center mb-6">
+          <div class="bg-white rounded-lg p-1 shadow-sm border border-gray-100 flex w-full max-w-3xl flex-col md:flex-row">
+            <button id="btnViewFeeAction" onclick="toggleDuesView('feeAction')" class="flex-1 py-2 px-1 text-sm font-bold rounded-md bg-blue-600 text-white shadow transition-all m-1">Fee Action</button>
+            <button id="btnViewGenBill" onclick="toggleDuesView('genBill')" class="flex-1 py-2 px-1 text-sm font-bold rounded-md text-gray-500 hover:text-gray-800 transition-all m-1">Generate Monthly Bill</button>
+            <button id="btnViewBatchDues" onclick="toggleDuesView('batchDues')" class="flex-1 py-2 px-1 text-sm font-bold rounded-md text-gray-500 hover:text-gray-800 transition-all m-1">Check Batch Dues</button>
           </div>
         </div>
 
-        <div class="bg-white p-4 md:p-6 rounded-lg shadow-sm border border-gray-100">
-          <h3 class="text-lg font-semibold mb-3">Check Batch Dues</h3>
+        <!-- 1. Fee Collection Section -->
+        <div id="view-feeAction" class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+          <h3 class="text-lg font-semibold mb-4"><i class="fa-solid fa-hand-holding-dollar text-green-500"></i> Fee Collection & Actions</h3>
+          
+          <div class="flex gap-2 mb-1">
+            <div class="relative w-full">
+              <input type="text" id="feeStudentInput" autocomplete="off" placeholder="Search Student ID or Name..." oninput="handleStudentSearch()" class="p-2 border rounded w-full focus:outline-none focus:border-blue-500">
+              <!-- Smart Dropdown replacing datalist -->
+              <div id="studentSearchDropdown" class="absolute left-0 right-0 bg-white border border-gray-200 w-full max-h-48 overflow-y-auto hidden z-50 rounded-b shadow-xl"></div>
+            </div>
+            <button onclick="manualRefreshBills(this)" class="bg-blue-50 text-blue-600 border border-blue-100 px-3 rounded hover:bg-blue-100 transition focus:outline-none flex-shrink-0" title="Refresh Selected Student's Bills">
+              <i class="fa-solid fa-rotate-right"></i>
+            </button>
+          </div>
+          
+          <!-- Student Details Line (Batch, Parent, Phone) -->
+          <div id="feeStudentDetails" class="hidden text-xs text-gray-500 mb-4 px-1 py-2 bg-gray-50 rounded border"></div>
+
+          <!-- Pending Bills Area -->
+          <div id="pendingBillsArea" class="bg-gray-50 p-2 rounded mb-4 max-h-40 overflow-y-auto hidden text-sm border border-gray-200"></div>
+
+          <div class="flex gap-2 mb-3 mt-4">
+            <input type="number" id="feeAmount" placeholder="Amount (₹)" class="p-2 border rounded w-full focus:outline-none focus:border-blue-500">
+            <select id="feeMode" class="p-2 border rounded w-1/2 focus:outline-none">
+              <option value="CASH">CASH</option><option value="UPI">UPI</option><option value="BANK">BANK</option>
+            </select>
+          </div>
+          <input type="text" id="feeNote" placeholder="Note (For Discounts or Records)" class="p-2 border rounded w-full mb-4 focus:outline-none">
+          
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <button onclick="collectDistributedFee()" class="bg-green-500 text-white p-3 rounded font-bold hover:bg-green-600 transition shadow-sm"><i class="fa-solid fa-check mr-1"></i> Collect Fee</button>
+            <button onclick="applyDistributedDiscount()" class="bg-purple-500 text-white p-3 rounded font-bold hover:bg-purple-600 transition shadow-sm"><i class="fa-solid fa-tag mr-1"></i> Apply Discount</button>
+            <button onclick="addPrevDue()" class="bg-yellow-500 text-white p-3 rounded font-bold hover:bg-yellow-600 transition shadow-sm"><i class="fa-solid fa-plus mr-1"></i> Add Manual Due</button>
+          </div>
+        </div>
+
+        <!-- 2. Generate Monthly Bills Section -->
+        <div id="view-genBill" class="hidden bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+          <h3 class="text-lg font-semibold mb-4"><i class="fa-solid fa-file-invoice text-blue-500"></i> Generate Monthly Bills</h3>
+          <p class="text-sm text-gray-500 mb-4">Create bills for an entire batch at once. Active students only.</p>
+          <select id="billBatch" class="p-2 border rounded w-full mb-3 batch-dropdown focus:outline-none"><option value="">All Batches</option></select>
           <div class="flex gap-2 mb-4">
-            <select id="viewDueBatch" class="p-2 border rounded w-full batch-dropdown"><option value="">All Batches</option></select>
-            <button onclick="loadBatchDues()" class="bg-gray-800 text-white px-4 rounded"><i class="fa-solid fa-search"></i></button>
+            <input type="number" id="billMonth" placeholder="Month (1-12)" class="p-2 border rounded w-full focus:outline-none">
+            <input type="number" id="billYear" placeholder="Year (e.g. 2026)" class="p-2 border rounded w-full focus:outline-none">
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <button onclick="openBillAuth('generate')" class="bg-blue-600 text-white p-3 rounded font-bold hover:bg-blue-700 shadow-sm"><i class="fa-solid fa-bolt mr-1"></i> Generate Bills</button>
+            <button onclick="openBillAuth('remove')" class="bg-red-500 text-white p-3 rounded font-bold hover:bg-red-600 shadow-sm"><i class="fa-solid fa-trash mr-1"></i> Remove Bills</button>
+          </div>
+        </div>
+
+        <!-- 3. Check Batch Dues Section -->
+        <div id="view-batchDues" class="hidden bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+          <h3 class="text-lg font-semibold mb-4"><i class="fa-solid fa-magnifying-glass-dollar text-gray-700"></i> Check Batch Dues</h3>
+          <div class="flex gap-2 mb-4">
+            <select id="viewDueBatch" class="p-3 border rounded w-full batch-dropdown focus:outline-none"><option value="">All Batches</option></select>
+            <button onclick="loadBatchDues()" class="bg-gray-800 text-white px-6 rounded font-bold shadow-sm hover:bg-gray-900 transition"><i class="fa-solid fa-search"></i> Search</button>
           </div>
           <div id="dueResults" class="space-y-2"></div>
         </div>
+
       </div>
 
       <!-- REPORTS TAB -->
@@ -253,7 +270,7 @@
         </div>
       </div>
 
-      <!-- NEW: MORE / RESOURCES TAB -->
+      <!-- MORE / RESOURCES TAB -->
       <div id="more" class="tab-content space-y-6">
         <h2 class="text-2xl font-bold">Settings & Resources</h2>
         
@@ -382,13 +399,11 @@
           </tr>`;
         });
         document.getElementById('batchTableBody').innerHTML = bHtml;
-        
-        // Load Folder Settings after batches are populated
         loadFolderSettings();
       }
 
       if(sRes.ok) {
-        let sHtml = '', dlHtml = '';
+        let sHtml = '';
         allStudents.forEach(s => {
           const statusBadge = s.Status === 'ACTIVE' ? `<span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-bold">ACTIVE</span>` : `<span class="bg-red-100 text-red-700 px-2 py-1 rounded text-xs font-bold">INACTIVE</span>`;
           const statusBtnIcon = s.Status === 'ACTIVE' ? `<button onclick="promptStatusChange('${s.StudentID}', 'INACTIVE')" class="text-red-500 hover:text-red-700" title="Make Inactive"><i class="fa-solid fa-power-off"></i></button>` : `<button onclick="promptStatusChange('${s.StudentID}', 'ACTIVE')" class="text-green-500 hover:text-green-700" title="Make Active"><i class="fa-solid fa-power-off"></i></button>`;
@@ -407,20 +422,17 @@
               ${statusBtnIcon}
             </td>
           </tr>`;
-          dlHtml += `<option value="${s.StudentID} - ${s.Name}"></option>`;
         });
         document.getElementById('studentTableBody').innerHTML = sHtml;
-        document.getElementById('studentDataList').innerHTML = dlHtml;
       }
       loadAllTests();
     };
 
-    // --- FOLDERS & RESOURCES (NEW) ---
+    // --- FOLDERS & RESOURCES ---
     async function loadFolderSettings() {
-      const res = await fetchAPI('getFolderLinks');
+      const res = await fetchAPI('getFolderLinks', {}, false);
       if (res.ok) {
         document.getElementById('globalResourceLink').value = res.globalUrl || '';
-        
         let html = '';
         allBatches.forEach(b => {
           const link = res.batchLinks[b.BatchID] || '';
@@ -442,12 +454,7 @@
       allBatches.forEach(b => {
         batchLinks[b.BatchID] = document.getElementById(`folder_${b.BatchID}`).value.trim();
       });
-      
-      const res = await fetchAPI('saveFolderLinks', {
-        globalUrl: globalUrl,
-        batchLinks: JSON.stringify(batchLinks)
-      });
-      
+      const res = await fetchAPI('saveFolderLinks', { globalUrl: globalUrl, batchLinks: JSON.stringify(batchLinks) });
       if (res.ok) alert("Folder mappings saved successfully!");
       else alert("Error saving folders: " + res.msg);
     }
@@ -456,6 +463,104 @@
       const url = document.getElementById(inputId).value.trim();
       if(url) window.open(url, '_blank');
       else alert("Please paste a link first.");
+    }
+
+    // --- DUES TOGGLE LOGIC ---
+    function toggleDuesView(view) {
+      document.getElementById('view-genBill').classList.add('hidden');
+      document.getElementById('view-feeAction').classList.add('hidden');
+      document.getElementById('view-batchDues').classList.add('hidden');
+      
+      const btns = ['btnViewGenBill', 'btnViewFeeAction', 'btnViewBatchDues'];
+      btns.forEach(b => document.getElementById(b).className = 'flex-1 py-2 px-1 text-sm font-bold rounded-md text-gray-500 hover:text-gray-800 transition-all m-1');
+      
+      if(view === 'genBill') {
+        document.getElementById('view-genBill').classList.remove('hidden');
+        document.getElementById('btnViewGenBill').className = 'flex-1 py-2 px-1 text-sm font-bold rounded-md bg-blue-600 text-white shadow transition-all m-1';
+      } else if(view === 'feeAction') {
+        document.getElementById('view-feeAction').classList.remove('hidden');
+        document.getElementById('btnViewFeeAction').className = 'flex-1 py-2 px-1 text-sm font-bold rounded-md bg-blue-600 text-white shadow transition-all m-1';
+      } else if(view === 'batchDues') {
+        document.getElementById('view-batchDues').classList.remove('hidden');
+        document.getElementById('btnViewBatchDues').className = 'flex-1 py-2 px-1 text-sm font-bold rounded-md bg-blue-600 text-white shadow transition-all m-1';
+      }
+    }
+
+    // --- SMART SEARCH DROPDOWN FOR FEES ---
+    function handleStudentSearch() {
+      const input = document.getElementById('feeStudentInput').value.toUpperCase();
+      const dropdown = document.getElementById('studentSearchDropdown');
+      dropdown.innerHTML = '';
+      
+      if(!input) { dropdown.classList.add('hidden'); return; }
+      
+      const matches = allStudents.filter(s => String(s.StudentID).toUpperCase().includes(input) || String(s.Name).toUpperCase().includes(input));
+      if(matches.length === 0) { dropdown.classList.add('hidden'); return; }
+      
+      // Limit to max 6 to prevent keyboard overlap on mobile
+      matches.slice(0, 6).forEach(s => {
+        const div = document.createElement('div');
+        div.className = 'p-3 border-b hover:bg-blue-50 cursor-pointer text-sm font-medium text-gray-700 transition';
+        div.innerHTML = `<span class="text-blue-500 font-mono text-xs mr-2">${s.StudentID}</span> ${s.Name}`;
+        div.onclick = () => {
+          document.getElementById('feeStudentInput').value = `${s.StudentID} - ${s.Name}`;
+          dropdown.classList.add('hidden');
+          loadStudentBills();
+        };
+        dropdown.appendChild(div);
+      });
+      dropdown.classList.remove('hidden');
+    }
+
+    // Hide dropdown if clicked outside
+    document.addEventListener('click', function(e) {
+      if(!e.target.closest('#feeStudentInput') && !e.target.closest('#studentSearchDropdown')) {
+        const dd = document.getElementById('studentSearchDropdown');
+        if(dd) dd.classList.add('hidden');
+      }
+    });
+
+    function getSelectedFeeStudent() {
+      let rawInput = document.getElementById('feeStudentInput').value.trim();
+      if(!rawInput) return null;
+      if (rawInput.includes(' - ')) return rawInput.split(' - ')[0].trim().toUpperCase();
+      let searchStr = rawInput.toUpperCase();
+      const matchedStudent = allStudents.find(s => String(s.StudentID).toUpperCase() === searchStr || String(s.Name).toUpperCase() === searchStr);
+      return matchedStudent ? matchedStudent.StudentID : null;
+    }
+
+    async function loadStudentBills() {
+      const validStudentId = getSelectedFeeStudent();
+      const detailDiv = document.getElementById('feeStudentDetails');
+      const pendingArea = document.getElementById('pendingBillsArea');
+
+      if(!validStudentId) { 
+        pendingArea.classList.add('hidden'); 
+        detailDiv.classList.add('hidden');
+        return; 
+      }
+      
+      // Setup Student Details Info
+      const student = allStudents.find(s => s.StudentID === validStudentId);
+      if(student) {
+        const batch = allBatches.find(b => b.BatchID === student.BatchID);
+        const batchName = batch ? batch.BatchName : student.BatchID;
+        const parent = student.ParentName || 'N/A';
+        const phone = student.ParentPhone || 'N/A';
+        detailDiv.innerHTML = `<i class="fa-solid fa-circle-info text-blue-500 mr-1"></i> <b>Batch:</b> ${batchName} | <b>Parent:</b> ${parent} | <b>Mob:</b> ${phone}`;
+        detailDiv.classList.remove('hidden');
+      }
+      
+      const res = await fetchAPI('studentFees', {studentId: validStudentId}, false); 
+      if(res.ok) {
+        let pending = res.bills.filter(b => b.status !== 'PAID').sort((a,b) => new Date(a.dueDate) - new Date(b.dueDate));
+        let html = ''; if(pending.length === 0) html = '<p class="text-green-600 text-center font-medium py-2">No pending bills!</p>';
+        pending.forEach(b => {
+          let left = b.amount - b.discount - b.paid;
+          html += `<label class="flex justify-between items-center bg-white p-2 border-b hover:bg-gray-50 cursor-pointer transition"><div class="flex items-center gap-3"><input type="checkbox" class="bill-check h-4 w-4 text-blue-600" value="${b.billId}" checked> <span class="font-medium text-gray-700">Due: ${cleanDate(b.dueDate)}</span></div> <span class="font-bold text-red-500">₹${left}</span></label>`;
+        });
+        pendingArea.innerHTML = html; pendingArea.classList.remove('hidden');
+      }
     }
 
     // --- STATUS TOGGLE LOGIC ---
@@ -626,36 +731,6 @@
       } else if(pendingBillAction === 'remove') {
         const res = await fetchAPI('deleteBills', {batchId: batchId, month: month, year: year, adminPass: pass});
         if(res.ok) alert(`Deleted ${res.count} bills.`); else alert('Error: ' + res.msg);
-      }
-    }
-
-    // --- SMART STUDENT SEARCH & FEES --- 
-    function getSelectedFeeStudent() {
-      let rawInput = document.getElementById('feeStudentInput').value.trim();
-      if(!rawInput) return null;
-      
-      if (rawInput.includes(' - ')) {
-        return rawInput.split(' - ')[0].trim().toUpperCase();
-      }
-      
-      let searchStr = rawInput.toUpperCase();
-      const matchedStudent = allStudents.find(s => String(s.StudentID).toUpperCase() === searchStr || String(s.Name).toUpperCase() === searchStr);
-      return matchedStudent ? matchedStudent.StudentID : null;
-    }
-
-    async function loadStudentBills() {
-      const validStudentId = getSelectedFeeStudent();
-      if(!validStudentId) { document.getElementById('pendingBillsArea').classList.add('hidden'); return; }
-      
-      const res = await fetchAPI('studentFees', {studentId: validStudentId}, false); 
-      if(res.ok) {
-        let pending = res.bills.filter(b => b.status !== 'PAID').sort((a,b) => new Date(a.dueDate) - new Date(b.dueDate));
-        let html = ''; if(pending.length === 0) html = '<p class="text-green-600 text-center font-medium py-2">No pending bills!</p>';
-        pending.forEach(b => {
-          let left = b.amount - b.discount - b.paid;
-          html += `<label class="flex justify-between items-center bg-white p-2 border-b hover:bg-gray-50 cursor-pointer transition"><div class="flex items-center gap-3"><input type="checkbox" class="bill-check h-4 w-4 text-blue-600" value="${b.billId}" checked> <span class="font-medium text-gray-700">Due: ${cleanDate(b.dueDate)}</span></div> <span class="font-bold text-red-500">₹${left}</span></label>`;
-        });
-        document.getElementById('pendingBillsArea').innerHTML = html; document.getElementById('pendingBillsArea').classList.remove('hidden');
       }
     }
 
