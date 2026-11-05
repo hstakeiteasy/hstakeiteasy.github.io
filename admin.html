@@ -46,7 +46,7 @@
       <button onclick="switchTab('marks')" class="w-full text-left p-3 rounded hover:bg-blue-50 font-medium"><i class="fa-solid fa-award w-6 text-yellow-500"></i> Marks & Tests</button>
       <button onclick="switchTab('dues')" class="w-full text-left p-3 rounded hover:bg-blue-50 font-medium"><i class="fa-solid fa-file-invoice-dollar w-6 text-green-500"></i> Dues & Billing</button>
       <button onclick="switchTab('reports')" class="w-full text-left p-3 rounded hover:bg-blue-50 font-medium"><i class="fa-solid fa-chart-line w-6 text-gray-500"></i> Reports</button>
-      <button onclick="window.location.href='more.html'" class="w-full text-left p-3 rounded hover:bg-blue-50 font-medium"><i class="fa-solid fa-ellipsis w-6 text-indigo-500"></i> More</button>
+      <button onclick="switchTab('more')" class="w-full text-left p-3 rounded hover:bg-blue-50 font-medium"><i class="fa-solid fa-ellipsis w-6 text-indigo-500"></i> More</button>
       <button onclick="logout()" class="w-full text-left p-3 rounded hover:bg-red-50 text-red-600 font-medium md:hidden mt-10"><i class="fa-solid fa-power-off w-6"></i> Logout</button>
     </div>
 
@@ -72,7 +72,7 @@
                 <th class="p-2">Name</th>
                 <th class="p-2">Fee</th>
                 <th class="p-2">Due Day</th>
-                <th class="p-2">Students</th> <!-- NEW COLUMN FOR COUNT -->
+                <th class="p-2">Students</th>
                 <th class="p-2">Action</th>
               </tr>
             </thead>
@@ -252,6 +252,34 @@
           </div>
         </div>
       </div>
+
+      <!-- NEW: MORE / RESOURCES TAB -->
+      <div id="more" class="tab-content space-y-6">
+        <h2 class="text-2xl font-bold">Settings & Resources</h2>
+        
+        <!-- Global Resources -->
+        <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+          <h3 class="text-lg font-bold mb-2"><i class="fa-brands fa-google-drive text-blue-500"></i> Common Resource Folder</h3>
+          <p class="text-sm text-gray-500 mb-4">This folder will be visible to ALL students in their Material section.</p>
+          <div class="flex gap-2">
+            <input type="url" id="globalResourceLink" placeholder="Paste Google Drive Folder Link here..." class="flex-1 p-3 border rounded focus:outline-none focus:border-blue-500">
+            <button onclick="testDriveLink('globalResourceLink')" class="bg-gray-100 text-gray-700 px-4 rounded hover:bg-gray-200" title="Test Link"><i class="fa-solid fa-arrow-up-right-from-square"></i></button>
+          </div>
+        </div>
+
+        <!-- Batch Wise Folders -->
+        <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+          <h3 class="text-lg font-bold mb-2"><i class="fa-solid fa-folder-tree text-green-500"></i> Batch-Wise Class Folders</h3>
+          <p class="text-sm text-gray-500 mb-4">Map a specific Google Drive folder (e.g. Class 5, Class 12) to each batch. Students will only see the folder assigned to their batch.</p>
+          
+          <div id="batchFolderContainer" class="space-y-3 mb-6">
+            <p class="text-gray-400 text-sm italic">Loading batches...</p>
+          </div>
+          
+          <button onclick="saveFolderSettings()" class="bg-blue-600 text-white font-bold px-6 py-3 rounded-lg shadow-md w-full md:w-auto"><i class="fa-solid fa-floppy-disk"></i> Save Folder Mappings</button>
+        </div>
+      </div>
+
     </div>
   </div>
 
@@ -329,14 +357,12 @@
     document.getElementById('attDate').valueAsDate = new Date(); document.getElementById('testDate').valueAsDate = new Date();
 
     window.onload = async () => {
-      // Fetch both arrays first so we can calculate the counts
       const bRes = await fetchAPI('getBatches');
       const sRes = await fetchAPI('getStudents');
       
       if(bRes.ok) allBatches = bRes.data;
       if(sRes.ok) allStudents = sRes.data;
 
-      // Render Batches with Student Count
       if(bRes.ok) {
         let bHtml = '';
         document.querySelectorAll('.batch-dropdown').forEach(s => { s.innerHTML = '<option value="">All Batches / Select</option>'; });
@@ -344,8 +370,6 @@
         
         allBatches.forEach(b => {
           document.querySelectorAll('.batch-dropdown, .batch-dropdown-strict').forEach(s => s.innerHTML += `<option value="${b.BatchID}">${b.BatchName}</option>`);
-          
-          // Calculate student count
           const studentCount = allStudents.filter(s => String(s.BatchID) === String(b.BatchID)).length;
           
           bHtml += `<tr class="border-b">
@@ -358,9 +382,11 @@
           </tr>`;
         });
         document.getElementById('batchTableBody').innerHTML = bHtml;
+        
+        // Load Folder Settings after batches are populated
+        loadFolderSettings();
       }
 
-      // Render Students
       if(sRes.ok) {
         let sHtml = '', dlHtml = '';
         allStudents.forEach(s => {
@@ -388,6 +414,49 @@
       }
       loadAllTests();
     };
+
+    // --- FOLDERS & RESOURCES (NEW) ---
+    async function loadFolderSettings() {
+      const res = await fetchAPI('getFolderLinks');
+      if (res.ok) {
+        document.getElementById('globalResourceLink').value = res.globalUrl || '';
+        
+        let html = '';
+        allBatches.forEach(b => {
+          const link = res.batchLinks[b.BatchID] || '';
+          html += `
+            <div class="flex flex-col md:flex-row gap-2 items-center">
+              <div class="w-full md:w-1/4 font-semibold text-gray-700 bg-gray-50 p-3 border rounded text-sm">${b.BatchName} <span class="text-xs text-gray-400 font-normal">(${b.BatchID})</span></div>
+              <input type="url" id="folder_${b.BatchID}" value="${link}" placeholder="Google Drive Folder Link for ${b.BatchName}" class="flex-1 p-3 border rounded focus:outline-none focus:border-blue-500 w-full">
+              <button onclick="testDriveLink('folder_${b.BatchID}')" class="bg-gray-100 text-gray-700 px-4 py-3 rounded hover:bg-gray-200 w-full md:w-auto" title="Test Link"><i class="fa-solid fa-arrow-up-right-from-square"></i></button>
+            </div>
+          `;
+        });
+        document.getElementById('batchFolderContainer').innerHTML = html;
+      }
+    }
+
+    async function saveFolderSettings() {
+      const globalUrl = document.getElementById('globalResourceLink').value.trim();
+      const batchLinks = {};
+      allBatches.forEach(b => {
+        batchLinks[b.BatchID] = document.getElementById(`folder_${b.BatchID}`).value.trim();
+      });
+      
+      const res = await fetchAPI('saveFolderLinks', {
+        globalUrl: globalUrl,
+        batchLinks: JSON.stringify(batchLinks)
+      });
+      
+      if (res.ok) alert("Folder mappings saved successfully!");
+      else alert("Error saving folders: " + res.msg);
+    }
+
+    function testDriveLink(inputId) {
+      const url = document.getElementById(inputId).value.trim();
+      if(url) window.open(url, '_blank');
+      else alert("Please paste a link first.");
+    }
 
     // --- STATUS TOGGLE LOGIC ---
     let pendingStatusChange = {};
