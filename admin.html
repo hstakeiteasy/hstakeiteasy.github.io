@@ -55,7 +55,6 @@
       
       <!-- BATCHES TAB -->
       <div id="batches" class="tab-content active space-y-6">
-        
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
           <h2 class="text-2xl font-bold">Manage Batches</h2>
           <div class="bg-indigo-50 border border-indigo-200 text-indigo-800 px-5 py-2 rounded-xl shadow-sm flex items-center gap-3">
@@ -89,7 +88,6 @@
 
       <!-- STUDENTS TAB -->
       <div id="students" class="tab-content space-y-6">
-        
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
           <h2 class="text-2xl font-bold">Manage Students</h2>
           <div class="bg-indigo-50 border border-indigo-200 text-indigo-800 px-5 py-2 rounded-xl shadow-sm flex items-center gap-3">
@@ -105,7 +103,6 @@
           <div class="grid grid-cols-1 md:grid-cols-6 gap-3">
             <input type="text" id="sName" placeholder="Student Name" class="p-2 border rounded md:col-span-2">
             
-            <!-- 🛡️ NEW: DEFAULT BLANK GENDER -->
             <select id="sGender" class="p-2 border rounded focus:outline-none focus:border-blue-500">
               <option value="" disabled selected>Select Gender</option>
               <option value="Male">Male</option>
@@ -305,7 +302,7 @@
 
         <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
           <h3 class="text-lg font-bold mb-2"><i class="fa-solid fa-folder-tree text-green-500"></i> Batch-Wise Class Folders</h3>
-          <p class="text-sm text-gray-500 mb-4">Map a specific Google Drive folder to each batch. Students will only see the folder assigned to their batch.</p>
+          <p class="text-sm text-gray-500 mb-4">Map a specific Google Drive folder to each batch.</p>
           <div id="batchFolderContainer" class="space-y-3 mb-6"><p class="text-gray-400 text-sm italic">Loading batches...</p></div>
           <button onclick="saveFolderSettings()" class="bg-blue-600 text-white font-bold px-6 py-3 rounded-lg shadow-md w-full md:w-auto"><i class="fa-solid fa-floppy-disk"></i> Save Folder Mappings</button>
         </div>
@@ -391,11 +388,9 @@
       if(bRes.ok) allBatches = bRes.data;
       if(sRes.ok) allStudents = sRes.data;
 
-      // 🛡️ POPULATE TOP TOTALS WITH MALE/FEMALE STATS
       if(sRes.ok) {
         const totalStu = allStudents.length;
         const activeStu = allStudents.filter(s => s.Status === 'ACTIVE').length;
-        
         const femaleCount = allStudents.filter(s => s.Gender === 'Female').length;
         const maleCount = allStudents.filter(s => s.Gender === 'Male').length; 
 
@@ -418,7 +413,6 @@
           const mCount = batchStudents.filter(s => s.Gender === 'Male').length;
           const fCount = batchStudents.filter(s => s.Gender === 'Female').length;
           
-          // 🛡️ NEW BATCH WISE MALE/FEMALE COUNT UI
           bHtml += `<tr class="border-b hover:bg-gray-50 transition">
             <td class="p-2">${b.BatchID}</td>
             <td class="p-2 font-bold">${b.BatchName}</td>
@@ -443,7 +437,6 @@
           const statusBadge = s.Status === 'ACTIVE' ? `<span class="bg-green-100 text-green-700 px-2 py-1 rounded text-[10px] font-bold">ACTIVE</span>` : `<span class="bg-red-100 text-red-700 px-2 py-1 rounded text-[10px] font-bold">INACTIVE</span>`;
           const statusBtnIcon = s.Status === 'ACTIVE' ? `<button onclick="promptStatusChange('${s.StudentID}', 'INACTIVE')" class="text-red-500 hover:text-red-700" title="Make Inactive"><i class="fa-solid fa-power-off"></i></button>` : `<button onclick="promptStatusChange('${s.StudentID}', 'ACTIVE')" class="text-green-500 hover:text-green-700" title="Make Active"><i class="fa-solid fa-power-off"></i></button>`;
 
-          // 🛡️ Gender Badge Rendering
           const isFemale = s.Gender === 'Female';
           const isMale = s.Gender === 'Male';
           const genderStr = isFemale ? 'Female' : (isMale ? 'Male' : 'None');
@@ -478,7 +471,6 @@
       loadAllTests();
     };
 
-    // --- SMART SEARCH & GENDER FILTER ---
     function filterStudents() {
       let searchFilter = document.getElementById('studentSearch').value.toUpperCase();
       let genderFilter = document.getElementById('studentGenderFilter').value;
@@ -565,7 +557,7 @@
           html += `
             <div class="flex flex-col md:flex-row gap-2 items-center">
               <div class="w-full md:w-1/4 font-semibold text-gray-700 bg-gray-50 p-3 border rounded text-sm">${b.BatchName} <span class="text-xs text-gray-400 font-normal">(${b.BatchID})</span></div>
-              <input type="url" id="folder_${b.BatchID}" value="${link}" placeholder="Google Drive Folder Link for ${b.BatchName}" class="flex-1 p-3 border rounded focus:outline-none focus:border-blue-50 w-full">
+              <input type="url" id="folder_${b.BatchID}" value="${link}" placeholder="Google Drive Folder Link for ${b.BatchName}" class="flex-1 p-3 border rounded focus:outline-none focus:border-blue-500 w-full">
               <button onclick="testDriveLink('folder_${b.BatchID}')" class="bg-gray-100 text-gray-700 px-4 py-3 rounded hover:bg-gray-200 w-full md:w-auto" title="Test Link"><i class="fa-solid fa-arrow-up-right-from-square"></i></button>
             </div>
           `;
@@ -759,9 +751,15 @@
       if(res.ok) { alert("Test Created!"); document.getElementById('testName').value = ''; document.getElementById('testMax').value = ''; await loadAllTests(); }
     }
 
+    // 🛡️ STRICT FIX FOR MARKS FETCHING ISSUE
     async function fetchMarks() {
-      const testId = document.getElementById('marksTestSelect').value; if(!testId) return alert("Select a test first");
-      const res = await fetchAPI('getMarks', {testId: testId});
+      const batchId = document.getElementById('marksBatchSelect').value;
+      const testId = document.getElementById('marksTestSelect').value; 
+      
+      if(!batchId || !testId) return alert("Select a Batch and Test first");
+      
+      const res = await fetchAPI('getMarks', {testId: testId, batchId: batchId});
+      
       if(res.ok) {
         document.getElementById('marksMaxLabel').innerText = `Max Marks: ${res.maxMarks}`;
         let html = '';
