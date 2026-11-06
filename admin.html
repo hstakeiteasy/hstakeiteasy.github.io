@@ -10,7 +10,20 @@
   <style> 
     body { background-color: #f1f5f9; } 
     .tab-content { display: none; } 
-    .tab-content.active { display: block; } 
+    .tab-content.active { display: block; animation: fadeIn 0.3s ease-in-out; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    /* Button Hover Enhancements */
+    .btn-primary {
+      background-color: #2563eb; color: white; padding: 0.5rem 1.25rem; border-radius: 0.5rem; font-weight: 700;
+      box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); transition: all 0.2s ease-in-out;
+    }
+    .btn-primary:hover {
+      background-color: #1d4ed8; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); transform: translateY(-2px);
+    }
+    .btn-primary:active { transform: scale(0.95); }
   </style>
 </head>
 <body class="text-gray-800">
@@ -27,7 +40,7 @@
       <button onclick="toggleSidebar()" class="md:hidden text-gray-600 text-2xl focus:outline-none"><i class="fa-solid fa-bars"></i></button>
       <div class="text-xl font-bold text-blue-600"><i class="fa-solid fa-shield-halved"></i> Admin Portal</div>
     </div>
-    <button onclick="logout()" class="hidden md:block text-red-500 hover:text-red-700 font-medium"><i class="fa-solid fa-power-off"></i> Logout</button>
+    <button onclick="logout()" class="hidden md:block text-red-500 hover:text-red-700 font-bold transition"><i class="fa-solid fa-power-off"></i> Logout</button>
   </nav>
 
   <div class="flex min-h-screen relative overflow-hidden">
@@ -35,19 +48,21 @@
     <!-- Mobile Sidebar Overlay -->
     <div id="sidebarOverlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black bg-opacity-50 z-30 hidden md:hidden transition-opacity"></div>
 
-    <!-- Sidebar Menu -->
+    <!-- 🛡️ FIXED SIDEBAR HOVER & ACTIVE STATES -->
     <div id="sidebar" class="fixed md:static inset-y-0 left-0 transform -translate-x-full md:translate-x-0 transition-transform duration-200 ease-in-out w-64 bg-white shadow-md p-4 space-y-2 z-40 h-full overflow-y-auto">
       <div class="flex justify-end md:hidden mb-4">
         <button onclick="toggleSidebar()" class="text-gray-500 text-2xl focus:outline-none"><i class="fa-solid fa-xmark"></i></button>
       </div>
-      <button onclick="switchTab('batches')" class="w-full text-left p-3 rounded hover:bg-blue-50 font-medium"><i class="fa-solid fa-users-rectangle w-6 text-blue-500"></i> Batches</button>
-      <button onclick="switchTab('students')" class="w-full text-left p-3 rounded hover:bg-blue-50 font-medium"><i class="fa-solid fa-user-graduate w-6 text-blue-500"></i> Students</button>
-      <button onclick="switchTab('attendance')" class="w-full text-left p-3 rounded hover:bg-blue-50 font-medium"><i class="fa-regular fa-calendar-check w-6 text-purple-500"></i> Attendance</button>
-      <button onclick="switchTab('marks')" class="w-full text-left p-3 rounded hover:bg-blue-50 font-medium"><i class="fa-solid fa-award w-6 text-yellow-500"></i> Marks & Tests</button>
-      <button onclick="switchTab('dues')" class="w-full text-left p-3 rounded hover:bg-blue-50 font-medium"><i class="fa-solid fa-file-invoice-dollar w-6 text-green-500"></i> Dues & Billing</button>
-      <button onclick="switchTab('reports')" class="w-full text-left p-3 rounded hover:bg-blue-50 font-medium"><i class="fa-solid fa-chart-line w-6 text-gray-500"></i> Reports</button>
-      <button onclick="switchTab('more')" class="w-full text-left p-3 rounded hover:bg-blue-50 font-medium"><i class="fa-solid fa-ellipsis w-6 text-indigo-500"></i> More</button>
-      <button onclick="logout()" class="w-full text-left p-3 rounded hover:bg-red-50 text-red-600 font-medium md:hidden mt-10"><i class="fa-solid fa-power-off w-6"></i> Logout</button>
+      
+      <button id="nav-batches" onclick="switchTab('batches')" class="nav-btn w-full text-left p-3 rounded-lg font-medium text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-all"><i class="fa-solid fa-users-rectangle w-6 text-blue-500"></i> Batches</button>
+      <button id="nav-students" onclick="switchTab('students')" class="nav-btn w-full text-left p-3 rounded-lg font-medium text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-all"><i class="fa-solid fa-user-graduate w-6 text-blue-500"></i> Students</button>
+      <button id="nav-attendance" onclick="switchTab('attendance')" class="nav-btn w-full text-left p-3 rounded-lg font-medium text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-all"><i class="fa-regular fa-calendar-check w-6 text-purple-500"></i> Attendance</button>
+      <button id="nav-marks" onclick="switchTab('marks')" class="nav-btn w-full text-left p-3 rounded-lg font-medium text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-all"><i class="fa-solid fa-award w-6 text-yellow-500"></i> Marks & Tests</button>
+      <button id="nav-dues" onclick="switchTab('dues')" class="nav-btn w-full text-left p-3 rounded-lg font-medium text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-all"><i class="fa-solid fa-file-invoice-dollar w-6 text-green-500"></i> Dues & Billing</button>
+      <button id="nav-reports" onclick="switchTab('reports')" class="nav-btn w-full text-left p-3 rounded-lg font-medium text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-all"><i class="fa-solid fa-chart-line w-6 text-gray-500"></i> Reports</button>
+      <button id="nav-more" onclick="switchTab('more')" class="nav-btn w-full text-left p-3 rounded-lg font-medium text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-all"><i class="fa-solid fa-ellipsis w-6 text-indigo-500"></i> More</button>
+      
+      <button onclick="logout()" class="w-full text-left p-3 rounded-lg hover:bg-red-50 text-red-600 font-bold transition-all md:hidden mt-10"><i class="fa-solid fa-power-off w-6"></i> Logout</button>
     </div>
 
     <!-- Main Content -->
@@ -72,19 +87,14 @@
             <input type="text" id="bName" placeholder="Batch Name" class="p-2 border rounded focus:outline-none focus:border-blue-500">
             <input type="number" id="bFee" placeholder="Fee (₹)" class="p-2 border rounded focus:outline-none focus:border-blue-500">
             <input type="number" id="bDueDay" placeholder="Due Day" class="p-2 border rounded focus:outline-none focus:border-blue-500">
-            <button onclick="addBatch()" class="bg-blue-600 text-white px-4 py-2 rounded font-bold shadow-sm hover:bg-blue-700 transition">Add Batch</button>
+            <button onclick="addBatch()" class="btn-primary">Add Batch</button>
           </div>
         </div>
         <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100 overflow-x-auto">
           <table class="w-full text-left border-collapse whitespace-nowrap">
             <thead>
               <tr class="bg-gray-100">
-                <th class="p-2">ID</th>
-                <th class="p-2">Name</th>
-                <th class="p-2">Fee</th>
-                <th class="p-2">Due Day</th>
-                <th class="p-2">Students</th>
-                <th class="p-2 text-center">Action</th>
+                <th class="p-2">ID</th><th class="p-2">Name</th><th class="p-2">Fee</th><th class="p-2">Due Day</th><th class="p-2">Students</th><th class="p-2 text-center">Action</th>
               </tr>
             </thead>
             <tbody id="batchTableBody"></tbody>
@@ -122,7 +132,7 @@
             <input type="number" id="sFee" placeholder="Custom Fee (Opt)" class="p-2 border rounded md:col-span-2 focus:outline-none focus:border-blue-500">
             <input type="number" id="sPrevDue" placeholder="Previous Due (Opt)" class="p-2 border rounded focus:outline-none focus:border-blue-500">
             <select id="sBatch" class="p-2 border rounded batch-dropdown md:col-span-2 focus:outline-none focus:border-blue-500"><option value="">Select Batch</option></select>
-            <button onclick="addStudent()" class="bg-blue-600 text-white p-2 rounded font-bold shadow-sm hover:bg-blue-700 transition">Add Student</button>
+            <button onclick="addStudent()" class="btn-primary">Add Student</button>
           </div>
           <div id="newStudentResult" class="mt-4 p-4 bg-green-50 border border-green-200 rounded hidden">
             <p class="text-green-800 font-medium" id="newStudentText"></p>
@@ -133,15 +143,14 @@
         </div>
         
         <div class="bg-white p-4 md:p-6 rounded-lg shadow-sm border border-gray-100 overflow-x-auto">
-          <!-- 🛡️ NEW: BATCH FILTER ADDED IN THE STUDENT SECTION -->
           <div class="flex flex-col md:flex-row gap-2 mb-4">
-            <input type="text" id="studentSearch" onkeyup="filterStudents()" placeholder="🔍 Search by Name or ID..." class="w-full md:w-1/2 p-3 border border-gray-300 rounded focus:outline-none focus:border-blue-500">
+            <input type="text" id="studentSearch" onkeyup="filterStudents()" placeholder="🔍 Search by Name or ID..." class="w-full md:w-1/2 p-3 border border-gray-300 rounded focus:outline-none focus:border-blue-500 transition">
             
-            <select id="studentBatchFilter" onchange="filterStudents()" class="p-3 border border-gray-300 rounded focus:outline-none bg-gray-50 text-gray-700 font-medium batch-dropdown w-full md:w-1/4">
+            <select id="studentBatchFilter" onchange="filterStudents()" class="p-3 border border-gray-300 rounded focus:outline-none bg-gray-50 text-gray-700 font-medium batch-dropdown w-full md:w-1/4 transition">
               <option value="">All Batches</option>
             </select>
             
-            <select id="studentGenderFilter" onchange="filterStudents()" class="p-3 border border-gray-300 rounded focus:outline-none bg-gray-50 text-gray-700 font-medium w-full md:w-1/4">
+            <select id="studentGenderFilter" onchange="filterStudents()" class="p-3 border border-gray-300 rounded focus:outline-none bg-gray-50 text-gray-700 font-medium w-full md:w-1/4 transition">
               <option value="ALL">All Genders</option>
               <option value="Male">Male Only</option>
               <option value="Female">Female Only</option>
@@ -168,14 +177,14 @@
           <div class="flex flex-col md:flex-row gap-3 mb-4">
             <input type="date" id="attDate" class="p-2 border rounded w-full md:w-1/3 focus:outline-none focus:border-blue-500">
             <select id="attBatch" class="p-2 border rounded batch-dropdown-strict w-full md:w-1/3 focus:outline-none focus:border-blue-500"><option value="">Select Batch</option></select>
-            <button onclick="fetchAttendance()" class="bg-blue-600 text-white px-4 py-2 rounded w-full md:w-auto font-bold hover:bg-blue-700 transition shadow-sm">Fetch Active Roster</button>
+            <button onclick="fetchAttendance()" class="btn-primary w-full md:w-auto">Fetch Active Roster</button>
           </div>
           <div id="attendanceArea" class="hidden">
             <table class="w-full text-left border-collapse whitespace-nowrap mt-4">
               <thead><tr class="bg-gray-100 text-sm"><th class="p-2">ID</th><th class="p-2 w-full">Name</th><th class="p-2 text-center">Status</th></tr></thead>
               <tbody id="attendanceTableBody"></tbody>
             </table>
-            <button onclick="saveAttendance()" class="mt-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-md font-bold w-full hover:bg-green-600 transition"><i class="fa-solid fa-floppy-disk"></i> Save Attendance</button>
+            <button onclick="saveAttendance()" class="mt-4 w-full bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-lg shadow-md font-bold transition transform hover:-translate-y-0.5 active:scale-95"><i class="fa-solid fa-floppy-disk"></i> Save Attendance</button>
           </div>
         </div>
       </div>
@@ -191,15 +200,17 @@
             <input type="date" id="testDate" class="p-2 border rounded focus:outline-none focus:border-blue-500">
             <select id="testBatch" class="p-2 border rounded batch-dropdown-strict focus:outline-none focus:border-blue-500"><option value="">Select Batch</option></select>
           </div>
-          <button onclick="addTest()" class="mt-3 bg-blue-600 text-white px-4 py-2 rounded font-bold hover:bg-blue-700 transition shadow-sm">Create Test</button>
+          <button onclick="addTest()" class="btn-primary mt-3">Create Test</button>
         </div>
 
         <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
           <h3 class="text-lg font-bold mb-3">Enter Test Marks</h3>
           <div class="flex gap-2 mb-4">
-            <select id="marksBatchSelect" class="p-2 border rounded w-1/3 batch-dropdown-strict focus:outline-none focus:border-blue-500" onchange="loadTestsForBatch()"><option value="">Select Batch</option></select>
-            <select id="marksTestSelect" class="p-2 border rounded w-1/3 focus:outline-none focus:border-blue-500"><option value="">Select Test...</option></select>
-            <button onclick="fetchMarks()" class="bg-blue-600 text-white px-4 py-2 rounded font-bold hover:bg-blue-700 transition shadow-sm">Load Active Roster</button>
+            <select id="marksBatchSelect" class="p-2 border rounded w-1/3 batch-dropdown-strict focus:outline-none focus:border-blue-500 transition" onchange="loadTestsForBatch()"><option value="">Select Batch</option></select>
+            <select id="marksTestSelect" class="p-2 border rounded w-1/3 focus:outline-none focus:border-blue-500 transition"><option value="">Select Test...</option></select>
+            
+            <!-- 🛡️ FIXED LOAD ACTIVE ROSTER BUTTON EFFECT -->
+            <button onclick="fetchMarks()" class="btn-primary">Load Active Roster</button>
           </div>
           <div id="marksArea" class="hidden">
             <p id="marksMaxLabel" class="text-gray-500 font-bold mb-2"></p>
@@ -207,7 +218,7 @@
               <thead><tr class="bg-gray-100 text-sm"><th class="p-2">ID</th><th class="p-2 w-full">Name</th><th class="p-2">Marks Obtained</th></tr></thead>
               <tbody id="marksTableBody"></tbody>
             </table>
-            <button onclick="saveMarks()" class="mt-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-md font-bold w-full hover:bg-green-600 transition"><i class="fa-solid fa-floppy-disk"></i> Save Marks</button>
+            <button onclick="saveMarks()" class="mt-4 w-full bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-lg shadow-md font-bold transition transform hover:-translate-y-0.5 active:scale-95"><i class="fa-solid fa-floppy-disk"></i> Save Marks</button>
           </div>
         </div>
       </div>
@@ -219,8 +230,8 @@
         <div class="flex justify-center mb-6">
           <div class="bg-white rounded-lg p-1 shadow-sm border border-gray-100 flex w-full max-w-3xl flex-col md:flex-row">
             <button id="btnViewFeeAction" onclick="toggleDuesView('feeAction')" class="flex-1 py-2 px-1 text-sm font-bold rounded-md bg-blue-600 text-white shadow transition-all m-1">Fee Action</button>
-            <button id="btnViewGenBill" onclick="toggleDuesView('genBill')" class="flex-1 py-2 px-1 text-sm font-bold rounded-md text-gray-500 hover:text-gray-800 transition-all m-1">Generate Monthly Bill</button>
-            <button id="btnViewBatchDues" onclick="toggleDuesView('batchDues')" class="flex-1 py-2 px-1 text-sm font-bold rounded-md text-gray-500 hover:text-gray-800 transition-all m-1">Check Batch Dues</button>
+            <button id="btnViewGenBill" onclick="toggleDuesView('genBill')" class="flex-1 py-2 px-1 text-sm font-bold rounded-md text-gray-500 hover:bg-gray-100 hover:text-gray-800 transition-all m-1">Generate Monthly Bill</button>
+            <button id="btnViewBatchDues" onclick="toggleDuesView('batchDues')" class="flex-1 py-2 px-1 text-sm font-bold rounded-md text-gray-500 hover:bg-gray-100 hover:text-gray-800 transition-all m-1">Check Batch Dues</button>
           </div>
         </div>
 
@@ -228,7 +239,7 @@
           <h3 class="text-lg font-semibold mb-4"><i class="fa-solid fa-hand-holding-dollar text-green-500"></i> Fee Collection & Actions</h3>
           <div class="flex gap-2 mb-1">
             <div class="relative w-full">
-              <input type="text" id="feeStudentInput" autocomplete="off" placeholder="Search Student ID or Name..." oninput="handleStudentSearch()" class="p-2 border rounded w-full focus:outline-none focus:border-blue-500">
+              <input type="text" id="feeStudentInput" autocomplete="off" placeholder="Search Student ID or Name..." oninput="handleStudentSearch()" class="p-2 border rounded w-full focus:outline-none focus:border-blue-500 transition">
               <div id="studentSearchDropdown" class="absolute left-0 right-0 bg-white border border-gray-200 w-full max-h-48 overflow-y-auto hidden z-50 rounded-b shadow-xl"></div>
             </div>
             <button onclick="manualRefreshBills(this)" class="bg-blue-50 text-blue-600 border border-blue-100 px-3 rounded hover:bg-blue-100 transition focus:outline-none flex-shrink-0" title="Refresh Selected Student's Bills">
@@ -246,31 +257,31 @@
           <input type="text" id="feeNote" placeholder="Note (For Discounts or Records)" class="p-2 border rounded w-full mb-4 focus:outline-none focus:border-blue-500">
           
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <button onclick="collectDistributedFee()" class="bg-green-500 text-white p-3 rounded font-bold hover:bg-green-600 transition shadow-sm"><i class="fa-solid fa-check mr-1"></i> Collect Fee</button>
-            <button onclick="applyDistributedDiscount()" class="bg-purple-500 text-white p-3 rounded font-bold hover:bg-purple-600 transition shadow-sm"><i class="fa-solid fa-tag mr-1"></i> Apply Discount</button>
-            <button onclick="addPrevDue()" class="bg-yellow-500 text-white p-3 rounded font-bold hover:bg-yellow-600 transition shadow-sm"><i class="fa-solid fa-plus mr-1"></i> Add Manual Due</button>
+            <button onclick="collectDistributedFee()" class="bg-green-500 text-white p-3 rounded-lg font-bold hover:bg-green-600 shadow-sm transition transform hover:-translate-y-0.5 active:scale-95"><i class="fa-solid fa-check mr-1"></i> Collect Fee</button>
+            <button onclick="applyDistributedDiscount()" class="bg-purple-500 text-white p-3 rounded-lg font-bold hover:bg-purple-600 shadow-sm transition transform hover:-translate-y-0.5 active:scale-95"><i class="fa-solid fa-tag mr-1"></i> Apply Discount</button>
+            <button onclick="addPrevDue()" class="bg-yellow-500 text-white p-3 rounded-lg font-bold hover:bg-yellow-600 shadow-sm transition transform hover:-translate-y-0.5 active:scale-95"><i class="fa-solid fa-plus mr-1"></i> Add Manual Due</button>
           </div>
         </div>
 
         <div id="view-genBill" class="hidden bg-white p-6 rounded-lg shadow-sm border border-gray-100">
           <h3 class="text-lg font-semibold mb-4"><i class="fa-solid fa-file-invoice text-blue-500"></i> Generate Monthly Bills</h3>
           <p class="text-sm text-gray-500 mb-4">Create bills for an entire batch at once. Active students only.</p>
-          <select id="billBatch" class="p-2 border rounded w-full mb-3 batch-dropdown focus:outline-none"><option value="">All Batches</option></select>
+          <select id="billBatch" class="p-2 border rounded w-full mb-3 batch-dropdown focus:outline-none focus:border-blue-500"><option value="">All Batches</option></select>
           <div class="flex gap-2 mb-4">
-            <input type="number" id="billMonth" placeholder="Month (1-12)" class="p-2 border rounded w-full focus:outline-none">
-            <input type="number" id="billYear" placeholder="Year (e.g. 2026)" class="p-2 border rounded w-full focus:outline-none">
+            <input type="number" id="billMonth" placeholder="Month (1-12)" class="p-2 border rounded w-full focus:outline-none focus:border-blue-500">
+            <input type="number" id="billYear" placeholder="Year (e.g. 2026)" class="p-2 border rounded w-full focus:outline-none focus:border-blue-500">
           </div>
           <div class="grid grid-cols-2 gap-3">
-            <button onclick="openBillAuth('generate')" class="bg-blue-600 text-white p-3 rounded font-bold hover:bg-blue-700 shadow-sm transition"><i class="fa-solid fa-bolt mr-1"></i> Generate Bills</button>
-            <button onclick="openBillAuth('remove')" class="bg-red-500 text-white p-3 rounded font-bold hover:bg-red-600 shadow-sm transition"><i class="fa-solid fa-trash mr-1"></i> Remove Bills</button>
+            <button onclick="openBillAuth('generate')" class="btn-primary"><i class="fa-solid fa-bolt mr-1"></i> Generate Bills</button>
+            <button onclick="openBillAuth('remove')" class="bg-red-500 text-white p-2.5 rounded-lg font-bold hover:bg-red-600 shadow-sm transition transform hover:-translate-y-0.5 active:scale-95"><i class="fa-solid fa-trash mr-1"></i> Remove Bills</button>
           </div>
         </div>
 
         <div id="view-batchDues" class="hidden bg-white p-6 rounded-lg shadow-sm border border-gray-100">
           <h3 class="text-lg font-semibold mb-4"><i class="fa-solid fa-magnifying-glass-dollar text-gray-700"></i> Check Batch Dues</h3>
           <div class="flex gap-2 mb-4">
-            <select id="viewDueBatch" class="p-3 border rounded w-full batch-dropdown focus:outline-none"><option value="">All Batches</option></select>
-            <button onclick="loadBatchDues()" class="bg-gray-800 text-white px-6 rounded font-bold shadow-sm hover:bg-gray-900 transition"><i class="fa-solid fa-search"></i> Search</button>
+            <select id="viewDueBatch" class="p-3 border rounded w-full batch-dropdown focus:outline-none focus:border-blue-500"><option value="">All Batches</option></select>
+            <button onclick="loadBatchDues()" class="bg-gray-800 text-white px-6 rounded-lg font-bold shadow-sm hover:bg-gray-900 transition transform hover:-translate-y-0.5 active:scale-95"><i class="fa-solid fa-search"></i> Search</button>
           </div>
           <div id="dueResults" class="space-y-2"></div>
         </div>
@@ -281,11 +292,11 @@
         <h2 class="text-2xl font-bold">Collection Reports</h2>
         <div class="bg-white p-4 md:p-6 rounded-lg shadow-sm border border-gray-100">
           <div class="flex flex-col md:flex-row gap-2 mb-4">
-            <select id="reportDays" class="p-2 border rounded w-full md:w-auto focus:outline-none"><option value="7">Last 7 Days</option><option value="30">Last 30 Days</option><option value="365">Last 1 Year</option></select>
-            <select id="reportBatch" class="p-2 border rounded w-full md:w-auto batch-dropdown focus:outline-none"><option value="">All Batches</option></select>
+            <select id="reportDays" class="p-2 border rounded w-full md:w-auto focus:outline-none focus:border-blue-500"><option value="7">Last 7 Days</option><option value="30">Last 30 Days</option><option value="365">Last 1 Year</option></select>
+            <select id="reportBatch" class="p-2 border rounded w-full md:w-auto batch-dropdown focus:outline-none focus:border-blue-500"><option value="">All Batches</option></select>
             <div class="flex gap-2 w-full md:w-auto">
-              <button onclick="loadReport()" class="bg-blue-600 text-white px-4 py-2 rounded font-bold shadow-sm hover:bg-blue-700 transition w-full md:w-auto">Fetch</button>
-              <button onclick="downloadPDF()" class="bg-red-500 text-white px-4 py-2 rounded font-bold shadow-sm hover:bg-red-600 transition w-full md:w-auto"><i class="fa-solid fa-file-pdf"></i> PDF</button>
+              <button onclick="loadReport()" class="btn-primary w-full md:w-auto">Fetch</button>
+              <button onclick="downloadPDF()" class="bg-red-500 text-white px-5 py-2.5 rounded-lg font-bold shadow-sm hover:bg-red-600 transition transform hover:-translate-y-0.5 active:scale-95 w-full md:w-auto"><i class="fa-solid fa-file-pdf"></i> PDF</button>
             </div>
           </div>
           
@@ -309,7 +320,7 @@
           <h3 class="text-lg font-bold mb-2"><i class="fa-brands fa-google-drive text-blue-500"></i> Common Resource Folder</h3>
           <p class="text-sm text-gray-500 mb-4">This folder will be visible to ALL students in their Material section.</p>
           <div class="flex gap-2">
-            <input type="url" id="globalResourceLink" placeholder="Paste Google Drive Folder Link here..." class="flex-1 p-3 border rounded focus:outline-none focus:border-blue-500">
+            <input type="url" id="globalResourceLink" placeholder="Paste Google Drive Folder Link here..." class="flex-1 p-3 border rounded focus:outline-none focus:border-blue-500 transition">
             <button onclick="testDriveLink('globalResourceLink')" class="bg-gray-100 text-gray-700 px-4 rounded hover:bg-gray-200 transition" title="Test Link"><i class="fa-solid fa-arrow-up-right-from-square"></i></button>
           </div>
         </div>
@@ -318,7 +329,7 @@
           <h3 class="text-lg font-bold mb-2"><i class="fa-solid fa-folder-tree text-green-500"></i> Batch-Wise Class Folders</h3>
           <p class="text-sm text-gray-500 mb-4">Map a specific Google Drive folder to each batch.</p>
           <div id="batchFolderContainer" class="space-y-3 mb-6"><p class="text-gray-400 text-sm italic">Loading batches...</p></div>
-          <button onclick="saveFolderSettings()" class="bg-blue-600 text-white font-bold px-6 py-3 rounded-lg shadow-md hover:bg-blue-700 transition w-full md:w-auto"><i class="fa-solid fa-floppy-disk"></i> Save Folder Mappings</button>
+          <button onclick="saveFolderSettings()" class="btn-primary w-full md:w-auto"><i class="fa-solid fa-floppy-disk"></i> Save Folder Mappings</button>
         </div>
       </div>
 
@@ -326,11 +337,11 @@
   </div>
 
   <!-- 👁️ BATCH STUDENTS MODAL (WITH ATTENDANCE) -->
-  <div id="batchStudentsModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex justify-center items-center z-[60] p-4">
-    <div class="bg-white p-6 rounded-lg w-full max-w-4xl max-h-[90vh] overflow-y-auto flex flex-col shadow-xl">
+  <div id="batchStudentsModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex justify-center items-center z-[60] p-4 transition-opacity">
+    <div class="bg-white p-6 rounded-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto flex flex-col shadow-2xl">
       <div class="flex justify-between items-center mb-4">
         <h3 id="batchStudentsTitle" class="text-xl font-bold text-gray-800">Students in Batch</h3>
-        <button onclick="document.getElementById('batchStudentsModal').classList.add('hidden')" class="text-gray-400 hover:text-gray-800 text-2xl transition"><i class="fa-solid fa-xmark"></i></button>
+        <button onclick="document.getElementById('batchStudentsModal').classList.add('hidden')" class="text-gray-400 hover:text-red-500 text-2xl transition"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <div class="overflow-x-auto border rounded-lg shadow-sm">
         <table class="w-full text-left border-collapse whitespace-nowrap">
@@ -351,7 +362,7 @@
   </div>
 
   <!-- 📲 CUSTOM ALERT MODAL (For WhatsApp Notification Success) -->
-  <div id="customAlertModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex justify-center items-center z-[70] p-4">
+  <div id="customAlertModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex justify-center items-center z-[70] p-4 transition-opacity">
     <div class="bg-white p-6 rounded-xl w-full max-w-sm text-center shadow-2xl">
       <div id="customAlertIcon" class="mb-4 text-5xl"></div>
       <h3 id="customAlertTitle" class="text-xl font-bold mb-2 text-gray-800">Notice</h3>
@@ -361,39 +372,39 @@
   </div>
 
   <!-- Universal Edit Modal -->
-  <div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex justify-center items-center z-[60] p-4">
-    <div class="bg-white p-6 rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto">
+  <div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex justify-center items-center z-[60] p-4 transition-opacity">
+    <div class="bg-white p-6 rounded-xl w-full max-w-md max-h-[90vh] overflow-y-auto shadow-2xl">
       <h3 id="modalTitle" class="text-lg font-bold mb-4">Edit</h3>
       <div id="modalBody" class="space-y-3"></div>
       <div class="flex justify-end gap-2 mt-4">
-        <button onclick="document.getElementById('editModal').classList.add('hidden')" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded font-bold text-gray-800 transition">Cancel</button>
-        <button id="modalSaveBtn" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 font-bold text-white rounded transition">Save</button>
+        <button onclick="document.getElementById('editModal').classList.add('hidden')" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg font-bold text-gray-800 transition">Cancel</button>
+        <button id="modalSaveBtn" class="btn-primary">Save</button>
       </div>
     </div>
   </div>
 
   <!-- Password Auth Modal for Bills -->
-  <div id="billAuthModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex justify-center items-center z-[60] p-4">
-    <div class="bg-white p-6 rounded-lg w-full max-w-sm">
+  <div id="billAuthModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex justify-center items-center z-[60] p-4 transition-opacity">
+    <div class="bg-white p-6 rounded-xl w-full max-w-sm shadow-2xl">
       <h3 id="billAuthTitle" class="text-xl font-bold text-gray-800 mb-2">Confirm Action</h3>
       <p class="text-sm text-gray-600 mb-4">Please enter your Admin Password to continue.</p>
-      <input type="password" id="billAdminPass" placeholder="Admin Password" class="w-full border p-3 rounded mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500">
+      <input type="password" id="billAdminPass" placeholder="Admin Password" class="w-full border p-3 rounded-lg mb-4 focus:outline-none focus:border-blue-500 transition">
       <div class="flex justify-end gap-2">
-        <button onclick="document.getElementById('billAuthModal').classList.add('hidden')" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 font-bold rounded text-gray-800 transition">Cancel</button>
-        <button id="billAuthConfirmBtn" class="px-4 py-2 text-white font-bold rounded transition">Confirm</button>
+        <button onclick="document.getElementById('billAuthModal').classList.add('hidden')" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 font-bold rounded-lg text-gray-800 transition">Cancel</button>
+        <button id="billAuthConfirmBtn" class="btn-primary">Confirm</button>
       </div>
     </div>
   </div>
 
   <!-- Password Auth Modal for Active/Inactive Status -->
-  <div id="statusAuthModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex justify-center items-center z-[60] p-4">
-    <div class="bg-white p-6 rounded-lg w-full max-w-sm">
+  <div id="statusAuthModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex justify-center items-center z-[60] p-4 transition-opacity">
+    <div class="bg-white p-6 rounded-xl w-full max-w-sm shadow-2xl">
       <h3 id="statusAuthTitle" class="text-xl font-bold text-gray-800 mb-2">Change Status</h3>
       <p class="text-sm text-gray-600 mb-4">Enter Admin Password to change this student's status.</p>
-      <input type="password" id="statusAdminPass" placeholder="Admin Password" class="w-full border p-3 rounded mb-4 focus:outline-none focus:ring-2 focus:ring-red-500">
+      <input type="password" id="statusAdminPass" placeholder="Admin Password" class="w-full border p-3 rounded-lg mb-4 focus:outline-none focus:border-red-500 transition">
       <div class="flex justify-end gap-2">
-        <button onclick="document.getElementById('statusAuthModal').classList.add('hidden')" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 font-bold rounded text-gray-800 transition">Cancel</button>
-        <button onclick="executeStatusChange()" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded transition">Confirm Status Change</button>
+        <button onclick="document.getElementById('statusAuthModal').classList.add('hidden')" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 font-bold rounded-lg text-gray-800 transition">Cancel</button>
+        <button onclick="executeStatusChange()" class="bg-red-600 text-white px-4 py-2 rounded-lg font-bold shadow-sm hover:bg-red-700 transition transform hover:-translate-y-0.5 active:scale-95">Confirm Status Change</button>
       </div>
     </div>
   </div>
@@ -408,7 +419,28 @@
     
     function logout() { localStorage.clear(); sessionStorage.clear(); window.location.href = 'login.html'; }
     function toggleSidebar() { document.getElementById('sidebar').classList.toggle('-translate-x-full'); document.getElementById('sidebarOverlay').classList.toggle('hidden'); }
-    function switchTab(tabId) { document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active')); document.getElementById(tabId).classList.add('active'); if(window.innerWidth < 768) { toggleSidebar(); } }
+    
+    // 🛡️ ENHANCED TAB SWITCHER (FIXES HOVER/ACTIVE STATE BUG)
+    function switchTab(tabId) { 
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active')); 
+      document.getElementById(tabId).classList.add('active'); 
+      
+      // Reset all sidebar buttons
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.classList.remove('bg-blue-100', 'text-blue-700');
+        btn.classList.add('text-gray-600', 'hover:bg-blue-50', 'hover:text-blue-600');
+      });
+      
+      // Highlight the active sidebar button
+      const activeNav = document.getElementById('nav-' + tabId);
+      if(activeNav) {
+        activeNav.classList.remove('text-gray-600', 'hover:bg-blue-50', 'hover:text-blue-600');
+        activeNav.classList.add('bg-blue-100', 'text-blue-700');
+      }
+
+      if(window.innerWidth < 768) { toggleSidebar(); } 
+    }
+    
     function cleanDate(isoString) { if(!isoString) return ''; const d = new Date(isoString); return d.toLocaleDateString('en-IN', {day:'2-digit', month:'2-digit', year:'numeric'}); }
 
     async function fetchAPI(action, params = {}, showLoader = true) {
@@ -431,17 +463,19 @@
     document.getElementById('attDate').valueAsDate = new Date(); document.getElementById('testDate').valueAsDate = new Date();
 
     window.onload = async () => {
+      // Initialize first tab selection visually
+      switchTab('batches');
+
       const bRes = await fetchAPI('getBatches');
       const sRes = await fetchAPI('getStudents');
       
       if(bRes.ok) allBatches = bRes.data;
       if(sRes.ok) allStudents = sRes.data;
 
-      // 🛡️ POPULATE TOP TOTALS WITH MALE/FEMALE STATS
+      // POPULATE TOP TOTALS
       if(sRes.ok) {
         const totalStu = allStudents.length;
         const activeStu = allStudents.filter(s => s.Status === 'ACTIVE').length;
-        
         const femaleCount = allStudents.filter(s => s.Gender === 'Female').length;
         const maleCount = allStudents.filter(s => s.Gender === 'Male').length; 
 
@@ -454,7 +488,6 @@
       if(bRes.ok) {
         let bHtml = '';
         document.querySelectorAll('.batch-dropdown').forEach(s => { 
-          // Smart text for batch filter dropdown vs form inputs
           s.innerHTML = s.id === 'studentBatchFilter' ? '<option value="">All Batches</option>' : '<option value="">All Batches / Select</option>'; 
         });
         document.querySelectorAll('.batch-dropdown-strict').forEach(s => { s.innerHTML = '<option value="">Select Batch...</option>'; });
@@ -479,8 +512,8 @@
               </span>
             </td>
             <td class="p-2 text-center flex justify-center gap-3">
-              <button onclick="viewBatchStudents('${b.BatchID}', '${b.BatchName}')" class="text-indigo-500 hover:text-indigo-700 p-2" title="View Students & Attendance"><i class="fa-solid fa-eye text-lg"></i></button>
-              <button onclick="editBatch('${b.BatchID}')" class="text-blue-500 hover:text-blue-700 p-2" title="Edit Batch"><i class="fa-solid fa-pen text-lg"></i></button>
+              <button onclick="viewBatchStudents('${b.BatchID}', '${b.BatchName}')" class="text-indigo-500 hover:text-indigo-700 p-2 transform hover:scale-110 transition" title="View Students & Attendance"><i class="fa-solid fa-eye text-lg"></i></button>
+              <button onclick="editBatch('${b.BatchID}')" class="text-blue-500 hover:text-blue-700 p-2 transform hover:scale-110 transition" title="Edit Batch"><i class="fa-solid fa-pen text-lg"></i></button>
             </td>
           </tr>`;
         });
@@ -491,8 +524,8 @@
       if(sRes.ok) {
         let sHtml = '';
         allStudents.forEach(s => {
-          const statusBadge = s.Status === 'ACTIVE' ? `<span class="bg-green-100 text-green-700 px-2 py-1 rounded text-[10px] font-bold">ACTIVE</span>` : `<span class="bg-red-100 text-red-700 px-2 py-1 rounded text-[10px] font-bold">INACTIVE</span>`;
-          const statusBtnIcon = s.Status === 'ACTIVE' ? `<button onclick="promptStatusChange('${s.StudentID}', 'INACTIVE')" class="text-red-500 hover:text-red-700" title="Make Inactive"><i class="fa-solid fa-power-off"></i></button>` : `<button onclick="promptStatusChange('${s.StudentID}', 'ACTIVE')" class="text-green-500 hover:text-green-700" title="Make Active"><i class="fa-solid fa-power-off"></i></button>`;
+          const statusBadge = s.Status === 'ACTIVE' ? `<span class="bg-green-100 text-green-700 px-2 py-1 rounded text-[10px] font-bold shadow-sm">ACTIVE</span>` : `<span class="bg-red-100 text-red-700 px-2 py-1 rounded text-[10px] font-bold shadow-sm">INACTIVE</span>`;
+          const statusBtnIcon = s.Status === 'ACTIVE' ? `<button onclick="promptStatusChange('${s.StudentID}', 'INACTIVE')" class="text-red-500 hover:text-red-700 p-1 transform hover:scale-110 transition" title="Make Inactive"><i class="fa-solid fa-power-off"></i></button>` : `<button onclick="promptStatusChange('${s.StudentID}', 'ACTIVE')" class="text-green-500 hover:text-green-700 p-1 transform hover:scale-110 transition" title="Make Active"><i class="fa-solid fa-power-off"></i></button>`;
 
           const isFemale = s.Gender === 'Female';
           const isMale = s.Gender === 'Male';
@@ -507,19 +540,18 @@
             genderBadge = `<span class="bg-gray-100 text-gray-500 border border-gray-200 px-2 py-0.5 rounded text-[10px] font-bold shadow-sm">-</span>`;
           }
 
-          // Added "stu-batch" and "data-batch" so it can be filtered
           sHtml += `<tr class="border-b student-row hover:bg-gray-50 transition">
             <td class="p-2 stu-id text-gray-500 text-xs font-mono">${s.StudentID}</td>
             <td class="p-2 font-medium stu-name">${s.Name}</td>
             <td class="p-2 stu-gender" data-gender="${genderStr}">${genderBadge}</td>
             <td class="p-2 text-gray-600 text-xs">${s.ParentName || '-'}</td>
             <td class="p-2 text-xs">${s.ParentPhone}</td>
-            <td class="p-2"><span class="stu-batch bg-gray-200 text-gray-800 text-[10px] px-2 py-1 rounded font-bold uppercase" data-batch="${s.BatchID}">${s.BatchID}</span></td>
+            <td class="p-2"><span class="stu-batch bg-gray-200 text-gray-800 text-[10px] px-2 py-1 rounded font-bold uppercase shadow-sm" data-batch="${s.BatchID}">${s.BatchID}</span></td>
             <td class="p-2 text-green-600 font-bold">${s.CustomFee ? '₹'+s.CustomFee : '-'}</td>
             <td class="p-2">${statusBadge}</td>
-            <td class="p-2 flex gap-4">
-              <button onclick="editStudent('${s.StudentID}')" class="text-blue-500 hover:text-blue-700" title="Edit"><i class="fa-solid fa-pen"></i></button>
-              <button onclick="managePassword('${s.StudentID}')" class="text-orange-500 hover:text-orange-700" title="Manage Pass"><i class="fa-solid fa-key"></i></button>
+            <td class="p-2 flex gap-3">
+              <button onclick="editStudent('${s.StudentID}')" class="text-blue-500 hover:text-blue-700 p-1 transform hover:scale-110 transition" title="Edit"><i class="fa-solid fa-pen"></i></button>
+              <button onclick="managePassword('${s.StudentID}')" class="text-orange-500 hover:text-orange-700 p-1 transform hover:scale-110 transition" title="Manage Pass"><i class="fa-solid fa-key"></i></button>
               ${statusBtnIcon}
             </td>
           </tr>`;
@@ -529,7 +561,7 @@
       loadAllTests();
     };
 
-    // 👁️ FETCH AND VIEW BATCH STUDENTS WITH ATTENDANCE
+    // 👁️ VIEW BATCH STUDENTS (WITH ATTENDANCE)
     async function viewBatchStudents(batchId, batchName) {
       document.getElementById('batchStudentsTitle').innerText = `Students in ${batchName}`;
       document.getElementById('batchStudentsBody').innerHTML = '<tr><td colspan="6" class="text-center py-6 text-gray-400"><i class="fa-solid fa-spinner fa-spin text-2xl mb-2"></i><br>Fetching attendance records...</td></tr>';
@@ -544,8 +576,8 @@
         } else {
           res.data.forEach(s => {
             const attColor = s.attendance >= 80 ? 'text-green-700 bg-green-100' : (s.attendance >= 50 ? 'text-orange-700 bg-orange-100' : 'text-red-700 bg-red-100');
-            const gBadge = s.gender === 'Female' ? `<span class="bg-pink-100 text-pink-700 px-2 py-0.5 rounded text-[10px] font-bold">F</span>` : (s.gender==='Male' ? `<span class="bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-[10px] font-bold">M</span>` : '-');
-            const statusStr = s.status === 'ACTIVE' ? '' : ' <span class="text-red-500 text-[10px] font-bold bg-red-50 px-1 rounded">(INACTIVE)</span>';
+            const gBadge = s.gender === 'Female' ? `<span class="bg-pink-100 text-pink-700 px-2 py-0.5 rounded text-[10px] font-bold shadow-sm">F</span>` : (s.gender==='Male' ? `<span class="bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-[10px] font-bold shadow-sm">M</span>` : '-');
+            const statusStr = s.status === 'ACTIVE' ? '' : ' <span class="text-red-500 text-[10px] font-bold bg-red-50 px-1 rounded ml-1">(INACTIVE)</span>';
             
             html += `<tr class="border-b hover:bg-indigo-50/30 transition">
               <td class="p-3 font-mono text-xs text-gray-500">${s.studentId}</td>
@@ -563,7 +595,7 @@
       }
     }
 
-    // 🛡️ UPDATED: DYNAMIC SEARCH WITH GENDER AND BATCH FILTER
+    // SEARCH AND FILTERS
     function filterStudents() {
       let searchFilter = document.getElementById('studentSearch').value.toUpperCase();
       let genderFilter = document.getElementById('studentGenderFilter').value;
@@ -655,7 +687,7 @@
           html += `
             <div class="flex flex-col md:flex-row gap-2 items-center">
               <div class="w-full md:w-1/4 font-semibold text-gray-700 bg-gray-50 p-3 border rounded text-sm">${b.BatchName} <span class="text-xs text-gray-400 font-normal">(${b.BatchID})</span></div>
-              <input type="url" id="folder_${b.BatchID}" value="${link}" placeholder="Google Drive Folder Link for ${b.BatchName}" class="flex-1 p-3 border rounded focus:outline-none focus:border-blue-500 w-full">
+              <input type="url" id="folder_${b.BatchID}" value="${link}" placeholder="Google Drive Folder Link for ${b.BatchName}" class="flex-1 p-3 border rounded focus:outline-none focus:border-blue-500 w-full transition">
               <button onclick="testDriveLink('folder_${b.BatchID}')" class="bg-gray-100 text-gray-700 px-4 py-3 rounded hover:bg-gray-200 transition" title="Test Link"><i class="fa-solid fa-arrow-up-right-from-square"></i></button>
             </div>
           `;
@@ -803,7 +835,7 @@
     function managePassword(id) {
       const s = allStudents.find(x => x.StudentID === id); document.getElementById('modalTitle').innerText = `Manage Login - ${s.Name}`;
       let phone = String(s.ParentPhone).replace(/\D/g, ''); if(phone.length === 10) phone = '91' + phone;
-      document.getElementById('modalBody').innerHTML = `<div class="mb-4 p-4 bg-blue-50 border border-blue-100 rounded flex justify-between items-center"><div><span class="text-xs text-blue-500 font-bold uppercase">Current Password</span><br><span class="font-bold font-mono text-lg text-gray-800">${s.Password}</span></div><a href="https://wa.me/${phone}?text=${encodeURIComponent(`Hi ${s.Name}, your tuition portal login:\nID: ${id}\nPass: ${s.Password}`)}" target="_blank" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition shadow-sm font-bold"><i class="fa-brands fa-whatsapp"></i> Share</a></div><hr class="my-4"><label class="text-sm font-bold text-gray-700">Change Password</label><input type="text" id="mSNewPass" placeholder="New password..." class="w-full border p-3 rounded mt-1 focus:ring-blue-200 focus:outline-none">`;
+      document.getElementById('modalBody').innerHTML = `<div class="mb-4 p-4 bg-blue-50 border border-blue-100 rounded flex justify-between items-center"><div><span class="text-xs text-blue-500 font-bold uppercase">Current Password</span><br><span class="font-bold font-mono text-lg text-gray-800">${s.Password}</span></div><a href="https://wa.me/${phone}?text=${encodeURIComponent(`Hi ${s.Name}, your tuition portal login:\nID: ${id}\nPass: ${s.Password}`)}" target="_blank" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition shadow-sm font-bold"><i class="fa-brands fa-whatsapp"></i> Share</a></div><hr class="my-4"><label class="text-sm font-bold text-gray-700">Change Password</label><input type="text" id="mSNewPass" placeholder="New password..." class="w-full border p-3 rounded mt-1 focus:ring-blue-200 focus:outline-none transition">`;
       document.getElementById('editModal').classList.remove('hidden');
       document.getElementById('modalSaveBtn').onclick = async () => { const newPass = document.getElementById('mSNewPass').value.trim(); if(!newPass) return alert("Please enter a new password."); await fetchAPI('adminChangeStudentPassword', {studentId:id, newPassword:newPass}); alert("Updated!"); window.location.reload(); };
     }
@@ -857,7 +889,7 @@
       if(res.ok) {
         document.getElementById('marksMaxLabel').innerText = `Max Marks: ${res.maxMarks}`;
         let html = '';
-        res.data.forEach(s => { html += `<tr class="border-b mark-row" data-id="${s.studentId}"><td class="p-2 font-mono text-gray-500">${s.studentId}</td><td class="p-2 font-bold">${s.name}</td><td class="p-2"><input type="number" class="border p-2 rounded w-24 student-mark focus:outline-none focus:border-blue-500" value="${s.mark}"></td></tr>`; });
+        res.data.forEach(s => { html += `<tr class="border-b mark-row hover:bg-gray-50 transition" data-id="${s.studentId}"><td class="p-2 font-mono text-gray-500">${s.studentId}</td><td class="p-2 font-bold">${s.name}</td><td class="p-2"><input type="number" class="border p-2 rounded w-24 student-mark focus:outline-none focus:border-blue-500 transition" value="${s.mark}"></td></tr>`; });
         document.getElementById('marksTableBody').innerHTML = html; document.getElementById('marksArea').classList.remove('hidden');
       }
     }
@@ -874,7 +906,6 @@
       const month = document.getElementById('billMonth').value; const year = document.getElementById('billYear').value;
       if(!month || !year) return alert("Specify Month and Year.");
       pendingBillAction = actionType; document.getElementById('billAuthTitle').innerText = actionType === 'generate' ? 'Generate Bills' : 'Remove Bills'; document.getElementById('billAdminPass').value = '';
-      const btn = document.getElementById('billAuthConfirmBtn'); btn.className = actionType === 'generate' ? 'px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded font-bold transition' : 'px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded font-bold transition'; btn.onclick = executeBillAction;
       document.getElementById('billAuthModal').classList.remove('hidden');
     }
 
@@ -898,7 +929,7 @@
       setTimeout(() => icon.classList.remove('fa-spin'), 300); 
     }
 
-    // 📲 NOTIFY PARENT ON WHATSAPP (FEE COLLECTION)
+    // 📲 NOTIFY PARENT ON WHATSAPP
     async function collectDistributedFee() {
       const studentId = getSelectedFeeStudent(); const amount = document.getElementById('feeAmount').value;
       if(!studentId || !amount) return alert("Enter valid student and amount");
@@ -919,7 +950,7 @@
         document.getElementById('customAlertIcon').innerHTML = '<i class="fa-solid fa-circle-check text-green-500"></i>';
         document.getElementById('customAlertTitle').innerText = 'Fee Collected Successfully!';
         document.getElementById('customAlertBody').innerHTML = `Amount of ₹${amount} has been collected.<br><br>` + 
-          (waLink ? `<a href="${waLink}" target="_blank" onclick="document.getElementById('customAlertModal').classList.add('hidden')" class="bg-green-500 text-white px-4 py-2 rounded-lg font-bold shadow-md hover:bg-green-600 inline-block transition"><i class="fa-brands fa-whatsapp mr-1"></i> Notify Parent on WhatsApp</a>` 
+          (waLink ? `<a href="${waLink}" target="_blank" onclick="document.getElementById('customAlertModal').classList.add('hidden')" class="bg-green-500 text-white px-4 py-2 rounded-lg font-bold shadow-md hover:bg-green-600 inline-block transition transform hover:-translate-y-0.5 active:scale-95"><i class="fa-brands fa-whatsapp mr-1"></i> Notify Parent on WhatsApp</a>` 
                   : `<p class="text-red-500 text-xs font-bold">No valid parent phone number found.</p>`);
         
         document.getElementById('customAlertModal').classList.remove('hidden');
@@ -949,7 +980,7 @@
         let html = `<div class="p-4 bg-red-50 border border-red-200 text-red-800 font-bold rounded-lg mb-4 flex justify-between shadow-sm"><span>Total Pending Due:</span> <span class="text-xl">₹${res.totalDue}</span></div>`;
         res.students.forEach(s => { 
           let phone = String(s.parentPhone).replace(/\D/g, ''); if(phone.length === 10) phone = '91' + phone;
-          html += `<div class="flex justify-between items-center p-4 border-b hover:bg-gray-50 transition"><div><span class="font-semibold text-gray-800">${s.name} <span class="text-xs text-gray-400 font-mono">(${s.studentId})</span></span><span class="ml-2 text-[10px] bg-gray-200 text-gray-700 px-2 py-1 rounded font-bold uppercase">${s.batchName}</span><p class="text-sm text-red-500 font-bold mt-1">Due: ₹${s.due}</p></div><a href="https://wa.me/${phone}?text=${encodeURIComponent(`Hi ${s.name}, your total pending tuition due is ₹${s.due}. Please pay as soon as possible.`)}" target="_blank" class="text-green-500 text-2xl hover:text-green-600 p-2 transition"><i class="fa-brands fa-whatsapp"></i></a></div>`; 
+          html += `<div class="flex justify-between items-center p-4 border-b hover:bg-gray-50 transition"><div><span class="font-semibold text-gray-800">${s.name} <span class="text-xs text-gray-400 font-mono">(${s.studentId})</span></span><span class="ml-2 text-[10px] bg-gray-200 text-gray-700 px-2 py-1 rounded font-bold uppercase">${s.batchName}</span><p class="text-sm text-red-500 font-bold mt-1">Due: ₹${s.due}</p></div><a href="https://wa.me/${phone}?text=${encodeURIComponent(`Hi ${s.name}, your total pending tuition due is ₹${s.due}. Please pay as soon as possible.`)}" target="_blank" class="text-green-500 text-2xl hover:text-green-600 p-2 transition transform hover:scale-110"><i class="fa-brands fa-whatsapp"></i></a></div>`; 
         }); document.getElementById('dueResults').innerHTML = html;
       }
     }
