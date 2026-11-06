@@ -123,15 +123,15 @@
           <i class="fa-solid fa-users text-blue-500 text-2xl mb-2"></i>
           <span class="text-xs font-bold text-gray-700">Community</span>
         </button>
-        <!-- 2. Materials Drive Link (UPDATED: Batch Specific) -->
-        <button id="btn-class-materials" onclick="alert('Loading class materials...')" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center hover:bg-gray-50 transition active:scale-95 opacity-70">
+        <!-- 2. Materials Drive Link -->
+        <button onclick="window.open('https://drive.google.com/drive/folders/1uiP92_Ept5ZIvsQ9z11195x8zPwYuSHn?usp=sharing', '_blank')" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center hover:bg-gray-50 transition active:scale-95">
           <i class="fa-brands fa-google-drive text-green-500 text-2xl mb-2"></i>
-          <span class="text-xs font-bold text-gray-700">Class Content</span>
+          <span class="text-xs font-bold text-gray-700">Materials</span>
         </button>
-        <!-- 3. Resources Drive Link (UPDATED: Common) -->
-        <button id="btn-common-resources" onclick="alert('Loading common resources...')" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center hover:bg-gray-50 transition active:scale-95 opacity-70">
+        <!-- 3. Resources Drive Link -->
+        <button onclick="window.open('https://drive.google.com/drive/folders/1uiP92_Ept5ZIvsQ9z11195x8zPwYuSHn?usp=sharing', '_blank')" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center hover:bg-gray-50 transition active:scale-95">
           <i class="fa-solid fa-folder-open text-orange-500 text-2xl mb-2"></i>
-          <span class="text-xs font-bold text-gray-700">Common Resources</span>
+          <span class="text-xs font-bold text-gray-700">Resources</span>
         </button>
         <!-- 4. Fees Link -->
         <button onclick="nav('fees')" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center hover:bg-gray-50 transition active:scale-95">
@@ -143,10 +143,10 @@
           <i class="fa-solid fa-award text-yellow-500 text-2xl mb-2"></i>
           <span class="text-xs font-bold text-gray-700">Academics</span>
         </button>
-        <!-- 6. Tests Link -->
-        <button onclick="window.location.href='test.html'" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center hover:bg-gray-50 transition active:scale-95">
-          <i class="fa-solid fa-pen-clip text-indigo-500 text-2xl mb-2"></i>
-          <span class="text-xs font-bold text-gray-700">Tests</span>
+        <!-- 6. Quiz Challenge Link -->
+        <button onclick="window.open('https://hstakeiteasy.github.io/quiz', '_blank')" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center hover:bg-gray-50 transition active:scale-95">
+          <i class="fa-solid fa-brain text-indigo-500 text-2xl mb-2"></i>
+          <span class="text-[11px] font-bold text-gray-700 text-center leading-tight mt-1">Quiz<br>Challenge</span>
         </button>
       </div>
 
@@ -215,8 +215,8 @@
       <button onclick="nav('home')" class="nav-btn nav-center-btn bg-blue-600 text-white w-14 h-14 rounded-full flex flex-col items-center justify-center transition active:scale-95" data-target="home"><i class="fa-solid fa-house text-xl"></i></button>
     </div>
     <div class="flex w-2/5 justify-evenly pb-2 pt-3">
-      <button onclick="window.location.href='test.html'" class="flex flex-col items-center text-gray-400 hover:text-blue-500 transition"><i class="fa-solid fa-pen-clip text-xl mb-1"></i><span class="text-[10px] font-bold tracking-wide">TESTS</span></button>
-      <button onclick="window.open('https://drive.google.com/drive/folders/1uHR_n1WL296M1QvekztaVdkHRu6svpxQ?usp=drive_link', '_blank')" class="flex flex-col items-center text-gray-400 hover:text-blue-500 transition"><i class="fa-solid fa-bullhorn text-xl mb-1"></i><span class="text-[10px] font-bold tracking-wide">NOTICE</span></button>
+      <button onclick="window.open('https://hstakeiteasy.github.io/quiz', '_blank')" class="flex flex-col items-center text-gray-400 hover:text-blue-500 transition"><i class="fa-solid fa-brain text-xl mb-1"></i><span class="text-[10px] font-bold tracking-wide">QUIZ</span></button>
+      <button onclick="window.open('https://drive.google.com/drive/folders/1NrHIK8OBWpmWZhycweMdZF5Bz1Ujv6uA?usp=sharing', '_blank')" class="flex flex-col items-center text-gray-400 hover:text-blue-500 transition"><i class="fa-solid fa-bullhorn text-xl mb-1"></i><span class="text-[10px] font-bold tracking-wide">NOTICE</span></button>
     </div>
   </div>
 
@@ -366,13 +366,11 @@
 
     async function loadDashboardData() {
       try {
-        // Fetch ALL data at the exact same time including Folder Links
-        const [meData, acaData, feeData, histData, foldersReq] = await Promise.all([
+        const [meData, acaData, feeData, histData] = await Promise.all([
           fetchAPI('me'),
           fetchAPI('studentAcademicStats'),
           fetchAPI('studentFees'),
-          fetchAPI('studentHistory'),
-          fetchAPI('getStudentFolders') // 🛡️ NEW FOLDER API ADDED
+          fetchAPI('studentHistory')
         ]);
 
         // 1. Setup Student Info
@@ -452,28 +450,6 @@
         } else {
            document.getElementById('marksHistoryList').innerHTML = '<p class="text-red-500 text-sm text-center bg-red-50 p-3 rounded-lg">Unable to load marks.</p>';
            document.getElementById('attendanceHistoryList').innerHTML = '<p class="text-red-500 text-sm text-center bg-red-50 p-3 rounded-lg">Unable to load attendance.</p>';
-        }
-
-        // 5. 🛡️ Setup Folder Links (Dynamic)
-        if (foldersReq && foldersReq.ok) {
-          const btnClass = document.getElementById('btn-class-materials');
-          const btnCommon = document.getElementById('btn-common-resources');
-
-          if (foldersReq.batchFolder) {
-            btnClass.onclick = () => window.open(foldersReq.batchFolder, '_blank');
-            btnClass.classList.remove('opacity-70');
-          } else {
-            btnClass.onclick = () => alert("Class Materials folder has not been assigned for your batch yet.");
-            btnClass.classList.remove('opacity-70');
-          }
-
-          if (foldersReq.globalUrl) {
-            btnCommon.onclick = () => window.open(foldersReq.globalUrl, '_blank');
-            btnCommon.classList.remove('opacity-70');
-          } else {
-            btnCommon.onclick = () => alert("Common Resources folder is currently empty.");
-            btnCommon.classList.remove('opacity-70');
-          }
         }
 
       } catch (err) {
