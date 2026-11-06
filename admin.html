@@ -133,14 +133,21 @@
         </div>
         
         <div class="bg-white p-4 md:p-6 rounded-lg shadow-sm border border-gray-100 overflow-x-auto">
-          <div class="flex gap-2 mb-4">
-            <input type="text" id="studentSearch" onkeyup="filterStudents()" placeholder="🔍 Search by Name or ID..." class="w-full p-3 border border-gray-300 rounded focus:outline-none focus:border-blue-500">
-            <select id="studentGenderFilter" onchange="filterStudents()" class="p-3 border border-gray-300 rounded focus:outline-none bg-gray-50 text-gray-700 font-medium">
+          <!-- 🛡️ NEW: BATCH FILTER ADDED IN THE STUDENT SECTION -->
+          <div class="flex flex-col md:flex-row gap-2 mb-4">
+            <input type="text" id="studentSearch" onkeyup="filterStudents()" placeholder="🔍 Search by Name or ID..." class="w-full md:w-1/2 p-3 border border-gray-300 rounded focus:outline-none focus:border-blue-500">
+            
+            <select id="studentBatchFilter" onchange="filterStudents()" class="p-3 border border-gray-300 rounded focus:outline-none bg-gray-50 text-gray-700 font-medium batch-dropdown w-full md:w-1/4">
+              <option value="">All Batches</option>
+            </select>
+            
+            <select id="studentGenderFilter" onchange="filterStudents()" class="p-3 border border-gray-300 rounded focus:outline-none bg-gray-50 text-gray-700 font-medium w-full md:w-1/4">
               <option value="ALL">All Genders</option>
               <option value="Male">Male Only</option>
               <option value="Female">Female Only</option>
             </select>
           </div>
+          
           <table class="w-full text-left border-collapse whitespace-nowrap" id="studentTable">
             <thead>
               <tr class="bg-gray-100 text-sm">
@@ -217,7 +224,6 @@
           </div>
         </div>
 
-        <!-- 1. FEE ACTION -->
         <div id="view-feeAction" class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
           <h3 class="text-lg font-semibold mb-4"><i class="fa-solid fa-hand-holding-dollar text-green-500"></i> Fee Collection & Actions</h3>
           <div class="flex gap-2 mb-1">
@@ -229,10 +235,8 @@
               <i class="fa-solid fa-rotate-right"></i>
             </button>
           </div>
-          
           <div id="feeStudentDetails" class="hidden text-xs text-gray-500 mb-4 px-1 py-2 bg-gray-50 rounded border"></div>
           <div id="pendingBillsArea" class="bg-gray-50 p-2 rounded mb-4 max-h-40 overflow-y-auto hidden text-sm border border-gray-200"></div>
-          
           <div class="flex gap-2 mb-3 mt-4">
             <input type="number" id="feeAmount" placeholder="Amount (₹)" class="p-2 border rounded w-full focus:outline-none focus:border-blue-500">
             <select id="feeMode" class="p-2 border rounded w-1/2 focus:outline-none">
@@ -248,7 +252,6 @@
           </div>
         </div>
 
-        <!-- 2. GENERATE BILLS -->
         <div id="view-genBill" class="hidden bg-white p-6 rounded-lg shadow-sm border border-gray-100">
           <h3 class="text-lg font-semibold mb-4"><i class="fa-solid fa-file-invoice text-blue-500"></i> Generate Monthly Bills</h3>
           <p class="text-sm text-gray-500 mb-4">Create bills for an entire batch at once. Active students only.</p>
@@ -263,7 +266,6 @@
           </div>
         </div>
 
-        <!-- 3. CHECK BATCH DUES -->
         <div id="view-batchDues" class="hidden bg-white p-6 rounded-lg shadow-sm border border-gray-100">
           <h3 class="text-lg font-semibold mb-4"><i class="fa-solid fa-magnifying-glass-dollar text-gray-700"></i> Check Batch Dues</h3>
           <div class="flex gap-2 mb-4">
@@ -451,7 +453,10 @@
 
       if(bRes.ok) {
         let bHtml = '';
-        document.querySelectorAll('.batch-dropdown').forEach(s => { s.innerHTML = '<option value="">All Batches / Select</option>'; });
+        document.querySelectorAll('.batch-dropdown').forEach(s => { 
+          // Smart text for batch filter dropdown vs form inputs
+          s.innerHTML = s.id === 'studentBatchFilter' ? '<option value="">All Batches</option>' : '<option value="">All Batches / Select</option>'; 
+        });
         document.querySelectorAll('.batch-dropdown-strict').forEach(s => { s.innerHTML = '<option value="">Select Batch...</option>'; });
         
         allBatches.forEach(b => {
@@ -502,13 +507,14 @@
             genderBadge = `<span class="bg-gray-100 text-gray-500 border border-gray-200 px-2 py-0.5 rounded text-[10px] font-bold shadow-sm">-</span>`;
           }
 
+          // Added "stu-batch" and "data-batch" so it can be filtered
           sHtml += `<tr class="border-b student-row hover:bg-gray-50 transition">
             <td class="p-2 stu-id text-gray-500 text-xs font-mono">${s.StudentID}</td>
             <td class="p-2 font-medium stu-name">${s.Name}</td>
             <td class="p-2 stu-gender" data-gender="${genderStr}">${genderBadge}</td>
             <td class="p-2 text-gray-600 text-xs">${s.ParentName || '-'}</td>
             <td class="p-2 text-xs">${s.ParentPhone}</td>
-            <td class="p-2"><span class="bg-gray-200 text-gray-800 text-[10px] px-2 py-1 rounded font-bold uppercase">${s.BatchID}</span></td>
+            <td class="p-2"><span class="stu-batch bg-gray-200 text-gray-800 text-[10px] px-2 py-1 rounded font-bold uppercase" data-batch="${s.BatchID}">${s.BatchID}</span></td>
             <td class="p-2 text-green-600 font-bold">${s.CustomFee ? '₹'+s.CustomFee : '-'}</td>
             <td class="p-2">${statusBadge}</td>
             <td class="p-2 flex gap-4">
@@ -557,16 +563,22 @@
       }
     }
 
+    // 🛡️ UPDATED: DYNAMIC SEARCH WITH GENDER AND BATCH FILTER
     function filterStudents() {
       let searchFilter = document.getElementById('studentSearch').value.toUpperCase();
       let genderFilter = document.getElementById('studentGenderFilter').value;
+      let batchFilter = document.getElementById('studentBatchFilter').value;
 
       document.querySelectorAll('.student-row').forEach(row => { 
         let textMatch = row.querySelector('.stu-id').textContent.toUpperCase().indexOf(searchFilter) > -1 || row.querySelector('.stu-name').textContent.toUpperCase().indexOf(searchFilter) > -1;
+        
         let rowGender = row.querySelector('.stu-gender').getAttribute('data-gender');
         let genderMatch = genderFilter === 'ALL' || rowGender === genderFilter;
         
-        row.style.display = (textMatch && genderMatch) ? "" : "none"; 
+        let rowBatch = row.querySelector('.stu-batch').getAttribute('data-batch');
+        let batchMatch = batchFilter === '' || rowBatch === batchFilter;
+        
+        row.style.display = (textMatch && genderMatch && batchMatch) ? "" : "none"; 
       });
     }
 
