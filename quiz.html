@@ -1,0 +1,1212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Quiz Duel — Challenge a Friend</title>
+<style>
+  :root {
+    --black: #000000;
+    --white: #ffffff;
+    --gray-50: #fafafa;
+    --gray-100: #f5f5f5;
+    --gray-200: #e5e5e5;
+    --gray-300: #d4d4d4;
+    --gray-500: #737373;
+    --gray-700: #404040;
+    --gray-900: #171717;
+    --radius: 12px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent;
+      font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+  html, body { height:100%; overflow-x:hidden; }
+  body {
+    background: var(--black); color: var(--white);
+    display:flex; justify-content:center; align-items:center;
+    padding:16px; min-height:100vh; min-height:100dvh;
+  }
+  .app {
+    background: var(--white); color: var(--black);
+    border-radius:20px; width:100%; max-width:460px;
+    padding:28px 24px; box-shadow:0 20px 60px rgba(255,255,255,0.06);
+    position:relative; overflow:hidden;
+  }
+  .brand { display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:24px; }
+  .brand-logo {
+    width:32px; height:32px; background:var(--black); border-radius:8px;
+    display:flex; align-items:center; justify-content:center;
+    color:var(--white); font-weight:800; font-size:16px;
+  }
+  .brand-name { font-size:20px; font-weight:800; letter-spacing:-0.5px; }
+
+  /* ===== MUSIC TOGGLE ===== */
+  .music-toggle {
+    position: fixed; top: 16px; right: 16px;
+    width: 44px; height: 44px; border-radius: 50%;
+    background: var(--white); border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+    z-index: 5000; transition: transform .2s;
+  }
+  .music-toggle:active { transform: scale(0.92); }
+  .music-toggle svg { width: 20px; height: 20px; fill: var(--black); }
+  .music-toggle.muted { opacity: 0.6; }
+  .music-toggle .wave {
+    position: absolute; inset: -4px; border-radius: 50%;
+    border: 2px solid var(--white); opacity: 0;
+    animation: musicPulse 1.2s ease-out infinite;
+  }
+  .music-toggle.playing .wave { opacity: 1; }
+  @keyframes musicPulse {
+    0% { transform: scale(0.9); opacity: 0.7; }
+    100% { transform: scale(1.4); opacity: 0; }
+  }
+
+  .screen { display:none; }
+  .screen.active { display:block; animation: fadeIn .25s ease; }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+
+  h2 { font-size:22px; font-weight:700; margin-bottom:6px; letter-spacing:-0.3px; }
+  .subtitle { font-size:14px; color:var(--gray-500); margin-bottom:22px; }
+
+  .input-group { margin-bottom:16px; }
+  label { display:block; font-size:13px; font-weight:600; color:var(--gray-700); margin-bottom:6px; }
+  input {
+    width:100%; padding:14px 16px;
+    border:1.5px solid var(--gray-200); border-radius:var(--radius);
+    font-size:16px; background:var(--gray-50); color:var(--black);
+    transition:border-color .2s, background .2s; -webkit-appearance:none;
+  }
+  input:focus { outline:none; border-color:var(--black); background:var(--white); }
+
+  .btn {
+    width:100%; padding:15px; border:none; border-radius:var(--radius);
+    font-size:16px; font-weight:700; cursor:pointer;
+    transition:transform .15s, opacity .15s; margin-bottom:10px;
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    letter-spacing:-0.2px; position:relative;
+  }
+  .btn:active { transform:scale(0.98); }
+  .btn:disabled { cursor:not-allowed; opacity:0.7; }
+  .btn-primary { background:var(--black); color:var(--white); }
+  .btn-secondary { background:var(--gray-100); color:var(--black); border:1.5px solid var(--gray-200); }
+  .btn-whatsapp { background:#25D366; color:var(--white); }
+  .btn-ghost { background:transparent; color:var(--gray-700); }
+
+  .btn .btn-spinner {
+    width:18px; height:18px;
+    border:2.5px solid rgba(255,255,255,0.35);
+    border-top-color:var(--white);
+    border-radius:50%; animation:spin .7s linear infinite; flex-shrink:0;
+  }
+  .btn-secondary .btn-spinner {
+    border:2.5px solid rgba(0,0,0,0.15); border-top-color:var(--black);
+  }
+
+  .loading-overlay {
+    position:fixed; inset:0;
+    background:rgba(0,0,0,0.55);
+    backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px);
+    display:flex; align-items:center; justify-content:center;
+    z-index:9999; opacity:0; visibility:hidden;
+    transition:opacity .2s ease, visibility .2s ease;
+  }
+  .loading-overlay.show { opacity:1; visibility:visible; }
+  .loading-overlay-content {
+    background:var(--white); color:var(--black);
+    border-radius:16px; padding:26px 30px;
+    display:flex; flex-direction:column; align-items:center; gap:14px;
+    box-shadow:0 20px 60px rgba(0,0,0,0.4); min-width:180px;
+    animation:pop .25s ease;
+  }
+  @keyframes pop { from { transform:scale(0.9); opacity:0; } to { transform:scale(1); opacity:1; } }
+  .big-spinner {
+    width:38px; height:38px;
+    border:4px solid var(--gray-200); border-top-color:var(--black);
+    border-radius:50%; animation:spin .8s linear infinite;
+  }
+  .loading-text { font-size:14px; font-weight:600; color:var(--gray-700); text-align:center; }
+
+  .room-card {
+    background:var(--gray-50); border:1.5px dashed var(--gray-300);
+    border-radius:var(--radius); padding:22px; text-align:center; margin-bottom:16px;
+  }
+  .room-card .label {
+    font-size:12px; color:var(--gray-500); text-transform:uppercase;
+    letter-spacing:1px; font-weight:600; margin-bottom:8px;
+  }
+  .room-id {
+    font-size:42px; font-weight:900; letter-spacing:8px; color:var(--black);
+    font-family:'SF Mono', Menlo, Consolas, monospace; margin-bottom:4px;
+  }
+  .room-expiry { font-size:12px; color:var(--gray-500); }
+
+  .loading { display:flex; flex-direction:column; align-items:center; padding:20px 0; }
+  .spinner {
+    width:32px; height:32px;
+    border:3px solid var(--gray-200); border-top-color:var(--black);
+    border-radius:50%; animation:spin .8s linear infinite; margin-bottom:12px;
+  }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  .loading-text-inline { font-size:14px; color:var(--gray-500); }
+
+  .timer-wrap { text-align:center; padding:20px 0; }
+  .timer-circle {
+    width:160px; height:160px; border-radius:50%;
+    border:4px solid var(--gray-200);
+    display:flex; align-items:center; justify-content:center;
+    margin:0 auto 16px; transition:border-color .2s;
+  }
+  .timer-circle.urgent { border-color:#000; }
+  .timer-value { font-size:56px; font-weight:900; letter-spacing:-2px; }
+  .timer-label { font-size:14px; color:var(--gray-500); font-weight:500; }
+
+  .game-top {
+    display:flex; justify-content:space-between; align-items:center;
+    padding:12px 14px; background:var(--black); color:var(--white);
+    border-radius:var(--radius); margin-bottom:16px;
+  }
+  .score-item { flex:1; text-align:center; }
+  .score-item:first-child { text-align:left; }
+  .score-item:last-child { text-align:right; }
+  .score-name { font-size:11px; opacity:0.7; text-transform:uppercase; letter-spacing:0.5px; font-weight:600; }
+  .score-value { font-size:22px; font-weight:800; letter-spacing:-0.5px; }
+  .score-value.negative { color:#ff6b6b; }
+  .vs-badge { font-size:11px; font-weight:700; opacity:0.4; margin:0 8px; }
+  .game-timer {
+    font-size:12px; font-weight:700; padding:4px 10px;
+    background:var(--white); color:var(--black);
+    border-radius:20px; font-variant-numeric:tabular-nums;
+  }
+  .game-timer.urgent { animation:pulse 1s infinite; }
+  @keyframes pulse { 50% { opacity:0.5; } }
+
+  .question-meta {
+    display:flex; justify-content:space-between; font-size:12px;
+    color:var(--gray-500); font-weight:600; margin-bottom:10px;
+    text-transform:uppercase; letter-spacing:0.5px;
+  }
+  .question-text {
+    font-size:19px; font-weight:700; line-height:1.4;
+    margin-bottom:20px; color:var(--black); letter-spacing:-0.3px;
+  }
+
+  .options { display:grid; gap:10px; }
+  .option {
+    padding:15px 18px; background:var(--white);
+    border:1.5px solid var(--gray-200); border-radius:var(--radius);
+    text-align:left; font-size:15px; font-weight:500; cursor:pointer;
+    transition:all .15s; display:flex; align-items:center; gap:12px; color:var(--black);
+  }
+  .option:active { transform:scale(0.99); }
+  .option .opt-letter {
+    width:26px; height:26px; border-radius:6px; background:var(--gray-100);
+    display:flex; align-items:center; justify-content:center;
+    font-size:13px; font-weight:800; flex-shrink:0;
+  }
+  .option.selected { background:var(--black); color:var(--white); border-color:var(--black); }
+  .option.selected .opt-letter { background:rgba(255,255,255,0.2); color:var(--white); }
+  .option.correct { background:var(--black); color:var(--white); border-color:var(--black); }
+  .option.correct .opt-letter { background:rgba(255,255,255,0.2); color:var(--white); }
+  .option.wrong { background:var(--white); color:var(--gray-500); border-color:var(--gray-300); text-decoration:line-through; }
+  .option.disabled { pointer-events:none; }
+
+  .feedback {
+    padding:12px 16px; border-radius:var(--radius); text-align:center;
+    font-weight:700; font-size:14px; margin-top:14px;
+  }
+  .feedback.correct { background:var(--black); color:var(--white); }
+  .feedback.wrong { background:var(--gray-100); color:var(--black); border:1.5px solid var(--gray-300); }
+
+  .error-msg { color:#b91c1c; font-size:13px; margin-top:8px; text-align:center; font-weight:500; }
+
+  .result-hero { text-align:center; padding:12px 0 18px; }
+  .result-trophy { font-size:56px; margin-bottom:8px; }
+  .result-title { font-size:26px; font-weight:900; letter-spacing:-0.5px; }
+  .result-subtitle { font-size:14px; color:var(--gray-500); margin-top:4px; }
+
+  .result-scores {
+    background:var(--black); color:var(--white); border-radius:var(--radius);
+    padding:18px; display:flex; justify-content:space-around; margin-bottom:18px;
+  }
+  .result-score-item { text-align:center; flex:1; }
+  .result-score-name { font-size:12px; opacity:0.7; margin-bottom:4px; text-transform:uppercase; letter-spacing:0.5px; font-weight:600; }
+  .result-score-value { font-size:30px; font-weight:900; letter-spacing:-1px; }
+  .result-score-value.negative { color:#ff6b6b; }
+
+  .divider {
+    display:flex; align-items:center; gap:12px; color:var(--gray-500);
+    font-size:12px; margin:16px 0; font-weight:600; text-transform:uppercase; letter-spacing:0.5px;
+  }
+  .divider::before, .divider::after { content:''; flex:1; height:1px; background:var(--gray-200); }
+  .info-note { font-size:12px; color:var(--gray-500); text-align:center; margin-top:16px; line-height:1.5; }
+
+  .whatsapp-row { display:flex; gap:10px; margin-bottom:10px; }
+  .whatsapp-row .btn { margin-bottom:0; }
+
+  @media (max-width:380px) {
+    .room-id { font-size:34px; letter-spacing:6px; }
+    .timer-value { font-size:48px; }
+    .timer-circle { width:140px; height:140px; }
+    .music-toggle { top:12px; right:12px; width:38px; height:38px; }
+  }
+</style>
+</head>
+<body>
+
+<button id="musicToggle" class="music-toggle" onclick="toggleMusic()" aria-label="Toggle music">
+  <span class="wave"></span>
+  <svg id="musicIcon" viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+</button>
+
+<div id="loadingOverlay" class="loading-overlay">
+  <div class="loading-overlay-content">
+    <div class="big-spinner"></div>
+    <div class="loading-text" id="loadingText">Loading…</div>
+  </div>
+</div>
+
+<div class="app">
+  <div class="brand">
+    <div class="brand-logo">Q</div>
+    <div class="brand-name">Quiz Duel</div>
+  </div>
+
+  <div id="homeScreen" class="screen active">
+    <h2>Challenge a friend</h2>
+    <p class="subtitle">Answer fast. Score high. Beat them.</p>
+    <div class="input-group">
+      <label>Your Name</label>
+      <input id="playerName" type="text" placeholder="Enter your name" maxlength="20" autocomplete="off">
+    </div>
+    <button id="createBtn" class="btn btn-primary" onclick="createRoom()">
+      <span class="btn-label">Create Room</span>
+    </button>
+    <button class="btn btn-secondary" onclick="showScreen('joinScreen')">Join Room</button>
+    <div id="homeError" class="error-msg"></div>
+  </div>
+
+  <div id="joinScreen" class="screen">
+    <h2>Join room</h2>
+    <p class="subtitle">Enter the code your friend shared</p>
+    <div class="input-group">
+      <label>Your Name</label>
+      <input id="joinName" type="text" placeholder="Enter your name" maxlength="20" autocomplete="off">
+    </div>
+    <div class="input-group">
+      <label>Room Code</label>
+      <input id="roomIdInput" type="text" placeholder="e.g. AB12CD" maxlength="6"
+             style="text-transform:uppercase; letter-spacing:4px; font-weight:700; text-align:center; font-size:20px;"
+             autocomplete="off">
+    </div>
+    <button id="joinBtn" class="btn btn-primary" onclick="joinRoom()">
+      <span class="btn-label">Join Game</span>
+    </button>
+    <button class="btn btn-ghost" onclick="showScreen('homeScreen')">← Back</button>
+    <div id="joinError" class="error-msg"></div>
+  </div>
+
+  <div id="waitingScreen" class="screen">
+    <h2>Room created</h2>
+    <p class="subtitle">Share the code below with your friend</p>
+    <div class="room-card">
+      <div class="label">Room Code</div>
+      <div class="room-id" id="displayRoomId">------</div>
+      <div class="room-expiry" id="roomExpiry">Expires in 5:00</div>
+    </div>
+    <div class="whatsapp-row">
+      <button class="btn btn-whatsapp" onclick="shareWhatsApp()" style="flex:1;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.1-1.7-.8-2-.9-.3-.1-.5-.1-.7.1-.2.3-.8 1-.9 1.2-.2.2-.3.2-.6.1-.3-.1-1.2-.4-2.3-1.4-.9-.8-1.4-1.7-1.6-2-.2-.3 0-.4.1-.6.1-.1.3-.4.4-.5.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5 0-.1-.7-1.6-.9-2.2-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.1.2 2.1 3.2 5.1 4.5.7.3 1.3.5 1.7.6.7.2 1.3.2 1.8.1.5-.1 1.7-.7 1.9-1.4.2-.6.2-1.2.2-1.4-.1-.1-.3-.2-.6-.3zM12 21.5c-1.7 0-3.3-.4-4.7-1.3l-.3-.2-3.5.9.9-3.4-.2-.4c-.9-1.5-1.4-3.2-1.4-5 0-5.1 4.2-9.3 9.3-9.3 2.5 0 4.8 1 6.6 2.7 1.8 1.8 2.7 4.1 2.7 6.6 0 5.1-4.2 9.3-9.4 9.3zM20.5 3.5C18.2 1.2 15.2 0 12 0 5.4 0 0 5.4 0 12c0 2.1.5 4.2 1.6 6L0 24l6.2-1.6c1.7.9 3.7 1.4 5.7 1.4h.1c6.6 0 12-5.4 12-12 0-3.2-1.2-6.2-3.5-8.3z"/></svg>
+        Share
+      </button>
+      <button class="btn btn-secondary" onclick="copyRoomId(event)" style="flex:1;">Copy Code</button>
+    </div>
+    <div class="loading">
+      <div class="spinner"></div>
+      <div class="loading-text-inline">Waiting for opponent to join…</div>
+    </div>
+  </div>
+
+  <div id="countdownScreen" class="screen">
+    <div class="timer-wrap">
+      <div class="timer-circle">
+        <div class="timer-value" id="countdownTimer">10</div>
+      </div>
+      <div class="timer-label">Get ready…</div>
+    </div>
+  </div>
+
+  <div id="gameScreen" class="screen">
+    <div class="game-top">
+      <div class="score-item">
+        <div class="score-name" id="p1Name">You</div>
+        <div class="score-value" id="p1Score">0</div>
+      </div>
+      <div class="vs-badge">VS</div>
+      <div class="score-item">
+        <div class="score-name" id="p2Name">Opp</div>
+        <div class="score-value" id="p2Score">0</div>
+      </div>
+      <div class="game-timer" id="gameTimer">5:00</div>
+    </div>
+    <div class="question-meta">
+      <span id="questionNumber">Q 1 / 5</span>
+      <span id="currentPlayer"></span>
+    </div>
+    <div class="question-text" id="questionText"></div>
+    <div class="options" id="optionsContainer"></div>
+    <div id="answerFeedback"></div>
+  </div>
+
+  <div id="resultScreen" class="screen">
+    <div class="result-hero">
+      <div class="result-trophy" id="resultIcon">🏆</div>
+      <div class="result-title" id="resultTitle">Player wins!</div>
+      <div class="result-subtitle" id="resultSubtitle">Great game</div>
+    </div>
+    <div class="result-scores">
+      <div class="result-score-item">
+        <div class="result-score-name" id="rP1Name">P1</div>
+        <div class="result-score-value" id="rP1Score">0</div>
+      </div>
+      <div style="display:flex; align-items:center; font-weight:900; opacity:0.4;">VS</div>
+      <div class="result-score-item">
+        <div class="result-score-name" id="rP2Name">P2</div>
+        <div class="result-score-value" id="rP2Score">0</div>
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="playAgain()">Play Again</button>
+    <div class="divider">Info</div>
+    <div class="info-note">This room will be automatically deleted from the database 1 hour after creation.</div>
+  </div>
+</div>
+
+<script>
+// ====================================================
+// APPS SCRIPT WEB APP URL
+// ====================================================
+const API_URL = 'https://script.google.com/macros/s/AKfycbywqH08aKVuCcdYgdi4GgK4b0QJUJQGrloNVfvBUddW8lmN7LtGB9jqoJg5omyZ0Ym2/exec';
+
+// ====================================================
+// STATE
+// ====================================================
+let currentRoomId = null;
+let currentPlayerName = null;
+let currentQuestion = null;
+let pollInterval = null;
+let isAnswerSubmitted = false;
+let lastQuestionNumber = 0;
+let lastCountdownSeconds = -1;
+let roomCreatedAt = null;
+let gameStartTimeMs = null;
+let audioCtx = null;
+let gameTimerInterval = null;
+
+// ====================================================
+// ROCK MUSIC ENGINE
+// ====================================================
+const Music = {
+  ctx: null,
+  masterGain: null,
+  compressor: null,
+  isPlaying: false,
+  isMuted: false,
+  schedulerTimer: null,
+  nextNoteTime: 0,
+  step: 0,
+  bpm: 130,
+  volume: 0.16, // master music volume
+
+  // One bar = 16 sixteenth-notes
+  // Each step object: { bass, chord, drums }
+  // Rhythm: classic rock driving 8th-note feel
+  pattern: [
+    // 1 (chord hit + kick + snare)
+    { bass: true, chord: true,  kick: true,  snare: false, hat: true },
+    // 2
+    { bass: false, chord: false, kick: false, snare: false, hat: true },
+    // 3
+    { bass: true, chord: false, kick: false, snare: false, hat: true },
+    // 4
+    { bass: false, chord: false, kick: false, snare: true, hat: true },
+    // 5
+    { bass: true, chord: true,  kick: true,  snare: false, hat: true },
+    // 6
+    { bass: false, chord: false, kick: false, snare: false, hat: true },
+    // 7
+    { bass: true, chord: false, kick: true, snare: false, hat: true },
+    // 8
+    { bass: false, chord: false, kick: false, snare: true, hat: true },
+    // 9
+    { bass: true, chord: true,  kick: true,  snare: false, hat: true },
+    // 10
+    { bass: false, chord: false, kick: false, snare: false, hat: true },
+    // 11
+    { bass: true, chord: false, kick: false, snare: false, hat: true },
+    // 12
+    { bass: false, chord: false, kick: false, snare: true, hat: true },
+    // 13
+    { bass: true, chord: true,  kick: true,  snare: false, hat: true },
+    // 14
+    { bass: false, chord: false, kick: false, snare: false, hat: true },
+    // 15
+    { bass: true, chord: false, kick: true, snare: false, hat: true },
+    // 16
+    { bass: false, chord: false, kick: false, snare: true, hat: true }
+  ],
+
+  // Power-chord progression (E5 — G5 — A5 — E5) — classic rock riff feel
+  // Each bar repeats the same chord. Progression: 2 bars E, 2 bars G, 2 bars A, 2 bars E
+  chordProgression: [
+    { root: 82.41,  third: 123.47, fifth: 164.81 }, // E2 power chord (E2 B2 E3)
+    { root: 82.41,  third: 123.47, fifth: 164.81 }, // E
+    { root: 98.00,  third: 146.83, fifth: 196.00 }, // G2
+    { root: 98.00,  third: 146.83, fifth: 196.00 }, // G
+    { root: 110.00, third: 164.81, fifth: 220.00 }, // A2
+    { root: 110.00, third: 164.81, fifth: 220.00 }, // A
+    { root: 82.41,  third: 123.47, fifth: 164.81 }, // E
+    { root: 82.41,  third: 123.47, fifth: 164.81 }  // E
+  ],
+  barIndex: 0,
+
+  init() {
+    if (this.ctx) return;
+    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+
+    // Master gain (volume control)
+    this.masterGain = this.ctx.createGain();
+    this.masterGain.gain.value = this.isMuted ? 0 : this.volume;
+
+    // Compressor for that "loud but not clipping" rock punch
+    this.compressor = this.ctx.createDynamicsCompressor();
+    this.compressor.threshold.value = -18;
+    this.compressor.knee.value = 10;
+    this.compressor.ratio.value = 6;
+    this.compressor.attack.value = 0.003;
+    this.compressor.release.value = 0.25;
+
+    this.compressor.connect(this.masterGain);
+    this.masterGain.connect(this.ctx.destination);
+  },
+
+  async resume() {
+    this.init();
+    if (this.ctx.state === 'suspended') {
+      try { await this.ctx.resume(); } catch (e) {}
+    }
+  },
+
+  start() {
+    if (this.isPlaying) return;
+    this.resume();
+    this.isPlaying = true;
+    this.step = 0;
+    this.barIndex = 0;
+    this.nextNoteTime = this.ctx.currentTime + 0.08;
+    this._schedule();
+    this._updateIcon();
+  },
+
+  stop() {
+    this.isPlaying = false;
+    if (this.schedulerTimer) {
+      clearTimeout(this.schedulerTimer);
+      this.schedulerTimer = null;
+    }
+    this._updateIcon();
+  },
+
+  toggle() { this.isPlaying ? this.stop() : this.start(); },
+
+  setMuted(muted) {
+    this.isMuted = muted;
+    this.init();
+    const now = this.ctx.currentTime;
+    this.masterGain.gain.cancelScheduledValues(now);
+    this.masterGain.gain.setValueAtTime(this.masterGain.gain.value, now);
+    this.masterGain.gain.linearRampToValueAtTime(muted ? 0 : this.volume, now + 0.2);
+    this._updateIcon();
+  },
+
+  _schedule() {
+    if (!this.isPlaying) return;
+
+    const sixteenth = 60 / this.bpm / 4; // duration of one 16th note
+    const lookAhead = 0.15;
+
+    while (this.nextNoteTime < this.ctx.currentTime + lookAhead) {
+      this._playStep(this.step, this.nextNoteTime, sixteenth);
+      this.step++;
+
+      if (this.step >= this.pattern.length) {
+        this.step = 0;
+        this.barIndex = (this.barIndex + 1) % this.chordProgression.length;
+      }
+
+      this.nextNoteTime += sixteenth;
+    }
+
+    this.schedulerTimer = setTimeout(() => this._schedule(), 40);
+  },
+
+  _playStep(stepIndex, time, sixteenth) {
+    const p = this.pattern[stepIndex];
+    const chord = this.chordProgression[this.barIndex];
+
+    if (p.chord)  this._playPowerChord(chord, time, sixteenth * 3);
+    if (p.bass)   this._playBass(chord.root / 2, time, sixteenth * 2);
+    if (p.kick)   this._playKick(time);
+    if (p.snare)  this._playSnare(time);
+    if (p.hat)    this._playHat(time);
+  },
+
+  // ===== DISTORTED POWER CHORD =====
+  _playPowerChord(chord, startTime, dur) {
+    // Three oscillators — root, third (fifth of scale) and octave
+    const voices = [chord.root, chord.third, chord.fifth];
+    const now = startTime;
+    const end = now + dur;
+
+    // Slightly detune each voice for a "wall of sound"
+    voices.forEach((freq, i) => {
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      const filter = this.ctx.createBiquadFilter();
+      const dist = this.ctx.createWaveShaper();
+
+      osc.type = 'sawtooth';
+      osc.frequency.value = freq * (i === 1 ? 2 : 1); // octave on middle
+      osc.detune.value = (i - 1) * 6; // slight spread
+
+      // Mild distortion via waveshaper
+      dist.curve = this._makeDistortionCurve(45);
+      dist.oversample = '4x';
+
+      // Low-pass to tame the harshness
+      filter.type = 'lowpass';
+      filter.frequency.value = 2200;
+      filter.Q.value = 0.8;
+
+      // Envelope — sharp attack, quick decay for a "chug"
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(0.22, now + 0.005);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + dur);
+
+      osc.connect(dist);
+      dist.connect(filter);
+      filter.connect(gain);
+      gain.connect(this.compressor);
+
+      osc.start(now);
+      osc.stop(end + 0.05);
+    });
+  },
+
+  // ===== BASS =====
+  _playBass(freq, startTime, dur) {
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    const filter = this.ctx.createBiquadFilter();
+
+    osc.type = 'sawtooth';
+    osc.frequency.value = freq;
+
+    filter.type = 'lowpass';
+    filter.frequency.value = 400;
+    filter.Q.value = 4;
+
+    gain.gain.setValueAtTime(0.0001, startTime);
+    gain.gain.exponentialRampToValueAtTime(0.28, startTime + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.001, startTime + dur);
+
+    osc.connect(filter);
+    filter.connect(gain);
+    gain.connect(this.compressor);
+
+    osc.start(startTime);
+    osc.stop(startTime + dur + 0.05);
+  },
+
+  // ===== KICK DRUM =====
+  _playKick(time) {
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+
+    osc.frequency.setValueAtTime(160, time);
+    osc.frequency.exponentialRampToValueAtTime(45, time + 0.12);
+
+    gain.gain.setValueAtTime(0.6, time);
+    gain.gain.exponentialRampToValueAtTime(0.001, time + 0.18);
+
+    osc.connect(gain);
+    gain.connect(this.compressor);
+    osc.start(time);
+    osc.stop(time + 0.2);
+  },
+
+  // ===== SNARE (noise burst + tone) =====
+  _playSnare(time) {
+    // Noise
+    const buffer = this.ctx.createBuffer(1, this.ctx.sampleRate * 0.15, this.ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+
+    const noise = this.ctx.createBufferSource();
+    noise.buffer = buffer;
+
+    const noiseGain = this.ctx.createGain();
+    noiseGain.gain.setValueAtTime(0.35, time);
+    noiseGain.gain.exponentialRampToValueAtTime(0.001, time + 0.14);
+
+    const noiseFilter = this.ctx.createBiquadFilter();
+    noiseFilter.type = 'highpass';
+    noiseFilter.frequency.value = 1400;
+
+    noise.connect(noiseFilter);
+    noiseFilter.connect(noiseGain);
+    noiseGain.connect(this.compressor);
+    noise.start(time);
+
+    // Tone body
+    const osc = this.ctx.createOscillator();
+    const oscGain = this.ctx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.value = 190;
+    oscGain.gain.setValueAtTime(0.25, time);
+    oscGain.gain.exponentialRampToValueAtTime(0.001, time + 0.1);
+    osc.connect(oscGain);
+    oscGain.connect(this.compressor);
+    osc.start(time);
+    osc.stop(time + 0.12);
+  },
+
+  // ===== HI-HAT =====
+  _playHat(time) {
+    const buffer = this.ctx.createBuffer(1, this.ctx.sampleRate * 0.05, this.ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+
+    const noise = this.ctx.createBufferSource();
+    noise.buffer = buffer;
+
+    const gain = this.ctx.createGain();
+    gain.gain.setValueAtTime(0.08, time);
+    gain.gain.exponentialRampToValueAtTime(0.001, time + 0.04);
+
+    const filter = this.ctx.createBiquadFilter();
+    filter.type = 'highpass';
+    filter.frequency.value = 7000;
+
+    noise.connect(filter);
+    filter.connect(gain);
+    gain.connect(this.compressor);
+    noise.start(time);
+  },
+
+  _makeDistortionCurve(amount) {
+    const n = 44100;
+    const curve = new Float32Array(n);
+    const deg = Math.PI / 180;
+    for (let i = 0; i < n; i++) {
+      const x = (i * 2) / n - 1;
+      curve[i] = ((3 + amount) * x * 20 * deg) / (Math.PI + amount * Math.abs(x));
+    }
+    return curve;
+  },
+
+  _updateIcon() {
+    const btn = document.getElementById('musicToggle');
+    const icon = document.getElementById('musicIcon');
+    if (!btn || !icon) return;
+    if (this.isMuted) {
+      btn.classList.add('muted');
+      btn.classList.remove('playing');
+      icon.innerHTML = '<path d="M4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73 4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>';
+    } else if (this.isPlaying) {
+      btn.classList.remove('muted');
+      btn.classList.add('playing');
+      icon.innerHTML = '<path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>';
+    } else {
+      btn.classList.remove('muted', 'playing');
+      icon.innerHTML = '<path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>';
+    }
+  }
+};
+
+function toggleMusic() {
+  if (Music.isMuted) {
+    Music.setMuted(false);
+  } else if (!Music.isPlaying) {
+    Music.start();
+    Music.setMuted(false);
+  } else {
+    Music.setMuted(true);
+  }
+}
+
+// ====================================================
+// LOADING OVERLAY
+// ====================================================
+let loadingCount = 0;
+function showLoading(text) {
+  loadingCount++;
+  if (text) document.getElementById('loadingText').textContent = text;
+  document.getElementById('loadingOverlay').classList.add('show');
+}
+function hideLoading() {
+  loadingCount = Math.max(0, loadingCount - 1);
+  if (loadingCount === 0) document.getElementById('loadingOverlay').classList.remove('show');
+}
+
+function setButtonBusy(btn, busy, busyText) {
+  if (!btn) return;
+  const label = btn.querySelector('.btn-label');
+  if (!label) return;
+  if (busy) {
+    btn.dataset.originalText = label.textContent;
+    btn.disabled = true;
+    label.innerHTML = `<span class="btn-spinner"></span>${busyText || 'Please wait…'}`;
+    label.style.display = 'inline-flex';
+    label.style.alignItems = 'center';
+    label.style.gap = '8px';
+  } else {
+    btn.disabled = false;
+    label.textContent = btn.dataset.originalText || label.textContent;
+  }
+}
+
+// ====================================================
+// API
+// ====================================================
+async function api(action, ...args) {
+  const res = await fetch(API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({ action, args }),
+    redirect: 'follow'
+  });
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  return await res.json();
+}
+
+// ====================================================
+// SFX (separate from music)
+// ====================================================
+function initAudio() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+}
+
+function playVictoryMusic() {
+  try {
+    initAudio();
+    const now = audioCtx.currentTime;
+    const notes = [523.25, 659.25, 783.99, 1046.50];
+    notes.forEach((freq, i) => {
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      const start = now + i * 0.15;
+      gain.gain.setValueAtTime(0, start);
+      gain.gain.linearRampToValueAtTime(0.25, start + 0.03);
+      gain.gain.exponentialRampToValueAtTime(0.001, start + 0.6);
+      osc.start(start);
+      osc.stop(start + 0.65);
+    });
+  } catch (e) {}
+}
+
+function playBeep() {
+  try {
+    initAudio();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.frequency.value = 880;
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    const now = audioCtx.currentTime;
+    gain.gain.setValueAtTime(0.15, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+    osc.start(now);
+    osc.stop(now + 0.16);
+  } catch (e) {}
+}
+
+function playCorrect() {
+  try {
+    initAudio();
+    const now = audioCtx.currentTime;
+    [880, 1320].forEach((f, i) => {
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = f;
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      const s = now + i * 0.1;
+      gain.gain.setValueAtTime(0.2, s);
+      gain.gain.exponentialRampToValueAtTime(0.001, s + 0.3);
+      osc.start(s);
+      osc.stop(s + 0.32);
+    });
+  } catch (e) {}
+}
+
+function playWrong() {
+  try {
+    initAudio();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'sawtooth';
+    osc.frequency.value = 180;
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    const now = audioCtx.currentTime;
+    gain.gain.setValueAtTime(0.15, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+    osc.start(now);
+    osc.stop(now + 0.32);
+  } catch (e) {}
+}
+
+// ====================================================
+// SCREENS
+// ====================================================
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// ====================================================
+// CREATE ROOM
+// ====================================================
+async function createRoom() {
+  const name = document.getElementById('playerName').value.trim();
+  document.getElementById('homeError').textContent = '';
+  if (!name) { document.getElementById('homeError').textContent = 'Please enter your name'; return; }
+
+  initAudio();
+  Music.resume();
+  Music.start();
+
+  const btn = document.getElementById('createBtn');
+  setButtonBusy(btn, true, 'Creating…');
+  showLoading('Creating room…');
+
+  currentPlayerName = name;
+  try {
+    const result = await api('createRoom', name);
+    if (!result.success) {
+      document.getElementById('homeError').textContent = result.error || 'Failed';
+      return;
+    }
+    currentRoomId = result.roomId;
+    roomCreatedAt = Date.now();
+    document.getElementById('displayRoomId').textContent = result.roomId;
+    showScreen('waitingScreen');
+    startRoomExpiryTimer();
+    startPolling();
+  } catch (err) {
+    document.getElementById('homeError').textContent = 'Network error: ' + err.message;
+  } finally {
+    setButtonBusy(btn, false);
+    hideLoading();
+  }
+}
+
+// ====================================================
+// JOIN ROOM
+// ====================================================
+async function joinRoom() {
+  const name = document.getElementById('joinName').value.trim();
+  const roomId = document.getElementById('roomIdInput').value.trim().toUpperCase();
+  document.getElementById('joinError').textContent = '';
+  if (!name) { document.getElementById('joinError').textContent = 'Please enter your name'; return; }
+  if (!roomId) { document.getElementById('joinError').textContent = 'Please enter room code'; return; }
+
+  initAudio();
+  Music.resume();
+  Music.start();
+
+  const btn = document.getElementById('joinBtn');
+  setButtonBusy(btn, true, 'Joining…');
+  showLoading('Joining room…');
+
+  currentPlayerName = name;
+  currentRoomId = roomId;
+  try {
+    const result = await api('joinRoom', roomId, name);
+    if (!result.success) {
+      document.getElementById('joinError').textContent = result.error || 'Failed';
+      currentRoomId = null;
+      return;
+    }
+    startPolling();
+  } catch (err) {
+    document.getElementById('joinError').textContent = 'Network error: ' + err.message;
+    currentRoomId = null;
+  } finally {
+    setButtonBusy(btn, false);
+    hideLoading();
+  }
+}
+
+// ====================================================
+// ROOM EXPIRY
+// ====================================================
+function startRoomExpiryTimer() {
+  const el = document.getElementById('roomExpiry');
+  if (!el) return;
+  const tick = () => {
+    const elapsed = (Date.now() - roomCreatedAt) / 1000;
+    const left = Math.max(0, 300 - elapsed);
+    const m = Math.floor(left / 60);
+    const s = Math.floor(left % 60);
+    el.textContent = `Expires in ${m}:${s.toString().padStart(2, '0')}`;
+    if (left <= 0) el.textContent = 'Expired';
+  };
+  tick();
+  setInterval(tick, 1000);
+}
+
+// ====================================================
+// SHARE
+// ====================================================
+function shareWhatsApp() {
+  const text = `🎯 Join my Quiz Duel!\n\nRoom Code: *${currentRoomId}*\n\nOpen: ${location.href}`;
+  window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+}
+
+function copyRoomId(ev) {
+  navigator.clipboard.writeText(currentRoomId).then(() => {
+    const btn = ev ? ev.currentTarget : null;
+    if (btn) {
+      const original = btn.textContent;
+      btn.textContent = '✓ Copied';
+      setTimeout(() => { btn.textContent = original; }, 1200);
+    }
+  });
+}
+
+// ====================================================
+// POLLING
+// ====================================================
+function startPolling() {
+  stopPolling();
+  pollInterval = setInterval(checkGameState, 1200);
+}
+function stopPolling() {
+  if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
+}
+
+async function checkGameState() {
+  if (!currentRoomId) return;
+  try {
+    const state = await api('getGameState', currentRoomId, currentPlayerName);
+    handleState(state);
+  } catch (err) {
+    console.warn('Poll error:', err);
+  }
+}
+
+function handleState(state) {
+  if (state.status === 'waiting') { showScreen('waitingScreen'); return; }
+
+  if (state.status === 'countdown') {
+    showScreen('countdownScreen');
+    if (state.secondsLeft !== lastCountdownSeconds) {
+      if (lastCountdownSeconds !== -1) playBeep();
+      lastCountdownSeconds = state.secondsLeft;
+      document.getElementById('countdownTimer').textContent = state.secondsLeft;
+    }
+    return;
+  }
+
+  if (state.status === 'playing') {
+    document.getElementById('p1Name').textContent = state.player1;
+    document.getElementById('p1Score').textContent = state.player1Score;
+    document.getElementById('p1Score').classList.toggle('negative', state.player1Score < 0);
+    document.getElementById('p2Name').textContent = state.player2;
+    document.getElementById('p2Score').textContent = state.player2Score;
+    document.getElementById('p2Score').classList.toggle('negative', state.player2Score < 0);
+
+    if (state.gameStartTime && !gameStartTimeMs) {
+      gameStartTimeMs = state.gameStartTime;
+      startGameTimer();
+    }
+
+    if (state.questionNumber !== lastQuestionNumber) {
+      lastQuestionNumber = state.questionNumber;
+      isAnswerSubmitted = false;
+      displayQuestion(state);
+    }
+    showScreen('gameScreen');
+    return;
+  }
+
+  if (state.status === 'finished') {
+    stopPolling();
+    stopGameTimer();
+    displayResults(state);
+    return;
+  }
+
+  if (state.status === 'error') {
+    alert('Error: ' + state.error);
+    stopPolling();
+    showScreen('homeScreen');
+  }
+}
+
+// ====================================================
+// GAME TIMER
+// ====================================================
+function startGameTimer() {
+  stopGameTimer();
+  updateGameTimer();
+  gameTimerInterval = setInterval(updateGameTimer, 1000);
+}
+function stopGameTimer() {
+  if (gameTimerInterval) { clearInterval(gameTimerInterval); gameTimerInterval = null; }
+}
+function updateGameTimer() {
+  if (!gameStartTimeMs) return;
+  const elapsed = (Date.now() - gameStartTimeMs) / 1000;
+  const left = Math.max(0, 300 - elapsed);
+  const m = Math.floor(left / 60);
+  const s = Math.floor(left % 60);
+  const el = document.getElementById('gameTimer');
+  el.textContent = `${m}:${s.toString().padStart(2, '0')}`;
+  el.classList.toggle('urgent', left <= 30);
+}
+
+// ====================================================
+// DISPLAY QUESTION
+// ====================================================
+function displayQuestion(state) {
+  currentQuestion = state;
+  document.getElementById('questionNumber').textContent = `Q ${state.questionNumber} / ${state.totalQuestions}`;
+  document.getElementById('currentPlayer').textContent = '';
+  document.getElementById('questionText').textContent = state.question;
+  document.getElementById('answerFeedback').innerHTML = '';
+
+  const container = document.getElementById('optionsContainer');
+  container.innerHTML = '';
+  state.options.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'option';
+    btn.innerHTML = `<span class="opt-letter">${String.fromCharCode(65 + i)}</span><span>${opt}</span>`;
+    btn.onclick = () => selectAnswer(i);
+    container.appendChild(btn);
+  });
+}
+
+// ====================================================
+// SELECT ANSWER
+// ====================================================
+async function selectAnswer(index) {
+  if (isAnswerSubmitted) return;
+  isAnswerSubmitted = true;
+
+  const opts = document.querySelectorAll('.option');
+  opts.forEach(o => o.classList.add('disabled'));
+  opts[index].classList.add('selected');
+
+  showLoading('Submitting answer…');
+
+  try {
+    const result = await api('submitAnswer', currentRoomId, currentPlayerName, index, currentQuestion.questionNumber);
+    if (!result.success) {
+      document.getElementById('answerFeedback').innerHTML = `<div class="feedback wrong">${result.error || 'Too late!'}</div>`;
+      return;
+    }
+    if (opts[result.correctAnswer]) opts[result.correctAnswer].classList.add('correct');
+    if (!result.isCorrect && opts[index]) opts[index].classList.add('wrong');
+
+    const fb = document.getElementById('answerFeedback');
+    if (result.isCorrect) {
+      playCorrect();
+      fb.innerHTML = `<div class="feedback correct">✓ Correct! +${result.scoreChange} points</div>`;
+    } else {
+      playWrong();
+      fb.innerHTML = `<div class="feedback wrong">✗ Wrong! ${result.scoreChange} points</div>`;
+    }
+  } catch (err) {
+    document.getElementById('answerFeedback').innerHTML = `<div class="feedback wrong">Network error: ${err.message}</div>`;
+    isAnswerSubmitted = false;
+  } finally {
+    hideLoading();
+  }
+}
+
+// ====================================================
+// RESULTS
+// ====================================================
+function displayResults(state) {
+  document.getElementById('rP1Name').textContent = state.player1;
+  document.getElementById('rP1Score').textContent = state.player1Score;
+  document.getElementById('rP1Score').classList.toggle('negative', state.player1Score < 0);
+  document.getElementById('rP2Name').textContent = state.player2;
+  document.getElementById('rP2Score').textContent = state.player2Score;
+  document.getElementById('rP2Score').classList.toggle('negative', state.player2Score < 0);
+
+  const icon = document.getElementById('resultIcon');
+  const title = document.getElementById('resultTitle');
+  const subtitle = document.getElementById('resultSubtitle');
+
+  if (state.player1Score === state.player2Score) {
+    icon.textContent = '🤝';
+    title.textContent = "It's a Tie!";
+    subtitle.textContent = 'Perfectly matched';
+  } else {
+    const winner = state.player1Score > state.player2Score ? state.player1 : state.player2;
+    icon.textContent = '🏆';
+    title.textContent = `${winner} wins!`;
+    subtitle.textContent = state.reason === 'time' ? 'Time up!' : 'All questions answered';
+  }
+
+  playVictoryMusic();
+  showScreen('resultScreen');
+}
+
+// ====================================================
+// RESET
+// ====================================================
+function playAgain() {
+  stopPolling();
+  stopGameTimer();
+  currentRoomId = null;
+  currentPlayerName = null;
+  currentQuestion = null;
+  lastQuestionNumber = 0;
+  lastCountdownSeconds = -1;
+  isAnswerSubmitted = false;
+  roomCreatedAt = null;
+  gameStartTimeMs = null;
+  document.getElementById('playerName').value = '';
+  document.getElementById('joinName').value = '';
+  document.getElementById('roomIdInput').value = '';
+  showScreen('homeScreen');
+}
+
+// ====================================================
+// FIRST-TOUCH MUSIC UNLOCK
+// ====================================================
+document.addEventListener('pointerdown', function unlockMusicOnce() {
+  Music.resume().then(() => {
+    if (!Music.isMuted) Music.start();
+  });
+  document.removeEventListener('pointerdown', unlockMusicOnce);
+}, { once: true });
+
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden && Music.ctx && Music.ctx.state === 'suspended') {
+    Music.ctx.resume();
+  }
+});
+</script>
+</body>
+</html>
