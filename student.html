@@ -19,35 +19,19 @@
   <!-- BEAUTIFUL GLOBAL LOADING SCREEN -->
   <div id="globalLoader" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex flex-col justify-center items-center px-4 transition-opacity duration-300">
     <div class="bg-white p-8 rounded-[2rem] shadow-2xl flex flex-col items-center max-w-sm w-full relative overflow-hidden border border-white/20">
-      
-      <!-- Top Accent Progress Line -->
       <div class="absolute top-0 left-0 w-full h-1.5 bg-gray-100">
         <div id="loaderProgressBar" class="h-full bg-blue-600 w-0"></div>
       </div>
-      
-      <!-- Bouncing Icon with Ping Effect -->
       <div class="w-20 h-20 bg-blue-50 text-blue-600 rounded-3xl flex items-center justify-center mb-5 shadow-inner relative">
         <i class="fa-solid fa-graduation-cap text-4xl animate-bounce relative z-10"></i>
         <div class="absolute inset-0 bg-blue-400 rounded-3xl animate-ping opacity-20"></div>
       </div>
-      
       <h3 class="text-2xl font-black text-gray-800 mb-2 tracking-tight">Fetching Data</h3>
-      
-      <!-- Dynamic Rotating Text -->
-      <p id="loaderMessage" class="text-sm text-gray-500 font-medium text-center mb-6 h-10 flex items-center justify-center transition-opacity duration-200">
-        Connecting to secure portal...
-      </p>
-      
-      <!-- Main Gradient Progress Bar -->
+      <p id="loaderMessage" class="text-sm text-gray-500 font-medium text-center mb-6 h-10 flex items-center justify-center transition-opacity duration-200">Connecting to secure portal...</p>
       <div class="w-full bg-gray-100 rounded-full h-3 mb-3 overflow-hidden shadow-inner">
         <div id="loaderProgressFill" class="bg-gradient-to-r from-blue-500 to-indigo-600 h-3 rounded-full w-0"></div>
       </div>
-      
-      <!-- 30s Countdown Timer -->
-      <p class="text-xs font-bold text-gray-400 uppercase tracking-widest">
-        Time Left: <span id="countdownTimer" class="text-blue-600 font-black text-sm">30</span>s
-      </p>
-
+      <p class="text-xs font-bold text-gray-400 uppercase tracking-widest">Time Left: <span id="countdownTimer" class="text-blue-600 font-black text-sm">30</span>s</p>
     </div>
   </div>
 
@@ -55,7 +39,6 @@
   <div class="bg-blue-600 text-white p-6 rounded-b-[2rem] shadow-lg">
     <div class="flex justify-between items-center mb-4">
       <h1 id="greeting" class="text-xl font-light text-blue-100">Good Morning,</h1>
-      
       <div class="relative">
         <button onclick="toggleStudentMenu()" class="text-white text-2xl focus:outline-none"><i class="fa-solid fa-bars"></i></button>
         <div id="studentMenuDropdown" class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl hidden overflow-hidden z-50 text-gray-800 border border-gray-100">
@@ -79,15 +62,9 @@
       <!-- CAROUSEL SECTION -->
       <div class="relative w-full rounded-2xl overflow-hidden shadow-sm border border-gray-100 bg-gray-50">
         <div id="carouselInner" class="flex w-full transition-transform duration-500 ease-in-out">
-          
-          <!-- IMAGE 1 -->
-          <img src="https://raw.githubusercontent.com/hstakeiteasy/hstakeiteasy.github.io/refs/heads/main/static/1.jpg" alt="Slide 1" class="w-full h-auto object-contain flex-shrink-0 block">
-          
-          <!-- IMAGE 2 -->
-          <img src="https://raw.githubusercontent.com/hstakeiteasy/hstakeiteasy.github.io/refs/heads/main/static/2.jpg" alt="Slide 2" class="w-full h-auto object-contain flex-shrink-0 block">
-          
+          <img src="https://raw.githubusercontent.com/hstakeiteasy/hstakeiteasy.github.io/refs/heads/main/static/qe4.png" alt="Slide 1" class="w-full h-auto object-contain flex-shrink-0 block">
+          <img src="https://raw.githubusercontent.com/hstakeiteasy/hstakeiteasy.github.io/refs/heads/main/static/qe5.png" alt="Slide 2" class="w-full h-auto object-contain flex-shrink-0 block">
         </div>
-        <!-- Carousel Indicators -->
         <div class="absolute bottom-2 left-0 right-0 flex justify-center gap-1.5 z-10">
           <button onclick="goToSlide(0)" class="w-2 h-2 rounded-full bg-blue-600 transition-all carousel-dot shadow-sm scale-110"></button>
           <button onclick="goToSlide(1)" class="w-2 h-2 rounded-full bg-blue-600/40 transition-all carousel-dot shadow-sm"></button>
@@ -100,50 +77,47 @@
         <p id="dailyQuote" class="text-gray-700 font-medium italic text-center text-sm relative z-10">"Education is the most powerful weapon which you can use to change the world."</p>
       </div>
 
-      <!-- Quick Stats -->
+      <!-- 🛡️ CLICKABLE QUICK STATS BUTTONS -->
       <div class="grid grid-cols-2 gap-4">
-        <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center">
+        <!-- Attendance Navigate Button -->
+        <button onclick="nav('marks'); toggleAcademicView('attendance');" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center hover:bg-purple-50 transition active:scale-95 w-full">
           <div class="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 mb-2"><i class="fa-solid fa-clipboard-user text-xl"></i></div>
           <p class="text-xs text-gray-500 font-semibold uppercase tracking-wider mb-1">Attendance</p>
           <h3 id="homeAttendance" class="text-2xl font-black text-gray-800">--%</h3>
           <p class="text-[10px] text-gray-400 mt-1">Since Joining</p>
-        </div>
-        <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center">
+        </button>
+        
+        <!-- Last Exam Navigate Button -->
+        <button onclick="nav('marks'); toggleAcademicView('marks');" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center hover:bg-yellow-50 transition active:scale-95 w-full">
           <div class="w-12 h-12 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-600 mb-2"><i class="fa-solid fa-award text-xl"></i></div>
           <p class="text-xs text-gray-500 font-semibold uppercase tracking-wider mb-1">Last Exam</p>
           <h3 id="homeLastExamMark" class="text-2xl font-black text-gray-800">--/--</h3>
           <p id="homeLastExamName" class="text-[10px] text-gray-400 mt-1 truncate w-full px-2">No exams yet</p>
-        </div>
+        </button>
       </div>
 
       <h3 class="font-bold text-gray-800 ml-1 mb-2 mt-4">Quick Links</h3>
       <div class="grid grid-cols-3 gap-3">
-        <!-- 1. Community Link -->
         <button onclick="window.open('https://hstakeiteasy.github.io/community', '_blank')" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center hover:bg-gray-50 transition active:scale-95">
           <i class="fa-solid fa-users text-blue-500 text-2xl mb-2"></i>
           <span class="text-xs font-bold text-gray-700">Community</span>
         </button>
-        <!-- 2. Materials Drive Link -->
-        <button onclick="window.open('https://drive.google.com/drive/folders/1uiP92_Ept5ZIvsQ9z11195x8zPwYuSHn?usp=sharing', '_blank')" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center hover:bg-gray-50 transition active:scale-95">
+        <button id="btn-class-materials" onclick="alert('Loading class materials...')" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center hover:bg-gray-50 transition active:scale-95 opacity-70">
           <i class="fa-brands fa-google-drive text-green-500 text-2xl mb-2"></i>
-          <span class="text-xs font-bold text-gray-700">Materials</span>
+          <span class="text-xs font-bold text-gray-700">Class Content</span>
         </button>
-        <!-- 3. Resources Drive Link -->
-        <button onclick="window.open('https://drive.google.com/drive/folders/1uiP92_Ept5ZIvsQ9z11195x8zPwYuSHn?usp=sharing', '_blank')" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center hover:bg-gray-50 transition active:scale-95">
+        <button id="btn-common-resources" onclick="alert('Loading common resources...')" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center hover:bg-gray-50 transition active:scale-95 opacity-70">
           <i class="fa-solid fa-folder-open text-orange-500 text-2xl mb-2"></i>
-          <span class="text-xs font-bold text-gray-700">Resources</span>
+          <span class="text-[11px] font-bold text-gray-700 text-center leading-tight">Common<br>Resources</span>
         </button>
-        <!-- 4. Fees Link -->
         <button onclick="nav('fees')" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center hover:bg-gray-50 transition active:scale-95">
           <i class="fa-solid fa-wallet text-red-500 text-2xl mb-2"></i>
           <span class="text-xs font-bold text-gray-700">Fees</span>
         </button>
-        <!-- 5. Academics Link -->
         <button onclick="nav('marks')" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center hover:bg-gray-50 transition active:scale-95">
           <i class="fa-solid fa-award text-yellow-500 text-2xl mb-2"></i>
           <span class="text-xs font-bold text-gray-700">Academics</span>
         </button>
-        <!-- 6. Quiz Challenge Link -->
         <button onclick="window.open('https://hstakeiteasy.github.io/quiz', '_blank')" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center hover:bg-gray-50 transition active:scale-95">
           <i class="fa-solid fa-brain text-indigo-500 text-2xl mb-2"></i>
           <span class="text-[11px] font-bold text-gray-700 text-center leading-tight mt-1">Quiz<br>Challenge</span>
@@ -178,31 +152,59 @@
         </div>
       </div>
       <div id="view-marks">
-        <div id="marksHistoryList" class="space-y-3 mb-8"><p class="text-gray-400 text-center py-4"><i class="fa-solid fa-spinner fa-spin"></i> Loading marks...</p></div>
+        <div id="marksHistoryList" class="space-y-4 mb-8"><p class="text-gray-400 text-center py-4"><i class="fa-solid fa-spinner fa-spin"></i> Loading marks...</p></div>
       </div>
       <div id="view-attendance" class="hidden">
         <div id="attendanceHistoryList" class="space-y-2"><p class="text-gray-400 text-center py-4"><i class="fa-solid fa-spinner fa-spin"></i> Loading attendance...</p></div>
       </div>
     </div>
 
-    <!-- TESTS PAGE -->
-    <div id="page-tests" class="page-section">
-      <div class="bg-white p-10 rounded-2xl shadow-sm border border-gray-100 text-center">
-        <i class="fa-solid fa-file-contract text-5xl text-indigo-400 mb-4"></i>
-        <h3 class="text-xl font-bold">Upcoming Tests</h3>
-        <p class="text-gray-500 mt-2 text-sm">Redirecting to tests...</p>
+  </div>
+
+  <!-- 📊 TEST ANALYSIS MODAL -->
+  <div id="testAnalysisModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex justify-center items-center z-[70] p-4 transition-opacity">
+    <div class="bg-white p-6 rounded-2xl w-full max-w-sm shadow-2xl relative overflow-hidden">
+      <!-- Decorative Header Bar -->
+      <div class="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-indigo-500 to-purple-600"></div>
+      
+      <div class="flex justify-between items-center mb-4 mt-2">
+        <h3 id="analysisTestName" class="text-lg font-bold text-gray-800">Test Analysis</h3>
+        <button onclick="document.getElementById('testAnalysisModal').classList.add('hidden')" class="text-gray-400 hover:text-red-500 text-2xl transition"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      
+      <!-- Loader State -->
+      <div id="analysisLoader" class="text-center py-6 text-gray-400">
+        <i class="fa-solid fa-spinner fa-spin text-3xl mb-2 text-indigo-500"></i>
+        <p class="text-xs font-medium">Analyzing performance...</p>
+      </div>
+      
+      <!-- Content State -->
+      <div id="analysisContent" class="hidden space-y-5 mt-2">
+        
+        <!-- Score Highlights -->
+        <div class="flex gap-3">
+          <div class="flex-1 bg-indigo-50 border border-indigo-100 p-3 rounded-xl text-center shadow-sm">
+            <p class="text-[10px] text-indigo-500 font-bold uppercase tracking-wider mb-1">Your Rank</p>
+            <p id="analysisRank" class="text-3xl font-black text-indigo-700">#--</p>
+          </div>
+          <div class="flex-1 bg-purple-50 border border-purple-100 p-3 rounded-xl text-center shadow-sm">
+            <p class="text-[10px] text-purple-500 font-bold uppercase tracking-wider mb-1">Class Avg</p>
+            <p id="analysisAvg" class="text-3xl font-black text-purple-700">--</p>
+          </div>
+        </div>
+        
+        <!-- Top Performers Section -->
+        <div>
+          <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-1">
+            <i class="fa-solid fa-crown text-yellow-500"></i> Top 3 Performers
+          </h4>
+          <div id="analysisTop3" class="space-y-2">
+            <!-- Dynamic List populates here -->
+          </div>
+        </div>
+        
       </div>
     </div>
-
-    <!-- NOTICE PAGE -->
-    <div id="page-notice" class="page-section">
-      <div class="bg-white p-10 rounded-2xl shadow-sm border border-gray-100 text-center">
-        <i class="fa-solid fa-bullhorn text-5xl text-purple-400 mb-4"></i>
-        <h3 class="text-xl font-bold">Notice Board</h3>
-        <p class="text-gray-500 mt-2 text-sm">Redirecting to notices...</p>
-      </div>
-    </div>
-
   </div>
 
   <!-- Bottom Navigation -->
@@ -352,9 +354,10 @@
     startLoader(); // Trigger UI immediately
 
     // --- FAULT-TOLERANT, CONCURRENT FETCH ENGINE ---
-    async function fetchAPI(actionParam) {
+    async function fetchAPI(actionParam, paramsObj = {}) {
       try {
-        const url = `${SCRIPT_URL}?action=${actionParam}&token=${token}&studentId=${studentId}&role=student&_t=${new Date().getTime()}`;
+        let url = `${SCRIPT_URL}?action=${actionParam}&token=${token}&studentId=${studentId}&role=student&_t=${new Date().getTime()}`;
+        Object.keys(paramsObj).forEach(k => url += `&${k}=${encodeURIComponent(paramsObj[k])}`);
         const res = await fetch(url);
         if (!res.ok) throw new Error("Network response not ok");
         return await res.json();
@@ -364,22 +367,70 @@
       }
     }
 
+    // 📊 NEW: LOAD & DISPLAY TEST ANALYSIS
+    async function openTestAnalysis(testId, testName) {
+      if(!testId) return alert("Test ID missing");
+      document.getElementById('analysisTestName').innerText = testName;
+      document.getElementById('testAnalysisModal').classList.remove('hidden');
+      document.getElementById('analysisLoader').classList.remove('hidden');
+      document.getElementById('analysisContent').classList.add('hidden');
+      
+      const res = await fetchAPI('getTestAnalysis', {testId: testId});
+      
+      if(res.ok) {
+        document.getElementById('analysisRank').innerText = `#${res.myRank}`;
+        document.getElementById('analysisAvg').innerText = res.average;
+        
+        let top3Html = '';
+        const medals = [
+          '<i class="fa-solid fa-medal text-yellow-400 text-2xl filter drop-shadow-sm"></i>', 
+          '<i class="fa-solid fa-medal text-gray-300 text-2xl filter drop-shadow-sm"></i>', 
+          '<i class="fa-solid fa-medal text-amber-700 text-2xl filter drop-shadow-sm"></i>'
+        ];
+        
+        res.top3.forEach((t, i) => {
+          const medal = medals[i] || `<span class="font-black text-gray-400">#${i+1}</span>`;
+          const isMe = String(t.studentId).toUpperCase() === String(studentId).toUpperCase();
+          const bgClass = isMe ? 'bg-indigo-50 border-indigo-200 shadow-sm' : 'bg-white border-gray-100';
+          
+          top3Html += `
+            <div class="${bgClass} border p-3 rounded-xl flex justify-between items-center transition">
+              <div class="flex items-center gap-3">
+                <div class="w-8 text-center flex justify-center items-center">${medal}</div>
+                <div>
+                  <p class="text-sm font-bold text-gray-800">${t.name} ${isMe ? '<span class="text-[9px] bg-indigo-600 text-white px-1.5 py-0.5 rounded-full ml-1 font-bold shadow-sm">YOU</span>' : ''}</p>
+                </div>
+              </div>
+              <div class="text-right bg-gray-50 px-3 py-1 rounded-lg border border-gray-100">
+                <span class="font-black text-gray-700 text-lg">${t.mark}</span>
+              </div>
+            </div>
+          `;
+        });
+        document.getElementById('analysisTop3').innerHTML = top3Html;
+        
+        document.getElementById('analysisLoader').classList.add('hidden');
+        document.getElementById('analysisContent').classList.remove('hidden');
+      } else {
+        document.getElementById('analysisLoader').innerHTML = '<p class="text-red-500 font-medium text-sm py-4">Failed to load analysis. Data not available.</p>';
+      }
+    }
+
     async function loadDashboardData() {
       try {
-        const [meData, acaData, feeData, histData] = await Promise.all([
+        const [meData, acaData, feeData, histData, foldersReq] = await Promise.all([
           fetchAPI('me'),
           fetchAPI('studentAcademicStats'),
           fetchAPI('studentFees'),
-          fetchAPI('studentHistory')
+          fetchAPI('studentHistory'),
+          fetchAPI('getStudentFolders')
         ]);
 
-        // 1. Setup Student Info
         if (meData.ok) {
           document.getElementById('studentName').innerText = meData.name || 'Student';
           document.getElementById('studentIdDisplay').innerText = `ID: ${meData.studentId || studentId}`;
         }
 
-        // 2. Setup Academic Summary
         if (acaData.ok) {
           document.getElementById('homeAttendance').innerText = `${acaData.attendance || '--'}%`;
           if (acaData.lastTest) {
@@ -388,7 +439,6 @@
           }
         }
 
-        // 3. Setup Fee Info
         if (feeData.ok) {
           document.getElementById('totalDueAmount').innerText = `₹${feeData.totalDue || 0}`;
           let billsHtml = '';
@@ -409,30 +459,34 @@
            document.getElementById('billsList').innerHTML = '<p class="text-red-500 text-sm text-center mt-4 bg-red-50 p-3 rounded-lg">Unable to load fee data.</p>';
         }
 
-        // 4. Setup History Lists
         if (histData.ok) {
-          // Marks
+          // 🛡️ UPDATED: Render Marks History with Analysis Button
           let mHtml = '';
           if (!histData.marks || histData.marks.length === 0) {
             mHtml = '<p class="text-gray-500 text-sm text-center bg-gray-100 p-3 rounded-lg">No test records found.</p>';
           } else {
             histData.marks.forEach(m => {
               mHtml += `
-              <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex justify-between items-center">
-                <div>
-                  <p class="font-bold text-gray-800">${m.testName || 'Test'}</p>
-                  <p class="text-xs text-gray-400">${cleanDate(m.date)}</p>
+              <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col transition hover:shadow-md">
+                <div class="flex justify-between items-center mb-4">
+                  <div>
+                    <p class="font-bold text-gray-800">${m.testName || 'Test'}</p>
+                    <p class="text-[10px] text-gray-400 font-medium tracking-wide mt-1">${cleanDate(m.date)}</p>
+                  </div>
+                  <div class="text-right bg-blue-50 px-3 py-1.5 rounded-xl border border-blue-100">
+                    <span class="text-2xl font-black text-blue-600">${m.mark}</span>
+                    <span class="text-xs text-blue-400 font-bold">/ ${m.max}</span>
+                  </div>
                 </div>
-                <div class="text-right">
-                  <span class="text-xl font-black text-blue-600">${m.mark}</span>
-                  <span class="text-xs text-gray-400 font-bold">/ ${m.max}</span>
-                </div>
+                <!-- Analysis Trigger Button -->
+                <button onclick="openTestAnalysis('${m.testId}', '${m.testName}')" class="w-full py-2.5 bg-indigo-50 text-indigo-600 rounded-xl text-xs font-bold hover:bg-indigo-600 hover:text-white transition-all flex items-center justify-center gap-2 border border-indigo-100 active:scale-95">
+                  <i class="fa-solid fa-chart-simple"></i> View Analysis
+                </button>
               </div>`;
             });
           }
           document.getElementById('marksHistoryList').innerHTML = mHtml;
 
-          // Attendance
           let aHtml = '';
           if (!histData.attendance || histData.attendance.length === 0) {
             aHtml = '<p class="text-gray-500 text-sm text-center bg-gray-100 p-3 rounded-lg">No attendance records found.</p>';
@@ -450,6 +504,27 @@
         } else {
            document.getElementById('marksHistoryList').innerHTML = '<p class="text-red-500 text-sm text-center bg-red-50 p-3 rounded-lg">Unable to load marks.</p>';
            document.getElementById('attendanceHistoryList').innerHTML = '<p class="text-red-500 text-sm text-center bg-red-50 p-3 rounded-lg">Unable to load attendance.</p>';
+        }
+
+        if (foldersReq && foldersReq.ok) {
+          const btnClass = document.getElementById('btn-class-materials');
+          const btnCommon = document.getElementById('btn-common-resources');
+
+          if (foldersReq.batchFolder) {
+            btnClass.onclick = () => window.open(foldersReq.batchFolder, '_blank');
+            btnClass.classList.remove('opacity-70');
+          } else {
+            btnClass.onclick = () => alert("Class Materials folder has not been assigned for your batch yet.");
+            btnClass.classList.remove('opacity-70');
+          }
+
+          if (foldersReq.globalUrl) {
+            btnCommon.onclick = () => window.open(foldersReq.globalUrl, '_blank');
+            btnCommon.classList.remove('opacity-70');
+          } else {
+            btnCommon.onclick = () => alert("Common Resources folder is currently empty.");
+            btnCommon.classList.remove('opacity-70');
+          }
         }
 
       } catch (err) {
