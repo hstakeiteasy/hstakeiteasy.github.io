@@ -62,6 +62,19 @@
     100% { transform: scale(1.4); opacity: 0; }
   }
 
+  /* ===== RULES BUTTON (floating left) ===== */
+  .rules-toggle {
+    position: fixed; top: 16px; left: 16px;
+    height: 44px; padding: 0 14px; border-radius: 22px;
+    background: var(--white); border: none; cursor: pointer;
+    display: flex; align-items: center; gap: 6px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+    z-index: 5000; transition: transform .2s;
+    font-size: 13px; font-weight: 700; color: var(--black);
+  }
+  .rules-toggle:active { transform: scale(0.95); }
+  .rules-toggle svg { width: 16px; height: 16px; fill: var(--black); }
+
   .screen { display:none; }
   .screen.active { display:block; animation: fadeIn .25s ease; }
   @keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
@@ -126,6 +139,65 @@
     border-radius:50%; animation:spin .8s linear infinite;
   }
   .loading-text { font-size:14px; font-weight:600; color:var(--gray-700); text-align:center; }
+
+  /* ===== RULES MODAL ===== */
+  .rules-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.65);
+    backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 10000; padding: 20px;
+    opacity: 0; visibility: hidden;
+    transition: opacity .25s ease, visibility .25s ease;
+  }
+  .rules-overlay.show { opacity: 1; visibility: visible; }
+  .rules-card {
+    background: var(--white); color: var(--black);
+    border-radius: 20px; width: 100%; max-width: 420px;
+    padding: 28px 24px;
+    box-shadow: 0 25px 70px rgba(0,0,0,0.5);
+    animation: pop .3s ease;
+    max-height: 90vh; overflow-y: auto;
+  }
+  .rules-title {
+    font-size: 22px; font-weight: 900; letter-spacing: -0.5px;
+    margin-bottom: 4px;
+  }
+  .rules-sub {
+    font-size: 13px; color: var(--gray-500);
+    margin-bottom: 20px; font-weight: 500;
+  }
+  .rules-list { list-style: none; }
+  .rules-list li {
+    display: flex; gap: 12px; align-items: flex-start;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--gray-100);
+    font-size: 14px; line-height: 1.5; color: var(--gray-700);
+    font-weight: 500;
+  }
+  .rules-list li:last-child { border-bottom: none; }
+  .rules-list .num {
+    flex-shrink: 0;
+    width: 24px; height: 24px;
+    background: var(--black); color: var(--white);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 800;
+    margin-top: 1px;
+  }
+  .rules-list strong { color: var(--black); font-weight: 700; }
+  .rules-note {
+    background: var(--gray-50);
+    border: 1px solid var(--gray-200);
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 12px;
+    color: var(--gray-700);
+    line-height: 1.5;
+    margin-top: 16px;
+    font-weight: 500;
+  }
+  .rules-actions { margin-top: 20px; }
 
   .room-card {
     background:var(--gray-50); border:1.5px dashed var(--gray-300);
@@ -249,6 +321,7 @@
     .timer-value { font-size:48px; }
     .timer-circle { width:140px; height:140px; }
     .music-toggle { top:12px; right:12px; width:38px; height:38px; }
+    .rules-toggle { top:12px; left:12px; height:38px; font-size:12px; }
   }
 </style>
 </head>
@@ -258,6 +331,54 @@
   <span class="wave"></span>
   <svg id="musicIcon" viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
 </button>
+
+<button class="rules-toggle" onclick="openRules()" aria-label="Show rules">
+  <svg viewBox="0 0 24 24"><path d="M11 7h2v2h-2zm0 4h2v6h-2zm1-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
+  Rules
+</button>
+
+<!-- RULES MODAL -->
+<div id="rulesOverlay" class="rules-overlay">
+  <div class="rules-card">
+    <div class="rules-title">How to Play</div>
+    <div class="rules-sub">Read this once, then jump in</div>
+
+    <ul class="rules-list">
+      <li>
+        <span class="num">1</span>
+        <span>Enter your name and <strong>Create Room</strong>. Share the Room Code with your friend via WhatsApp or Copy.</span>
+      </li>
+      <li>
+        <span class="num">2</span>
+        <span>Your friend enters the code and taps <strong>Join Room</strong>. A <strong>10-second countdown</strong> starts once both players are in.</span>
+      </li>
+      <li>
+        <span class="num">3</span>
+        <span>You play <strong>5 questions</strong>. Each question has <strong>4 options</strong>. The <strong>first player to answer</strong> locks in their choice, and the next question appears for both.</span>
+      </li>
+      <li>
+        <span class="num">4</span>
+        <span>Scoring: <strong>Correct = +10</strong> points. <strong>Wrong = -5</strong> points. Scores can go negative.</span>
+      </li>
+      <li>
+        <span class="num">5</span>
+        <span>The whole match has a <strong>5-minute time limit</strong>. If time runs out before question 5, the player with the highest score wins.</span>
+      </li>
+      <li>
+        <span class="num">6</span>
+        <span><strong>Highest score wins.</strong> Ties are possible. Press <strong>Play Again</strong> to start a new match.</span>
+      </li>
+    </ul>
+
+    <div class="rules-note">
+      Rooms automatically expire after 5 minutes if no opponent joins, and all match data is deleted from the database 1 hour after creation.
+    </div>
+
+    <div class="rules-actions">
+      <button class="btn btn-primary" onclick="closeRules()">Got it, let me play</button>
+    </div>
+  </div>
+</div>
 
 <div id="loadingOverlay" class="loading-overlay">
   <div class="loading-overlay-content">
@@ -403,6 +524,34 @@ let audioCtx = null;
 let gameTimerInterval = null;
 
 // ====================================================
+// RULES MODAL
+// ====================================================
+const RULES_SEEN_KEY = 'quizDuelRulesSeen_v1';
+
+function openRules() {
+  document.getElementById('rulesOverlay').classList.add('show');
+}
+
+function closeRules() {
+  document.getElementById('rulesOverlay').classList.remove('show');
+  try { localStorage.setItem(RULES_SEEN_KEY, '1'); } catch (e) {}
+}
+
+// Show on first visit (after tiny delay so UI settles)
+window.addEventListener('DOMContentLoaded', () => {
+  let seen = false;
+  try { seen = localStorage.getItem(RULES_SEEN_KEY) === '1'; } catch (e) {}
+  if (!seen) {
+    setTimeout(openRules, 350);
+  }
+});
+
+// Close on backdrop click
+document.getElementById('rulesOverlay').addEventListener('click', function(e) {
+  if (e.target === this) closeRules();
+});
+
+// ====================================================
 // ROCK MUSIC ENGINE
 // ====================================================
 const Music = {
@@ -415,76 +564,50 @@ const Music = {
   nextNoteTime: 0,
   step: 0,
   bpm: 130,
-  volume: 0.16, // master music volume
+  volume: 0.16,
 
-  // One bar = 16 sixteenth-notes
-  // Each step object: { bass, chord, drums }
-  // Rhythm: classic rock driving 8th-note feel
   pattern: [
-    // 1 (chord hit + kick + snare)
     { bass: true, chord: true,  kick: true,  snare: false, hat: true },
-    // 2
     { bass: false, chord: false, kick: false, snare: false, hat: true },
-    // 3
     { bass: true, chord: false, kick: false, snare: false, hat: true },
-    // 4
     { bass: false, chord: false, kick: false, snare: true, hat: true },
-    // 5
     { bass: true, chord: true,  kick: true,  snare: false, hat: true },
-    // 6
     { bass: false, chord: false, kick: false, snare: false, hat: true },
-    // 7
     { bass: true, chord: false, kick: true, snare: false, hat: true },
-    // 8
     { bass: false, chord: false, kick: false, snare: true, hat: true },
-    // 9
     { bass: true, chord: true,  kick: true,  snare: false, hat: true },
-    // 10
     { bass: false, chord: false, kick: false, snare: false, hat: true },
-    // 11
     { bass: true, chord: false, kick: false, snare: false, hat: true },
-    // 12
     { bass: false, chord: false, kick: false, snare: true, hat: true },
-    // 13
     { bass: true, chord: true,  kick: true,  snare: false, hat: true },
-    // 14
     { bass: false, chord: false, kick: false, snare: false, hat: true },
-    // 15
     { bass: true, chord: false, kick: true, snare: false, hat: true },
-    // 16
     { bass: false, chord: false, kick: false, snare: true, hat: true }
   ],
 
-  // Power-chord progression (E5 — G5 — A5 — E5) — classic rock riff feel
-  // Each bar repeats the same chord. Progression: 2 bars E, 2 bars G, 2 bars A, 2 bars E
   chordProgression: [
-    { root: 82.41,  third: 123.47, fifth: 164.81 }, // E2 power chord (E2 B2 E3)
-    { root: 82.41,  third: 123.47, fifth: 164.81 }, // E
-    { root: 98.00,  third: 146.83, fifth: 196.00 }, // G2
-    { root: 98.00,  third: 146.83, fifth: 196.00 }, // G
-    { root: 110.00, third: 164.81, fifth: 220.00 }, // A2
-    { root: 110.00, third: 164.81, fifth: 220.00 }, // A
-    { root: 82.41,  third: 123.47, fifth: 164.81 }, // E
-    { root: 82.41,  third: 123.47, fifth: 164.81 }  // E
+    { root: 82.41,  third: 123.47, fifth: 164.81 },
+    { root: 82.41,  third: 123.47, fifth: 164.81 },
+    { root: 98.00,  third: 146.83, fifth: 196.00 },
+    { root: 98.00,  third: 146.83, fifth: 196.00 },
+    { root: 110.00, third: 164.81, fifth: 220.00 },
+    { root: 110.00, third: 164.81, fifth: 220.00 },
+    { root: 82.41,  third: 123.47, fifth: 164.81 },
+    { root: 82.41,  third: 123.47, fifth: 164.81 }
   ],
   barIndex: 0,
 
   init() {
     if (this.ctx) return;
     this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-
-    // Master gain (volume control)
     this.masterGain = this.ctx.createGain();
     this.masterGain.gain.value = this.isMuted ? 0 : this.volume;
-
-    // Compressor for that "loud but not clipping" rock punch
     this.compressor = this.ctx.createDynamicsCompressor();
     this.compressor.threshold.value = -18;
     this.compressor.knee.value = 10;
     this.compressor.ratio.value = 6;
     this.compressor.attack.value = 0.003;
     this.compressor.release.value = 0.25;
-
     this.compressor.connect(this.masterGain);
     this.masterGain.connect(this.ctx.destination);
   },
@@ -530,144 +653,107 @@ const Music = {
 
   _schedule() {
     if (!this.isPlaying) return;
-
-    const sixteenth = 60 / this.bpm / 4; // duration of one 16th note
+    const sixteenth = 60 / this.bpm / 4;
     const lookAhead = 0.15;
-
     while (this.nextNoteTime < this.ctx.currentTime + lookAhead) {
       this._playStep(this.step, this.nextNoteTime, sixteenth);
       this.step++;
-
       if (this.step >= this.pattern.length) {
         this.step = 0;
         this.barIndex = (this.barIndex + 1) % this.chordProgression.length;
       }
-
       this.nextNoteTime += sixteenth;
     }
-
     this.schedulerTimer = setTimeout(() => this._schedule(), 40);
   },
 
   _playStep(stepIndex, time, sixteenth) {
     const p = this.pattern[stepIndex];
     const chord = this.chordProgression[this.barIndex];
-
-    if (p.chord)  this._playPowerChord(chord, time, sixteenth * 3);
-    if (p.bass)   this._playBass(chord.root / 2, time, sixteenth * 2);
-    if (p.kick)   this._playKick(time);
-    if (p.snare)  this._playSnare(time);
-    if (p.hat)    this._playHat(time);
+    if (p.chord) this._playPowerChord(chord, time, sixteenth * 3);
+    if (p.bass)  this._playBass(chord.root / 2, time, sixteenth * 2);
+    if (p.kick)  this._playKick(time);
+    if (p.snare) this._playSnare(time);
+    if (p.hat)   this._playHat(time);
   },
 
-  // ===== DISTORTED POWER CHORD =====
   _playPowerChord(chord, startTime, dur) {
-    // Three oscillators — root, third (fifth of scale) and octave
     const voices = [chord.root, chord.third, chord.fifth];
     const now = startTime;
     const end = now + dur;
-
-    // Slightly detune each voice for a "wall of sound"
     voices.forEach((freq, i) => {
       const osc = this.ctx.createOscillator();
       const gain = this.ctx.createGain();
       const filter = this.ctx.createBiquadFilter();
       const dist = this.ctx.createWaveShaper();
-
       osc.type = 'sawtooth';
-      osc.frequency.value = freq * (i === 1 ? 2 : 1); // octave on middle
-      osc.detune.value = (i - 1) * 6; // slight spread
-
-      // Mild distortion via waveshaper
+      osc.frequency.value = freq * (i === 1 ? 2 : 1);
+      osc.detune.value = (i - 1) * 6;
       dist.curve = this._makeDistortionCurve(45);
       dist.oversample = '4x';
-
-      // Low-pass to tame the harshness
       filter.type = 'lowpass';
       filter.frequency.value = 2200;
       filter.Q.value = 0.8;
-
-      // Envelope — sharp attack, quick decay for a "chug"
       gain.gain.setValueAtTime(0.0001, now);
       gain.gain.exponentialRampToValueAtTime(0.22, now + 0.005);
       gain.gain.exponentialRampToValueAtTime(0.001, now + dur);
-
       osc.connect(dist);
       dist.connect(filter);
       filter.connect(gain);
       gain.connect(this.compressor);
-
       osc.start(now);
       osc.stop(end + 0.05);
     });
   },
 
-  // ===== BASS =====
   _playBass(freq, startTime, dur) {
     const osc = this.ctx.createOscillator();
     const gain = this.ctx.createGain();
     const filter = this.ctx.createBiquadFilter();
-
     osc.type = 'sawtooth';
     osc.frequency.value = freq;
-
     filter.type = 'lowpass';
     filter.frequency.value = 400;
     filter.Q.value = 4;
-
     gain.gain.setValueAtTime(0.0001, startTime);
     gain.gain.exponentialRampToValueAtTime(0.28, startTime + 0.01);
     gain.gain.exponentialRampToValueAtTime(0.001, startTime + dur);
-
     osc.connect(filter);
     filter.connect(gain);
     gain.connect(this.compressor);
-
     osc.start(startTime);
     osc.stop(startTime + dur + 0.05);
   },
 
-  // ===== KICK DRUM =====
   _playKick(time) {
     const osc = this.ctx.createOscillator();
     const gain = this.ctx.createGain();
-
     osc.frequency.setValueAtTime(160, time);
     osc.frequency.exponentialRampToValueAtTime(45, time + 0.12);
-
     gain.gain.setValueAtTime(0.6, time);
     gain.gain.exponentialRampToValueAtTime(0.001, time + 0.18);
-
     osc.connect(gain);
     gain.connect(this.compressor);
     osc.start(time);
     osc.stop(time + 0.2);
   },
 
-  // ===== SNARE (noise burst + tone) =====
   _playSnare(time) {
-    // Noise
     const buffer = this.ctx.createBuffer(1, this.ctx.sampleRate * 0.15, this.ctx.sampleRate);
     const data = buffer.getChannelData(0);
     for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
-
     const noise = this.ctx.createBufferSource();
     noise.buffer = buffer;
-
     const noiseGain = this.ctx.createGain();
     noiseGain.gain.setValueAtTime(0.35, time);
     noiseGain.gain.exponentialRampToValueAtTime(0.001, time + 0.14);
-
     const noiseFilter = this.ctx.createBiquadFilter();
     noiseFilter.type = 'highpass';
     noiseFilter.frequency.value = 1400;
-
     noise.connect(noiseFilter);
     noiseFilter.connect(noiseGain);
     noiseGain.connect(this.compressor);
     noise.start(time);
-
-    // Tone body
     const osc = this.ctx.createOscillator();
     const oscGain = this.ctx.createGain();
     osc.type = 'triangle';
@@ -680,23 +766,18 @@ const Music = {
     osc.stop(time + 0.12);
   },
 
-  // ===== HI-HAT =====
   _playHat(time) {
     const buffer = this.ctx.createBuffer(1, this.ctx.sampleRate * 0.05, this.ctx.sampleRate);
     const data = buffer.getChannelData(0);
     for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
-
     const noise = this.ctx.createBufferSource();
     noise.buffer = buffer;
-
     const gain = this.ctx.createGain();
     gain.gain.setValueAtTime(0.08, time);
     gain.gain.exponentialRampToValueAtTime(0.001, time + 0.04);
-
     const filter = this.ctx.createBiquadFilter();
     filter.type = 'highpass';
     filter.frequency.value = 7000;
-
     noise.connect(filter);
     filter.connect(gain);
     gain.connect(this.compressor);
@@ -734,18 +815,13 @@ const Music = {
 };
 
 function toggleMusic() {
-  if (Music.isMuted) {
-    Music.setMuted(false);
-  } else if (!Music.isPlaying) {
-    Music.start();
-    Music.setMuted(false);
-  } else {
-    Music.setMuted(true);
-  }
+  if (Music.isMuted) Music.setMuted(false);
+  else if (!Music.isPlaying) { Music.start(); Music.setMuted(false); }
+  else Music.setMuted(true);
 }
 
 // ====================================================
-// LOADING OVERLAY
+// LOADING
 // ====================================================
 let loadingCount = 0;
 function showLoading(text) {
@@ -775,9 +851,6 @@ function setButtonBusy(btn, busy, busyText) {
   }
 }
 
-// ====================================================
-// API
-// ====================================================
 async function api(action, ...args) {
   const res = await fetch(API_URL, {
     method: 'POST',
@@ -790,7 +863,7 @@ async function api(action, ...args) {
 }
 
 // ====================================================
-// SFX (separate from music)
+// SFX
 // ====================================================
 function initAudio() {
   if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -976,7 +1049,7 @@ function startRoomExpiryTimer() {
 // SHARE
 // ====================================================
 function shareWhatsApp() {
-  const text = `🎯 Join my Quiz Duel!\n\nRoom Code: *${currentRoomId}*\n\nOpen: ${location.href}`;
+  const text = `Join my Quiz Duel!\n\nRoom Code: ${currentRoomId}\n\nOpen: ${location.href}`;
   window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
 }
 
@@ -985,7 +1058,7 @@ function copyRoomId(ev) {
     const btn = ev ? ev.currentTarget : null;
     if (btn) {
       const original = btn.textContent;
-      btn.textContent = '✓ Copied';
+      btn.textContent = 'Copied';
       setTimeout(() => { btn.textContent = original; }, 1200);
     }
   });
@@ -1129,10 +1202,10 @@ async function selectAnswer(index) {
     const fb = document.getElementById('answerFeedback');
     if (result.isCorrect) {
       playCorrect();
-      fb.innerHTML = `<div class="feedback correct">✓ Correct! +${result.scoreChange} points</div>`;
+      fb.innerHTML = `<div class="feedback correct">Correct. +${result.scoreChange} points</div>`;
     } else {
       playWrong();
-      fb.innerHTML = `<div class="feedback wrong">✗ Wrong! ${result.scoreChange} points</div>`;
+      fb.innerHTML = `<div class="feedback wrong">Wrong. ${result.scoreChange} points</div>`;
     }
   } catch (err) {
     document.getElementById('answerFeedback').innerHTML = `<div class="feedback wrong">Network error: ${err.message}</div>`;
@@ -1158,14 +1231,14 @@ function displayResults(state) {
   const subtitle = document.getElementById('resultSubtitle');
 
   if (state.player1Score === state.player2Score) {
-    icon.textContent = '🤝';
-    title.textContent = "It's a Tie!";
+    icon.textContent = '';
+    title.textContent = "It's a Tie";
     subtitle.textContent = 'Perfectly matched';
   } else {
     const winner = state.player1Score > state.player2Score ? state.player1 : state.player2;
-    icon.textContent = '🏆';
-    title.textContent = `${winner} wins!`;
-    subtitle.textContent = state.reason === 'time' ? 'Time up!' : 'All questions answered';
+    icon.textContent = '';
+    title.textContent = `${winner} wins`;
+    subtitle.textContent = state.reason === 'time' ? 'Time up' : 'All questions answered';
   }
 
   playVictoryMusic();
