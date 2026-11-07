@@ -59,7 +59,7 @@
     <!-- HOME PAGE -->
     <div id="page-home" class="page-section active space-y-6">
 
-      <!-- CAROUSEL SECTION (UPDATED IMAGES) -->
+      <!-- CAROUSEL SECTION -->
       <div class="relative w-full rounded-2xl overflow-hidden shadow-sm border border-gray-100 bg-gray-50">
         <div id="carouselInner" class="flex w-full transition-transform duration-500 ease-in-out">
           <img src="https://raw.githubusercontent.com/hstakeiteasy/hstakeiteasy.github.io/refs/heads/main/static/1.jpg" alt="Slide 1" class="w-full h-auto object-contain flex-shrink-0 block">
@@ -79,7 +79,6 @@
 
       <!-- 🛡️ CLICKABLE QUICK STATS BUTTONS -->
       <div class="grid grid-cols-2 gap-4">
-        <!-- Attendance Navigate Button -->
         <button onclick="nav('marks'); toggleAcademicView('attendance');" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center hover:bg-purple-50 transition active:scale-95 w-full">
           <div class="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 mb-2"><i class="fa-solid fa-clipboard-user text-xl"></i></div>
           <p class="text-xs text-gray-500 font-semibold uppercase tracking-wider mb-1">Attendance</p>
@@ -87,7 +86,6 @@
           <p class="text-[10px] text-gray-400 mt-1">Since Joining</p>
         </button>
         
-        <!-- Last Exam Navigate Button -->
         <button onclick="nav('marks'); toggleAcademicView('marks');" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center hover:bg-yellow-50 transition active:scale-95 w-full">
           <div class="w-12 h-12 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-600 mb-2"><i class="fa-solid fa-award text-xl"></i></div>
           <p class="text-xs text-gray-500 font-semibold uppercase tracking-wider mb-1">Last Exam</p>
@@ -161,7 +159,7 @@
 
   </div>
 
-  <!-- 📊 TEST ANALYSIS MODAL -->
+  <!-- 📊 TEST ANALYSIS MODAL (WITH DENSE RANKING LOGIC) -->
   <div id="testAnalysisModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex justify-center items-center z-[70] p-4 transition-opacity">
     <div class="bg-white p-6 rounded-2xl w-full max-w-sm shadow-2xl relative overflow-hidden">
       <!-- Decorative Header Bar -->
@@ -196,9 +194,9 @@
         <!-- Top Performers Section -->
         <div>
           <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-1">
-            <i class="fa-solid fa-crown text-yellow-500"></i> Top 3 Performers
+            <i class="fa-solid fa-crown text-yellow-500"></i> Top Performers
           </h4>
-          <div id="analysisTop3" class="space-y-2">
+          <div id="analysisTop3" class="space-y-2 max-h-48 overflow-y-auto pr-1">
             <!-- Dynamic List populates here -->
           </div>
         </div>
@@ -285,7 +283,6 @@
       return d.toLocaleDateString('en-IN', {day:'2-digit', month:'2-digit', year:'numeric'});
     }
 
-    // --- CAROUSEL LOGIC ---
     let currentSlide = 0;
     function goToSlide(index) {
       currentSlide = index;
@@ -311,7 +308,6 @@
       }
     }, 4000); 
 
-    // --- BEAUTIFUL 30s LOADER LOGIC ---
     let loaderInterval;
     let secondsLeft = 30;
 
@@ -351,9 +347,8 @@
       }
     }
 
-    startLoader(); // Trigger UI immediately
+    startLoader(); 
 
-    // --- FAULT-TOLERANT, CONCURRENT FETCH ENGINE ---
     async function fetchAPI(actionParam, paramsObj = {}) {
       try {
         let url = `${SCRIPT_URL}?action=${actionParam}&token=${token}&studentId=${studentId}&role=student&_t=${new Date().getTime()}`;
@@ -367,7 +362,7 @@
       }
     }
 
-    // 📊 NEW: LOAD & DISPLAY TEST ANALYSIS
+    // 📊 NEW: LOAD & DISPLAY TEST ANALYSIS (DENSE RANKING MAPPING)
     async function openTestAnalysis(testId, testName) {
       if(!testId) return alert("Test ID missing");
       document.getElementById('analysisTestName').innerText = testName;
@@ -381,19 +376,21 @@
         document.getElementById('analysisRank').innerText = `#${res.myRank}`;
         document.getElementById('analysisAvg').innerText = res.average;
         
-        let top3Html = '';
-        const medals = [
-          '<i class="fa-solid fa-medal text-yellow-400 text-2xl filter drop-shadow-sm"></i>', 
-          '<i class="fa-solid fa-medal text-gray-300 text-2xl filter drop-shadow-sm"></i>', 
-          '<i class="fa-solid fa-medal text-amber-700 text-2xl filter drop-shadow-sm"></i>'
-        ];
+        let topHtml = '';
         
-        res.top3.forEach((t, i) => {
-          const medal = medals[i] || `<span class="font-black text-gray-400">#${i+1}</span>`;
+        // Medals are mapped directly to rank number, not array index!
+        const medals = {
+          1: '<i class="fa-solid fa-medal text-yellow-400 text-2xl filter drop-shadow-sm"></i>', 
+          2: '<i class="fa-solid fa-medal text-gray-300 text-2xl filter drop-shadow-sm"></i>', 
+          3: '<i class="fa-solid fa-medal text-amber-700 text-2xl filter drop-shadow-sm"></i>'
+        };
+        
+        res.topPerformers.forEach(t => {
+          const medal = medals[t.rank] || `<span class="font-black text-gray-400">#${t.rank}</span>`;
           const isMe = String(t.studentId).toUpperCase() === String(studentId).toUpperCase();
           const bgClass = isMe ? 'bg-indigo-50 border-indigo-200 shadow-sm' : 'bg-white border-gray-100';
           
-          top3Html += `
+          topHtml += `
             <div class="${bgClass} border p-3 rounded-xl flex justify-between items-center transition">
               <div class="flex items-center gap-3">
                 <div class="w-8 text-center flex justify-center items-center">${medal}</div>
@@ -401,13 +398,14 @@
                   <p class="text-sm font-bold text-gray-800">${t.name} ${isMe ? '<span class="text-[9px] bg-indigo-600 text-white px-1.5 py-0.5 rounded-full ml-1 font-bold shadow-sm">YOU</span>' : ''}</p>
                 </div>
               </div>
-              <div class="text-right bg-gray-50 px-3 py-1 rounded-lg border border-gray-100">
-                <span class="font-black text-gray-700 text-lg">${t.mark}</span>
+              <div class="text-right bg-gray-50 px-3 py-1 rounded-lg border border-gray-100 flex flex-col items-end">
+                <span class="font-black text-gray-700 text-lg leading-tight">${t.mark}</span>
+                <span class="text-[9px] text-gray-400 font-bold uppercase tracking-wider">Rank ${t.rank}</span>
               </div>
             </div>
           `;
         });
-        document.getElementById('analysisTop3').innerHTML = top3Html;
+        document.getElementById('analysisTop3').innerHTML = topHtml;
         
         document.getElementById('analysisLoader').classList.add('hidden');
         document.getElementById('analysisContent').classList.remove('hidden');
@@ -460,7 +458,6 @@
         }
 
         if (histData.ok) {
-          // 🛡️ UPDATED: Render Marks History with Analysis Button
           let mHtml = '';
           if (!histData.marks || histData.marks.length === 0) {
             mHtml = '<p class="text-gray-500 text-sm text-center bg-gray-100 p-3 rounded-lg">No test records found.</p>';
@@ -478,7 +475,6 @@
                     <span class="text-xs text-blue-400 font-bold">/ ${m.max}</span>
                   </div>
                 </div>
-                <!-- Analysis Trigger Button -->
                 <button onclick="openTestAnalysis('${m.testId}', '${m.testName}')" class="w-full py-2.5 bg-indigo-50 text-indigo-600 rounded-xl text-xs font-bold hover:bg-indigo-600 hover:text-white transition-all flex items-center justify-center gap-2 border border-indigo-100 active:scale-95">
                   <i class="fa-solid fa-chart-simple"></i> View Analysis
                 </button>
@@ -534,7 +530,6 @@
       }
     }
 
-    // Fire the logic
     loadDashboardData();
   </script>
 </body>
