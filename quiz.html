@@ -3,33 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Quiz Duel — Challenge a Friend</title>
+<!-- STOP BROWSER CACHING -->
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>Quiz Duel</title>
 <style>
-  :root {
-    --black: #000000;
-    --white: #ffffff;
-    --gray-50: #fafafa;
-    --gray-100: #f5f5f5;
-    --gray-200: #e5e5e5;
-    --gray-300: #d4d4d4;
-    --gray-500: #737373;
-    --gray-700: #404040;
-    --radius: 12px;
-  }
-  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent;
-      font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+  :root { --black: #000; --white: #fff; --gray-50: #fafafa; --gray-100: #f5f5f5; --gray-200: #e5e5e5; --gray-300: #d4d4d4; --gray-500: #737373; --gray-700: #404040; --radius: 12px; }
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
   html, body { height:100%; overflow-x:hidden; }
-  body {
-    background: var(--black); color: var(--white);
-    display:flex; justify-content:center; align-items:center;
-    padding:16px; min-height:100vh; min-height:100dvh;
-  }
-  .app {
-    background: var(--white); color: var(--black);
-    border-radius:20px; width:100%; max-width:460px;
-    padding:28px 24px; box-shadow:0 20px 60px rgba(255,255,255,0.06);
-    position:relative; overflow:hidden;
-  }
+  body { background: var(--black); color: var(--white); display:flex; justify-content:center; align-items:center; padding:16px; min-height:100vh; min-height:100dvh; }
+  .app { background: var(--white); color: var(--black); border-radius:20px; width:100%; max-width:460px; padding:28px 24px; box-shadow:0 20px 60px rgba(255,255,255,0.06); position:relative; overflow:hidden; }
   .brand { display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:24px; }
   .brand-logo { width:32px; height:32px; background:var(--black); border-radius:8px; display:flex; align-items:center; justify-content:center; color:var(--white); font-weight:800; font-size:16px; }
   .brand-name { font-size:20px; font-weight:800; letter-spacing:-0.5px; }
@@ -296,44 +280,39 @@ let currentRoomId = null;
 let currentPlayerName = null;
 let currentQuestion = null;
 let pollInterval = null;
+let isPolling = false;
 let isAnswerSubmitted = false;
 let lastQuestionNumber = 0;
 let lastCountdownSeconds = -1;
 let roomCreatedAt = null;
 let gameStartTimeMs = null;
+let clockOffset = 0;
 let audioCtx = null;
 let gameTimerInterval = null;
 
+// RULES
 const RULES_SEEN_KEY = 'quizDuelRulesSeen_v1';
 function openRules() { document.getElementById('rulesOverlay').classList.add('show'); }
 function closeRules() { document.getElementById('rulesOverlay').classList.remove('show'); try { localStorage.setItem(RULES_SEEN_KEY, '1'); } catch (e) {} }
-
 window.addEventListener('DOMContentLoaded', () => {
   let seen = false; try { seen = localStorage.getItem(RULES_SEEN_KEY) === '1'; } catch (e) {}
   if (!seen) setTimeout(openRules, 350);
 });
 document.getElementById('rulesOverlay').addEventListener('click', function(e) { if (e.target === this) closeRules(); });
 
+// MUSIC
 const Music = {
   ctx: null, masterGain: null, compressor: null, isPlaying: false, isMuted: false,
   schedulerTimer: null, nextNoteTime: 0, step: 0, bpm: 130, volume: 0.16,
   pattern: [
-    { bass: true, chord: true,  kick: true,  snare: false, hat: true },
-    { bass: false, chord: false, kick: false, snare: false, hat: true },
-    { bass: true, chord: false, kick: false, snare: false, hat: true },
-    { bass: false, chord: false, kick: false, snare: true, hat: true },
-    { bass: true, chord: true,  kick: true,  snare: false, hat: true },
-    { bass: false, chord: false, kick: false, snare: false, hat: true },
-    { bass: true, chord: false, kick: true, snare: false, hat: true },
-    { bass: false, chord: false, kick: false, snare: true, hat: true },
-    { bass: true, chord: true,  kick: true,  snare: false, hat: true },
-    { bass: false, chord: false, kick: false, snare: false, hat: true },
-    { bass: true, chord: false, kick: false, snare: false, hat: true },
-    { bass: false, chord: false, kick: false, snare: true, hat: true },
-    { bass: true, chord: true,  kick: true,  snare: false, hat: true },
-    { bass: false, chord: false, kick: false, snare: false, hat: true },
-    { bass: true, chord: false, kick: true, snare: false, hat: true },
-    { bass: false, chord: false, kick: false, snare: true, hat: true }
+    { bass: true, chord: true,  kick: true,  snare: false, hat: true }, { bass: false, chord: false, kick: false, snare: false, hat: true },
+    { bass: true, chord: false, kick: false, snare: false, hat: true }, { bass: false, chord: false, kick: false, snare: true, hat: true },
+    { bass: true, chord: true,  kick: true,  snare: false, hat: true }, { bass: false, chord: false, kick: false, snare: false, hat: true },
+    { bass: true, chord: false, kick: true, snare: false, hat: true }, { bass: false, chord: false, kick: false, snare: true, hat: true },
+    { bass: true, chord: true,  kick: true,  snare: false, hat: true }, { bass: false, chord: false, kick: false, snare: false, hat: true },
+    { bass: true, chord: false, kick: false, snare: false, hat: true }, { bass: false, chord: false, kick: false, snare: true, hat: true },
+    { bass: true, chord: true,  kick: true,  snare: false, hat: true }, { bass: false, chord: false, kick: false, snare: false, hat: true },
+    { bass: true, chord: false, kick: true, snare: false, hat: true }, { bass: false, chord: false, kick: false, snare: true, hat: true }
   ],
   chordProgression: [
     { root: 82.41,  third: 123.47, fifth: 164.81 }, { root: 82.41,  third: 123.47, fifth: 164.81 },
@@ -352,17 +331,10 @@ const Music = {
     this.compressor.connect(this.masterGain); this.masterGain.connect(this.ctx.destination);
   },
   async resume() { this.init(); if (this.ctx.state === 'suspended') { try { await this.ctx.resume(); } catch (e) {} } },
-  start() {
-    if (this.isPlaying) return; this.resume(); this.isPlaying = true; this.step = 0; this.barIndex = 0;
-    this.nextNoteTime = this.ctx.currentTime + 0.08; this._schedule(); this._updateIcon();
-  },
+  start() { if (this.isPlaying) return; this.resume(); this.isPlaying = true; this.step = 0; this.barIndex = 0; this.nextNoteTime = this.ctx.currentTime + 0.08; this._schedule(); this._updateIcon(); },
   stop() { this.isPlaying = false; if (this.schedulerTimer) { clearTimeout(this.schedulerTimer); this.schedulerTimer = null; } this._updateIcon(); },
   toggle() { this.isPlaying ? this.stop() : this.start(); },
-  setMuted(muted) {
-    this.isMuted = muted; this.init(); const now = this.ctx.currentTime;
-    this.masterGain.gain.cancelScheduledValues(now); this.masterGain.gain.setValueAtTime(this.masterGain.gain.value, now);
-    this.masterGain.gain.linearRampToValueAtTime(muted ? 0 : this.volume, now + 0.2); this._updateIcon();
-  },
+  setMuted(muted) { this.isMuted = muted; this.init(); const now = this.ctx.currentTime; this.masterGain.gain.cancelScheduledValues(now); this.masterGain.gain.setValueAtTime(this.masterGain.gain.value, now); this.masterGain.gain.linearRampToValueAtTime(muted ? 0 : this.volume, now + 0.2); this._updateIcon(); },
   _schedule() {
     if (!this.isPlaying) return;
     const sixteenth = 60 / this.bpm / 4, lookAhead = 0.15;
@@ -436,90 +408,43 @@ const Music = {
     else { btn.classList.remove('muted', 'playing'); icon.innerHTML = '<path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>'; }
   }
 };
-function toggleMusic() {
-  if (Music.isMuted) Music.setMuted(false);
-  else if (!Music.isPlaying) { Music.start(); Music.setMuted(false); }
-  else Music.setMuted(true);
-}
+function toggleMusic() { if (Music.isMuted) Music.setMuted(false); else if (!Music.isPlaying) { Music.start(); Music.setMuted(false); } else Music.setMuted(true); }
 
+// UI & LOADING
 let loadingCount = 0;
 function showLoading(text) { loadingCount++; if (text) document.getElementById('loadingText').textContent = text; document.getElementById('loadingOverlay').classList.add('show'); }
 function hideLoading() { loadingCount = Math.max(0, loadingCount - 1); if (loadingCount === 0) document.getElementById('loadingOverlay').classList.remove('show'); }
-
 function setButtonBusy(btn, busy, busyText) {
-  if (!btn) return;
-  const label = btn.querySelector('.btn-label');
-  if (!label) return;
-  if (busy) {
-    btn.dataset.originalText = label.textContent; btn.disabled = true;
-    label.innerHTML = `<span class="btn-spinner"></span>${busyText || 'Please wait…'}`;
-    label.style.display = 'inline-flex'; label.style.alignItems = 'center'; label.style.gap = '8px';
-  } else { btn.disabled = false; label.textContent = btn.dataset.originalText || label.textContent; }
+  if (!btn) return; const label = btn.querySelector('.btn-label'); if (!label) return;
+  if (busy) { btn.dataset.originalText = label.textContent; btn.disabled = true; label.innerHTML = `<span class="btn-spinner"></span>${busyText || 'Please wait…'}`; label.style.display = 'inline-flex'; label.style.alignItems = 'center'; label.style.gap = '8px'; }
+  else { btn.disabled = false; label.textContent = btn.dataset.originalText || label.textContent; }
 }
+function showScreen(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
 
-function showScreen(id) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-}
-
+// API
 async function api(action, ...args) {
-  const res = await fetch(API_URL, {
-    method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    body: JSON.stringify({ action, args }), redirect: 'follow'
-  });
+  const res = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action, args }), redirect: 'follow' });
   if (!res.ok) throw new Error('HTTP ' + res.status);
   return await res.json();
 }
 
+// SFX
 function initAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); if (audioCtx.state === 'suspended') audioCtx.resume(); }
 function playVictoryMusic() {
-  try {
-    initAudio(); const now = audioCtx.currentTime; const notes = [523.25, 659.25, 783.99, 1046.50];
-    notes.forEach((freq, i) => {
-      const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
-      osc.type = 'sine'; osc.frequency.value = freq; osc.connect(gain); gain.connect(audioCtx.destination);
-      const start = now + i * 0.15; gain.gain.setValueAtTime(0, start); gain.gain.linearRampToValueAtTime(0.25, start + 0.03); gain.gain.exponentialRampToValueAtTime(0.001, start + 0.6);
-      osc.start(start); osc.stop(start + 0.65);
-    });
-  } catch (e) {}
+  try { initAudio(); const now = audioCtx.currentTime; const notes = [523.25, 659.25, 783.99, 1046.50]; notes.forEach((freq, i) => { const osc = audioCtx.createOscillator(), gain = audioCtx.createGain(); osc.type = 'sine'; osc.frequency.value = freq; osc.connect(gain); gain.connect(audioCtx.destination); const start = now + i * 0.15; gain.gain.setValueAtTime(0, start); gain.gain.linearRampToValueAtTime(0.25, start + 0.03); gain.gain.exponentialRampToValueAtTime(0.001, start + 0.6); osc.start(start); osc.stop(start + 0.65); }); } catch (e) {}
 }
-function playBeep() {
-  try {
-    initAudio(); const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
-    osc.frequency.value = 880; osc.connect(gain); gain.connect(audioCtx.destination);
-    const now = audioCtx.currentTime; gain.gain.setValueAtTime(0.15, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
-    osc.start(now); osc.stop(now + 0.16);
-  } catch (e) {}
-}
-function playCorrect() {
-  try {
-    initAudio(); const now = audioCtx.currentTime;
-    [880, 1320].forEach((f, i) => {
-      const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
-      osc.type = 'sine'; osc.frequency.value = f; osc.connect(gain); gain.connect(audioCtx.destination);
-      const s = now + i * 0.1; gain.gain.setValueAtTime(0.2, s); gain.gain.exponentialRampToValueAtTime(0.001, s + 0.3);
-      osc.start(s); osc.stop(s + 0.32);
-    });
-  } catch (e) {}
-}
-function playWrong() {
-  try {
-    initAudio(); const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
-    osc.type = 'sawtooth'; osc.frequency.value = 180; osc.connect(gain); gain.connect(audioCtx.destination);
-    const now = audioCtx.currentTime; gain.gain.setValueAtTime(0.15, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
-    osc.start(now); osc.stop(now + 0.32);
-  } catch (e) {}
-}
+function playBeep() { try { initAudio(); const osc = audioCtx.createOscillator(), gain = audioCtx.createGain(); osc.frequency.value = 880; osc.connect(gain); gain.connect(audioCtx.destination); const now = audioCtx.currentTime; gain.gain.setValueAtTime(0.15, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15); osc.start(now); osc.stop(now + 0.16); } catch (e) {} }
+function playCorrect() { try { initAudio(); const now = audioCtx.currentTime; [880, 1320].forEach((f, i) => { const osc = audioCtx.createOscillator(), gain = audioCtx.createGain(); osc.type = 'sine'; osc.frequency.value = f; osc.connect(gain); gain.connect(audioCtx.destination); const s = now + i * 0.1; gain.gain.setValueAtTime(0.2, s); gain.gain.exponentialRampToValueAtTime(0.001, s + 0.3); osc.start(s); osc.stop(s + 0.32); }); } catch (e) {} }
+function playWrong() { try { initAudio(); const osc = audioCtx.createOscillator(), gain = audioCtx.createGain(); osc.type = 'sawtooth'; osc.frequency.value = 180; osc.connect(gain); gain.connect(audioCtx.destination); const now = audioCtx.currentTime; gain.gain.setValueAtTime(0.15, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3); osc.start(now); osc.stop(now + 0.32); } catch (e) {} }
 
+// ACTIONS
 async function createRoom() {
   const name = document.getElementById('playerName').value.trim();
   document.getElementById('homeError').textContent = '';
   if (!name) { document.getElementById('homeError').textContent = 'Please enter your name'; return; }
-
   initAudio(); Music.resume(); Music.start();
   const btn = document.getElementById('createBtn');
   setButtonBusy(btn, true, 'Creating…'); showLoading('Creating room…');
-
   currentPlayerName = name;
   try {
     const result = await api('createRoom', name);
@@ -527,9 +452,7 @@ async function createRoom() {
     currentRoomId = result.roomId; roomCreatedAt = Date.now();
     document.getElementById('displayRoomId').textContent = result.roomId;
     showScreen('waitingScreen'); startRoomExpiryTimer(); startPolling();
-  } catch (err) {
-    document.getElementById('homeError').textContent = 'Network error: ' + err.message;
-  } finally { setButtonBusy(btn, false); hideLoading(); }
+  } catch (err) { document.getElementById('homeError').textContent = 'Network error: ' + err.message; } finally { setButtonBusy(btn, false); hideLoading(); }
 }
 
 async function joinRoom() {
@@ -538,56 +461,44 @@ async function joinRoom() {
   document.getElementById('joinError').textContent = '';
   if (!name) { document.getElementById('joinError').textContent = 'Please enter your name'; return; }
   if (!roomId) { document.getElementById('joinError').textContent = 'Please enter room code'; return; }
-
   initAudio(); Music.resume(); Music.start();
   const btn = document.getElementById('joinBtn');
   setButtonBusy(btn, true, 'Joining…'); showLoading('Joining room…');
-
   currentPlayerName = name; currentRoomId = roomId;
   try {
     const result = await api('joinRoom', roomId, name);
     if (!result.success) { document.getElementById('joinError').textContent = result.error || 'Failed'; currentRoomId = null; return; }
     startPolling();
-  } catch (err) {
-    document.getElementById('joinError').textContent = 'Network error: ' + err.message; currentRoomId = null;
-  } finally { setButtonBusy(btn, false); hideLoading(); }
+  } catch (err) { document.getElementById('joinError').textContent = 'Network error: ' + err.message; currentRoomId = null; } finally { setButtonBusy(btn, false); hideLoading(); }
 }
 
 function startRoomExpiryTimer() {
-  const el = document.getElementById('roomExpiry');
-  if (!el) return;
-  setInterval(() => {
-    const elapsed = (Date.now() - roomCreatedAt) / 1000;
-    const left = Math.max(0, 300 - elapsed);
-    el.textContent = `Expires in ${Math.floor(left / 60)}:${Math.floor(left % 60).toString().padStart(2, '0')}`;
-    if (left <= 0) el.textContent = 'Expired';
-  }, 1000);
+  const el = document.getElementById('roomExpiry'); if (!el) return;
+  setInterval(() => { const elapsed = (Date.now() - roomCreatedAt) / 1000; const left = Math.max(0, 300 - elapsed); el.textContent = `Expires in ${Math.floor(left / 60)}:${Math.floor(left % 60).toString().padStart(2, '0')}`; if (left <= 0) el.textContent = 'Expired'; }, 1000);
 }
+function shareWhatsApp() { window.open(`https://wa.me/?text=${encodeURIComponent(`Join my Quiz Duel!\n\nRoom Code: ${currentRoomId}\n\nOpen: ${location.href}`)}`, '_blank'); }
+function copyRoomId(ev) { navigator.clipboard.writeText(currentRoomId).then(() => { const btn = ev ? ev.currentTarget : null; if (btn) { const original = btn.textContent; btn.textContent = 'Copied'; setTimeout(() => { btn.textContent = original; }, 1200); } }); }
 
-function shareWhatsApp() {
-  const text = `Join my Quiz Duel!\n\nRoom Code: ${currentRoomId}\n\nOpen: ${location.href}`;
-  window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
-}
-
-function copyRoomId(ev) {
-  navigator.clipboard.writeText(currentRoomId).then(() => {
-    const btn = ev ? ev.currentTarget : null;
-    if (btn) { const original = btn.textContent; btn.textContent = 'Copied'; setTimeout(() => { btn.textContent = original; }, 1200); }
-  });
-}
-
+// POLLING & STATE HANDLER (With Absolute Server Sync)
 function startPolling() { stopPolling(); pollInterval = setInterval(checkGameState, 1200); }
 function stopPolling() { if (pollInterval) { clearInterval(pollInterval); pollInterval = null; } }
 
 async function checkGameState() {
-  if (!currentRoomId) return;
+  if (!currentRoomId || isPolling) return;
+  isPolling = true;
   try {
     const state = await api('getGameState', currentRoomId, currentPlayerName);
     handleState(state);
-  } catch (err) { console.warn('Poll error:', err); }
+  } catch (err) { console.warn('Poll error:', err); } finally { isPolling = false; }
 }
 
 function handleState(state) {
+  // EXACT SYNC: Adjust local time by the difference from the server
+  if (state.serverTime) {
+    const latency = 100; // Approx 100ms ping
+    clockOffset = state.serverTime - (Date.now() - latency);
+  }
+
   if (state.status === 'waiting') { showScreen('waitingScreen'); return; }
 
   if (state.status === 'countdown') {
@@ -610,43 +521,43 @@ function handleState(state) {
     document.getElementById('p2Score').textContent = state.player2Score;
     document.getElementById('p2Score').classList.toggle('negative', state.player2Score < 0);
 
-    // Start the 5-minute timer EXACTLY when the server sends the start time
     if (state.gameStartTime && !gameStartTimeMs) {
       gameStartTimeMs = state.gameStartTime;
       startGameTimer();
     }
 
     if (state.questionNumber !== lastQuestionNumber) {
-      // A short loading delay handles the tiny sync difference for late connections
+      // 400ms visual buffer so both players always see the question at the exact same time
       showLoading('Syncing game...');
       setTimeout(() => {
         lastQuestionNumber = state.questionNumber;
         isAnswerSubmitted = false;
         displayQuestion(state);
         hideLoading();
-      }, 400); // 400ms buffer to let both devices catch up perfectly
+      }, 400);
     }
     showScreen('gameScreen');
     return;
   }
 
   if (state.status === 'finished') { stopPolling(); stopGameTimer(); displayResults(state); return; }
-
-  if (state.status === 'error') {
-    stopPolling(); showScreen('homeScreen'); document.getElementById('homeError').textContent = state.error;
-  }
+  if (state.status === 'error') { stopPolling(); showScreen('homeScreen'); document.getElementById('homeError').textContent = state.error; }
 }
 
+// TIMERS
 function startGameTimer() { stopGameTimer(); updateGameTimer(); gameTimerInterval = setInterval(updateGameTimer, 1000); }
 function stopGameTimer() { if (gameTimerInterval) { clearInterval(gameTimerInterval); gameTimerInterval = null; } }
 function updateGameTimer() {
   if (!gameStartTimeMs) return;
-  const left = Math.max(0, 300 - (Date.now() - gameStartTimeMs) / 1000);
+  // Adjust browser time using the server clock offset to prevent drift
+  const currentServerTime = Date.now() + clockOffset;
+  const left = Math.max(0, 300 - (currentServerTime - gameStartTimeMs) / 1000);
   const el = document.getElementById('gameTimer');
   el.textContent = `${Math.floor(left / 60)}:${Math.floor(left % 60).toString().padStart(2, '0')}`;
   el.classList.toggle('urgent', left <= 30);
 }
 
+// GAME UI
 function displayQuestion(state) {
   currentQuestion = state;
   document.getElementById('questionNumber').textContent = `Q ${state.questionNumber} / ${state.totalQuestions}`;
@@ -677,10 +588,8 @@ async function selectAnswer(index) {
 
   try {
     const result = await api('submitAnswer', currentRoomId, currentPlayerName, index, currentQuestion.questionNumber);
-    if (!result.success) {
-      document.getElementById('answerFeedback').innerHTML = `<div class="feedback wrong">${result.error || 'Too late!'}</div>`;
-      return;
-    }
+    if (!result.success) { document.getElementById('answerFeedback').innerHTML = `<div class="feedback wrong">${result.error || 'Too late!'}</div>`; return; }
+    
     if (opts[result.correctAnswer]) opts[result.correctAnswer].classList.add('correct');
     if (!result.isCorrect && opts[index]) opts[index].classList.add('wrong');
 
@@ -702,9 +611,8 @@ function displayResults(state) {
   document.getElementById('rP2Score').classList.toggle('negative', state.player2Score < 0);
 
   const icon = document.getElementById('resultIcon'), title = document.getElementById('resultTitle'), subtitle = document.getElementById('resultSubtitle');
-  if (state.player1Score === state.player2Score) {
-    icon.textContent = ''; title.textContent = "It's a Tie"; subtitle.textContent = 'Perfectly matched';
-  } else {
+  if (state.player1Score === state.player2Score) { icon.textContent = ''; title.textContent = "It's a Tie"; subtitle.textContent = 'Perfectly matched'; }
+  else {
     const winner = state.player1Score > state.player2Score ? state.player1 : state.player2;
     icon.textContent = ''; title.textContent = `${winner} wins`; subtitle.textContent = state.reason === 'time' ? 'Time up' : 'All questions answered';
   }
@@ -722,14 +630,8 @@ function playAgain() {
   showScreen('homeScreen');
 }
 
-document.addEventListener('pointerdown', function unlockMusicOnce() {
-  Music.resume().then(() => { if (!Music.isMuted) Music.start(); });
-  document.removeEventListener('pointerdown', unlockMusicOnce);
-}, { once: true });
-
-document.addEventListener('visibilitychange', () => {
-  if (!document.hidden && Music.ctx && Music.ctx.state === 'suspended') Music.ctx.resume();
-});
+document.addEventListener('pointerdown', function unlockMusicOnce() { Music.resume().then(() => { if (!Music.isMuted) Music.start(); }); document.removeEventListener('pointerdown', unlockMusicOnce); }, { once: true });
+document.addEventListener('visibilitychange', () => { if (!document.hidden && Music.ctx && Music.ctx.state === 'suspended') Music.ctx.resume(); });
 </script>
 </body>
 </html>
