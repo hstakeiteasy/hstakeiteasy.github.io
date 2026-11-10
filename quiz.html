@@ -649,7 +649,7 @@ function copyRoomId(ev) {
 }
 
 // ====================================================
-// POLLING & STATE HANDLER (WITH SELF-HEALING)
+// POLLING & STATE HANDLER
 // ====================================================
 function startPolling() {
   stopPolling();
@@ -683,8 +683,7 @@ function handleState(state) {
   }
 
   if (state.status === 'playing') {
-    // SILENT SKIP: If the DB caught a broken question, just wait for the next tick
-    if (state.skipAnimation) return;
+    if (state.skipAnimation) return; // Silently wait for next tick
 
     document.getElementById('p1Name').textContent = state.player1;
     document.getElementById('p1Score').textContent = state.player1Score;
@@ -693,6 +692,7 @@ function handleState(state) {
     document.getElementById('p2Score').textContent = state.player2Score;
     document.getElementById('p2Score').classList.toggle('negative', state.player2Score < 0);
 
+    // Start the 5-minute timer ONLY when gameStartTime arrives from server
     if (state.gameStartTime && !gameStartTimeMs) {
       gameStartTimeMs = state.gameStartTime;
       startGameTimer();
