@@ -13,6 +13,12 @@
 </head>
 <body class="flex items-center justify-center min-h-screen p-4">
 
+  <!-- Custom Alert Toast -->
+  <div id="customAlert" class="fixed top-5 left-1/2 transform -translate-x-1/2 z-50 flex items-center p-4 min-w-[300px] text-sm text-red-800 rounded-xl bg-red-50 border border-red-200 shadow-lg transition-all duration-300 opacity-0 pointer-events-none -translate-y-5">
+    <i class="fa-solid fa-circle-exclamation mr-3 text-red-500 text-lg"></i>
+    <span id="customAlertText" class="font-medium">Error message</span>
+  </div>
+
   <div class="bg-white p-8 md:p-10 rounded-[2.5rem] shadow-2xl w-full max-w-md border border-white/50 relative overflow-hidden">
     
     <!-- Decorative background blobs -->
@@ -20,8 +26,7 @@
     <div class="absolute bottom-[-50px] left-[-50px] w-32 h-32 bg-indigo-100 rounded-full blur-3xl opacity-60 pointer-events-none"></div>
 
     <div class="relative z-10">
-     
-
+      
       <!-- Logo & Title -->
       <div class="text-center mb-8 pt-4">
         <img src="https://i.ibb.co/RGjnSG5z/image.png" alt="HsTakeItEasy Logo" class="w-20 h-20 mx-auto rounded-2xl shadow-md border border-gray-100 object-cover mb-4">
@@ -83,14 +88,31 @@
       </form>
       
       <!-- Support Link -->
-     
-
+      
     </div>
   </div>
 
   <script>
     // --- REPLACE THIS URL WITH YOUR DEPLOYMENT URL ---
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby7Q4nKX35FU54JgLEyj7HSCRktuHOWX6MCNcHpTcNKLJs_TIfCCEDAvcteRM0sXcWBkw/exec";
+
+    // Custom UI Alert Function
+    function showError(message) {
+      const alertBox = document.getElementById('customAlert');
+      const alertText = document.getElementById('customAlertText');
+      
+      alertText.textContent = message;
+      
+      // Slide in and show
+      alertBox.classList.remove('opacity-0', 'pointer-events-none', '-translate-y-5');
+      alertBox.classList.add('opacity-100', 'translate-y-0');
+      
+      // Auto-hide after 3.5 seconds
+      setTimeout(() => {
+        alertBox.classList.remove('opacity-100', 'translate-y-0');
+        alertBox.classList.add('opacity-0', 'pointer-events-none', '-translate-y-5');
+      }, 3500);
+    }
 
     // If already logged in, redirect
     if(localStorage.getItem('token')) {
@@ -127,13 +149,15 @@
             window.location.href = 'admin.html';
           }
         } else {
-          alert(data.msg || "Invalid credentials. Please try again.");
+          // Replaced default alert with custom UI
+          showError(data.msg || "Invalid credentials. Please try again.");
           btnText.classList.remove('hidden');
           spinner.classList.add('hidden');
         }
       } catch(err) {
         console.error(err);
-        alert("Network Error. Please check your internet connection.");
+        // Replaced default alert with custom UI
+        showError("Network Error. Please check your internet connection.");
         btnText.classList.remove('hidden');
         spinner.classList.add('hidden');
       }
