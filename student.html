@@ -449,6 +449,8 @@
         if (meData.ok) {
           document.getElementById('studentName').innerText = meData.name || 'Student';
           document.getElementById('studentIdDisplay').innerText = `ID: ${meData.studentId || studentId}`;
+          // ADD THIS LINE SO THE QUIZ PORTAL KNOWS THE NAME
+          localStorage.setItem('studentName', meData.name || 'Student'); 
         }
 
         if (acaData.ok) {
