@@ -1,185 +1,344 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Website Under Maintenance</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quiz Challenge - HSTakeItEasy</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body { background-color: #f8fafc; }
+    
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: #f1f1f1; }
+    ::-webkit-scrollbar-thumb { background: #c7d2fe; border-radius: 10px; }
 
-<style>
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+    /* Glowing Button Animation */
+    @keyframes glow { 
+      0% { box-shadow: 0 0 5px rgba(99, 102, 241, 0.4); } 
+      100% { box-shadow: 0 0 20px rgba(99, 102, 241, 0.8), 0 0 30px rgba(99, 102, 241, 0.6); } 
+    }
+    .btn-glow { animation: glow 1.5s infinite alternate; }
 
-body {
-    font-family: Arial, sans-serif;
-    background: linear-gradient(135deg, #101827, #253b59);
-    color: white;
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-}
-
-.maintenance-box {
-    max-width: 650px;
-    width: 100%;
-    text-align: center;
-    background: rgba(255,255,255,0.08);
-    border: 1px solid rgba(255,255,255,0.15);
-    border-radius: 20px;
-    padding: 45px 30px;
-    box-shadow: 0 15px 50px rgba(0,0,0,0.3);
-}
-
-.maintenance-icon {
-    font-size: 85px;
-    margin-bottom: 20px;
-    animation: rotate 5s linear infinite;
-}
-
-@keyframes rotate {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-}
-
-h1 {
-    font-size: 32px;
-    margin-bottom: 15px;
-    color: #ffc857;
-}
-
-.subtitle {
-    font-size: 17px;
-    line-height: 1.7;
-    color: #e0e7f0;
-    margin-bottom: 25px;
-}
-
-.status {
-    display: inline-block;
-    background: #f59e0b;
-    color: #111827;
-    padding: 10px 20px;
-    border-radius: 30px;
-    font-weight: bold;
-    margin-bottom: 25px;
-}
-
-.engineers {
-    font-size: 45px;
-    margin-bottom: 15px;
-}
-
-.message {
-    font-size: 15px;
-    line-height: 1.8;
-    color: #cbd5e1;
-    margin-bottom: 25px;
-}
-
-.progress-container {
-    width: 100%;
-    height: 9px;
-    background: #475569;
-    border-radius: 20px;
-    overflow: hidden;
-    margin-bottom: 15px;
-}
-
-.progress-bar {
-    width: 65%;
-    height: 100%;
-    background: linear-gradient(90deg, #f59e0b, #fcd34d);
-    border-radius: 20px;
-    animation: loading 2s ease-in-out infinite alternate;
-}
-
-@keyframes loading {
-    from { width: 40%; }
-    to { width: 85%; }
-}
-
-.footer {
-    font-size: 13px;
-    color: #94a3b8;
-    margin-top: 30px;
-}
-
-button {
-    background: #f59e0b;
-    color: #111827;
-    border: none;
-    padding: 13px 25px;
-    border-radius: 8px;
-    font-size: 15px;
-    font-weight: bold;
-    cursor: pointer;
-}
-
-button:hover {
-    background: #fbbf24;
-}
-
-@media(max-width: 480px) {
-    h1 { font-size: 25px; }
-    .maintenance-box { padding: 35px 20px; }
-}
-</style>
+    /* Quiz Option Styling */
+    .quiz-option { transition: all 0.2s ease-in-out; }
+    .quiz-option.selected { 
+      border-color: #4f46e5 !important; 
+      background-color: #e0e7ff !important; 
+      font-weight: 800; 
+      color: #4f46e5;
+    }
+    
+    /* Screen transitions */
+    .screen { display: none; animation: fadeIn 0.3s ease-in-out; }
+    .screen.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
 </head>
+<body class="text-gray-800 p-4 md:p-8 flex justify-center min-h-screen items-start pt-10">
 
-<body>
-
-<div class="maintenance-box">
-
-    <div class="maintenance-icon">⚙️</div>
-
-    <h1>We're Under Maintenance!</h1>
-
-    <div class="status">
-        ● MAINTENANCE IN PROGRESS
+  <div class="w-full max-w-md">
+    
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6 px-2">
+      <div>
+        <h1 class="text-2xl font-black text-gray-800 tracking-tight"><i class="fa-solid fa-brain text-indigo-600 mr-2"></i>Quiz Portal</h1>
+        <p class="text-xs text-gray-500 font-medium mt-1">Logged in as: <span id="displayStudentId" class="font-mono text-indigo-600 font-bold">Loading...</span></p>
+      </div>
+      <button onclick="window.close()" class="w-10 h-10 bg-white rounded-full shadow-sm text-gray-400 hover:text-red-500 flex items-center justify-center transition border border-gray-100"><i class="fa-solid fa-xmark text-xl"></i></button>
     </div>
 
-    <p class="subtitle">
-        Our quiz section is currently undergoing scheduled maintenance.
-    </p>
+    <!-- 1. HOME / LEADERBOARD SCREEN -->
+    <div id="screen-home" class="screen active space-y-6">
+      <div class="bg-white rounded-[2rem] p-6 shadow-sm border border-gray-100">
+        
+        <!-- Tabs -->
+        <div class="flex bg-gray-100 rounded-full p-1 mb-6">
+          <button id="tab-daily" onclick="switchTab('daily')" class="flex-1 py-2 text-xs font-bold rounded-full bg-white text-indigo-600 shadow-sm transition-all">Daily</button>
+          <button id="tab-weekly" onclick="switchTab('weekly')" class="flex-1 py-2 text-xs font-bold rounded-full text-gray-500 hover:text-gray-800 transition-all">Weekly</button>
+          <button id="tab-allTime" onclick="switchTab('allTime')" class="flex-1 py-2 text-xs font-bold rounded-full text-gray-500 hover:text-gray-800 transition-all">Overall</button>
+        </div>
 
-    <div class="engineers">👨‍💻 👨‍🔧 👩‍💻</div>
+        <!-- Leaderboard Lists -->
+        <div class="min-h-[200px]">
+          <div id="lb-daily" class="space-y-3"><p class="text-center text-gray-400 py-8 text-sm"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Loading...</p></div>
+          <div id="lb-weekly" class="space-y-3 hidden"></div>
+          <div id="lb-allTime" class="space-y-3 hidden"></div>
+        </div>
+      </div>
 
-    <p class="message">
-        All our engineers are working hard to improve the
-        system and bring everything back online as soon as possible.
-        <br><br>
-        We appreciate your patience and understanding.
-        <br><br>
-        Please try again sometime later.
-        The maintenance may take longer than usual.
-    </p>
-
-    <div class="progress-container">
-        <div class="progress-bar"></div>
+      <button onclick="startChallenge()" class="w-full bg-indigo-600 text-white font-black py-4 rounded-2xl shadow-lg transition active:scale-95 btn-glow flex items-center justify-center gap-2 text-lg">
+        <i class="fa-solid fa-play"></i> START CHALLENGE
+      </button>
     </div>
 
-    <p style="color:#fcd34d; font-size:13px;">
-        Our technical team is working on it...
-    </p>
 
-    <br>
+    <!-- 2. ACTIVE QUIZ SCREEN -->
+    <div id="screen-quiz" class="screen bg-white rounded-[2rem] p-6 shadow-sm border border-gray-100">
+      
+      <div class="flex justify-between items-center mb-6 pb-4 border-b border-gray-100">
+        <span id="questionCount" class="text-xs font-black text-gray-400 bg-gray-100 px-3 py-1.5 rounded-lg tracking-wider">Q 1/5</span>
+        <span id="timerDisplay" class="text-2xl font-black text-indigo-600 flex items-center gap-2 font-mono"><i class="fa-regular fa-clock text-lg text-indigo-400"></i> 05:00</span>
+      </div>
+      
+      <h3 id="questionText" class="text-lg font-bold text-gray-800 mb-6 leading-snug">Loading question...</h3>
+      
+      <div id="optionsContainer" class="space-y-3 mb-8">
+        <!-- Options injected via JS -->
+      </div>
 
-    <button onclick="location.reload()">
-        Try Again
-    </button>
-
-    <div class="footer">
-        © 2026 | Technical Support Team
-        <br>
-        Thank you for your patience.
+      <button id="nextBtn" onclick="nextQuestion()" class="w-full bg-gray-900 text-white font-bold py-3.5 rounded-xl shadow-sm hover:bg-black transition active:scale-95 hidden">Next Question</button>
     </div>
 
-</div>
 
+    <!-- 3. RESULT SCREEN -->
+    <div id="screen-result" class="screen bg-white rounded-[2rem] p-8 shadow-sm border border-gray-100 text-center relative overflow-hidden">
+      <div class="absolute -top-10 -right-10 text-9xl text-indigo-50 opacity-50 z-0"><i class="fa-solid fa-trophy"></i></div>
+      
+      <div class="relative z-10">
+        <i class="fa-solid fa-circle-check text-5xl text-green-500 mb-4"></i>
+        <h2 class="text-2xl font-black text-gray-800 mb-1">Challenge Completed!</h2>
+        <p class="text-sm text-gray-500 mb-6">Your final score has been calculated.</p>
+        
+        <div class="bg-indigo-50 border border-indigo-100 rounded-2xl p-6 mb-6">
+          <p class="text-xs font-bold text-indigo-400 uppercase tracking-widest mb-1">Total Score</p>
+          <h1 id="finalScore" class="text-6xl font-black text-indigo-600">--</h1>
+        </div>
+        
+        <div class="grid grid-cols-3 gap-2 mb-8">
+          <div class="bg-gray-50 rounded-xl p-3 border border-gray-100">
+            <p class="text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-1">Daily Rank</p>
+            <p id="rankDaily" class="text-lg font-black text-gray-800">#--</p>
+          </div>
+          <div class="bg-gray-50 rounded-xl p-3 border border-gray-100">
+            <p class="text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-1">Weekly Rank</p>
+            <p id="rankWeekly" class="text-lg font-black text-gray-800">#--</p>
+          </div>
+          <div class="bg-gray-50 rounded-xl p-3 border border-gray-100">
+            <p class="text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-1">Overall</p>
+            <p id="rankOverall" class="text-lg font-black text-gray-800">#--</p>
+          </div>
+        </div>
+        
+        <button onclick="returnHome()" class="w-full bg-gray-100 text-gray-700 font-bold py-3.5 rounded-xl hover:bg-gray-200 transition active:scale-95">Return to Leaderboard</button>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // 🔴 API URL PROVIDED BY YOU 🔴
+    const API_URL = "https://script.google.com/macros/s/AKfycbywqH08aKVuCcdYgdi4GgK4b0QJUJQGrloNVfvBUddW8lmN7LtGB9jqoJg5omyZ0Ym2/exec";
+    
+    // Auth Check
+    const studentId = localStorage.getItem('studentId') || sessionStorage.getItem('studentId');
+    if (!studentId) {
+      document.body.innerHTML = `
+        <div class="flex flex-col items-center justify-center min-h-screen text-center px-6">
+          <div class="bg-red-50 text-red-500 w-20 h-20 rounded-full flex items-center justify-center text-4xl mb-4"><i class="fa-solid fa-lock"></i></div>
+          <h2 class="text-2xl font-black text-gray-800 mb-2">Access Denied</h2>
+          <p class="text-gray-500 mb-6">You must be logged into the student portal to access the Quiz Challenge.</p>
+          <button onclick="window.close()" class="bg-gray-900 text-white px-6 py-3 rounded-xl font-bold">Close Window</button>
+        </div>`;
+      throw new Error("Unauthorized access.");
+    }
+    
+    document.getElementById('displayStudentId').innerText = studentId;
+
+    // State Variables
+    let quizData = [];
+    let currentIndex = 0;
+    let userAnswers = [];
+    let timerInterval;
+    let timeLeft = 300; // 5 minutes
+    
+    // Marking Scheme
+    const POSITIVE_MARK = 4;
+    const NEGATIVE_MARK = -1;
+
+    // Initialization
+    loadLeaderboard();
+
+    // ==========================================
+    // API CALL HELPER
+    // ==========================================
+    async function fetchAPI(action, params = {}) {
+      try {
+        let url = `${API_URL}?action=${action}&_t=${Date.now()}`;
+        Object.keys(params).forEach(k => url += `&${k}=${encodeURIComponent(params[k])}`);
+        const res = await fetch(url);
+        return await res.json();
+      } catch (err) {
+        console.error("API Error:", err);
+        return { ok: false };
+      }
+    }
+
+    // ==========================================
+    // LEADERBOARD LOGIC
+    // ==========================================
+    function switchTab(tab) {
+      ['daily', 'weekly', 'allTime'].forEach(t => {
+        document.getElementById(`lb-${t}`).classList.add('hidden');
+        document.getElementById(`tab-${t}`).className = 'flex-1 py-2 text-xs font-bold rounded-full text-gray-500 hover:text-gray-800 transition-all bg-transparent shadow-none';
+      });
+      document.getElementById(`lb-${tab}`).classList.remove('hidden');
+      document.getElementById(`tab-${tab}`).className = 'flex-1 py-2 text-xs font-bold rounded-full bg-white text-indigo-600 shadow-sm transition-all';
+    }
+
+    async function loadLeaderboard() {
+      const res = await fetchAPI('getLeaderboard');
+      
+      const buildHtml = (arr) => arr.map((r, i) => `
+        <div class="flex justify-between items-center p-3.5 ${i === 0 ? 'bg-yellow-50 border-yellow-200' : (i===1 ? 'bg-gray-50 border-gray-200' : (i===2 ? 'bg-orange-50 border-orange-200' : 'bg-white border-gray-100'))} border rounded-xl shadow-sm">
+          <div class="flex items-center gap-3">
+            <span class="w-6 text-center font-black ${i === 0 ? 'text-yellow-500' : (i===1 ? 'text-gray-400' : (i===2 ? 'text-orange-400' : 'text-gray-300'))}">#${i+1}</span>
+            <span class="font-bold text-gray-700 font-mono text-sm">${r.id}</span>
+          </div>
+          <span class="text-sm font-black text-indigo-600 bg-indigo-50/50 px-2 py-1 rounded-lg">${r.score} pts</span>
+        </div>`).join('') || "<p class='text-center text-sm text-gray-400 py-6'>No scores yet. Be the first!</p>";
+
+      if (res.ok) {
+        document.getElementById('lb-daily').innerHTML = buildHtml(res.leaderboard.daily);
+        document.getElementById('lb-weekly').innerHTML = buildHtml(res.leaderboard.weekly);
+        document.getElementById('lb-allTime').innerHTML = buildHtml(res.leaderboard.allTime);
+      } else {
+        document.getElementById('lb-daily').innerHTML = "<p class='text-red-500 text-center py-4'>Failed to load data.</p>";
+      }
+    }
+
+    // ==========================================
+    // QUIZ LOGIC
+    // ==========================================
+    function showScreen(screenId) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(`screen-${screenId}`).classList.add('active');
+    }
+
+    async function startChallenge() {
+      showScreen('quiz');
+      document.getElementById('questionText').innerText = "Fetching your questions...";
+      document.getElementById('optionsContainer').innerHTML = '';
+      document.getElementById('nextBtn').classList.add('hidden');
+      
+      const res = await fetchAPI('getQuiz');
+      
+      if (res.ok && res.questions && res.questions.length > 0) {
+        quizData = res.questions;
+        userAnswers = new Array(quizData.length).fill(null);
+        currentIndex = 0;
+        timeLeft = 300;
+        
+        renderQuestion();
+        startTimer();
+      } else {
+        alert("Failed to load questions. Check your database.");
+        returnHome();
+      }
+    }
+
+    function renderQuestion() {
+      const q = quizData[currentIndex];
+      document.getElementById('questionCount').innerText = `Q ${currentIndex + 1}/${quizData.length}`;
+      document.getElementById('questionText').innerText = q.question;
+      
+      const container = document.getElementById('optionsContainer');
+      container.innerHTML = '';
+      
+      q.options.forEach((opt, index) => {
+        const optNum = index + 1;
+        const isSelected = userAnswers[currentIndex] === optNum;
+        
+        const btn = document.createElement('button');
+        btn.className = `w-full text-left p-4 rounded-xl border-2 transition-all quiz-option flex items-center gap-3 ${isSelected ? 'selected' : 'border-gray-100 bg-gray-50 hover:bg-gray-100 hover:border-gray-200 text-gray-600 font-medium'}`;
+        
+        btn.innerHTML = `<span class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${isSelected ? 'bg-indigo-600 text-white' : 'bg-white text-gray-400 border border-gray-200'} shrink-0">${String.fromCharCode(65 + index)}</span> <span>${opt}</span>`;
+        
+        btn.onclick = () => selectOption(optNum);
+        container.appendChild(btn);
+      });
+
+      const nextBtn = document.getElementById('nextBtn');
+      nextBtn.classList.remove('hidden');
+      if (currentIndex === quizData.length - 1) {
+        nextBtn.innerText = "Submit Challenge";
+        nextBtn.className = "w-full bg-indigo-600 text-white font-black py-3.5 rounded-xl shadow-md hover:bg-indigo-700 transition active:scale-95";
+      } else {
+        nextBtn.innerText = "Next Question";
+        nextBtn.className = "w-full bg-gray-900 text-white font-bold py-3.5 rounded-xl shadow-sm hover:bg-black transition active:scale-95";
+      }
+    }
+
+    function selectOption(optNum) {
+      userAnswers[currentIndex] = optNum;
+      renderQuestion(); // Re-render to show selection styling
+    }
+
+    function nextQuestion() {
+      if (currentIndex < quizData.length - 1) {
+        currentIndex++;
+        renderQuestion();
+      } else {
+        finishChallenge();
+      }
+    }
+
+    function startTimer() {
+      const display = document.getElementById('timerDisplay');
+      display.classList.remove('text-red-500', 'animate-pulse');
+      display.classList.add('text-indigo-600');
+      
+      timerInterval = setInterval(() => {
+        timeLeft--;
+        const m = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+        const s = (timeLeft % 60).toString().padStart(2, '0');
+        display.innerHTML = `<i class="fa-regular fa-clock text-lg"></i> ${m}:${s}`;
+        
+        if (timeLeft <= 60) {
+          display.classList.remove('text-indigo-600');
+          display.classList.add('text-red-500', 'animate-pulse');
+        }
+        
+        if (timeLeft <= 0) finishChallenge();
+      }, 1000);
+    }
+
+    // ==========================================
+    // RESULT LOGIC
+    // ==========================================
+    async function finishChallenge() {
+      clearInterval(timerInterval);
+      showScreen('result');
+      
+      // Calculate Score Locally (+4 correct, -1 incorrect, 0 unattempted)
+      let score = 0;
+      quizData.forEach((q, i) => {
+        if (userAnswers[i] === q.answer) score += POSITIVE_MARK;
+        else if (userAnswers[i] !== null) score += NEGATIVE_MARK;
+      });
+
+      document.getElementById('finalScore').innerText = score;
+      document.getElementById('rankDaily').innerHTML = '<i class="fa-solid fa-spinner fa-spin text-gray-300"></i>';
+      document.getElementById('rankWeekly').innerHTML = '<i class="fa-solid fa-spinner fa-spin text-gray-300"></i>';
+      document.getElementById('rankOverall').innerHTML = '<i class="fa-solid fa-spinner fa-spin text-gray-300"></i>';
+
+      // Submit to database and get updated ranks
+      const res = await fetchAPI('submitScore', { studentId: studentId, score: score });
+      
+      if (res.ok) {
+        document.getElementById('rankDaily').innerText = `#${res.dailyRank}`;
+        document.getElementById('rankWeekly').innerText = `#${res.weeklyRank}`;
+        document.getElementById('rankOverall').innerText = `#${res.overallRank}`;
+      } else {
+        document.getElementById('rankDaily').innerText = "Error";
+      }
+    }
+
+    function returnHome() {
+      showScreen('home');
+      loadLeaderboard(); // Refresh leaderboard data
+    }
+  </script>
 </body>
 </html>
