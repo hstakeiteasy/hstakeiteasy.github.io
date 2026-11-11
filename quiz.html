@@ -8,9 +8,10 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     body { background-color: #f8fafc; }
-    ::-webkit-scrollbar { width: 4px; }
-    ::-webkit-scrollbar-track { background: #f1f1f1; }
-    ::-webkit-scrollbar-thumb { background: #c7d2fe; border-radius: 10px; }
+    .smooth-scroll { scroll-behavior: smooth; -webkit-overflow-scrolling: touch; }
+    .smooth-scroll::-webkit-scrollbar { width: 5px; }
+    .smooth-scroll::-webkit-scrollbar-track { background: #f8fafc; border-radius: 10px; }
+    .smooth-scroll::-webkit-scrollbar-thumb { background: #c7d2fe; border-radius: 10px; }
     @keyframes glow { 0% { box-shadow: 0 0 5px rgba(99, 102, 241, 0.4); } 100% { box-shadow: 0 0 20px rgba(99, 102, 241, 0.8), 0 0 30px rgba(99, 102, 241, 0.6); } }
     .btn-glow { animation: glow 1.5s infinite alternate; }
     .quiz-option { transition: all 0.2s ease-in-out; }
@@ -36,10 +37,7 @@
     <!-- 1. HOME / LEADERBOARD SCREEN -->
     <div id="screen-home" class="screen active space-y-6">
       
-      <!-- Personal Dashboard Stats (With Reset Timers) -->
       <div class="grid grid-cols-3 gap-3 mb-6">
-        
-        <!-- Daily Card -->
         <div class="bg-indigo-600 text-white rounded-2xl p-3 shadow-sm text-center flex flex-col justify-center">
           <p class="text-[10px] font-bold uppercase tracking-wider mb-0.5 opacity-80">Daily</p>
           <p id="dashRankDaily" class="text-xl font-black">#--</p>
@@ -49,8 +47,6 @@
             <p id="timerDailyReset" class="text-[9px] font-mono font-bold tracking-wider text-indigo-100">--:--:--</p>
           </div>
         </div>
-
-        <!-- Weekly Card -->
         <div class="bg-white rounded-2xl p-3 shadow-sm border border-gray-100 text-center flex flex-col justify-center">
           <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Weekly</p>
           <p id="dashRankWeekly" class="text-xl font-black text-gray-800">#--</p>
@@ -60,8 +56,6 @@
             <p id="timerWeeklyReset" class="text-[9px] font-mono font-bold tracking-wider text-gray-500">--d --:--:--</p>
           </div>
         </div>
-
-        <!-- Overall Card -->
         <div class="bg-white rounded-2xl p-3 shadow-sm border border-gray-100 text-center flex flex-col justify-center">
           <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Overall</p>
           <p id="dashRankOverall" class="text-xl font-black text-gray-800">#--</p>
@@ -71,11 +65,9 @@
             <p class="text-[9px] font-mono font-bold tracking-wider text-gray-500">Never Resets</p>
           </div>
         </div>
-
       </div>
 
       <div class="bg-white rounded-[2rem] p-6 shadow-sm border border-gray-100">
-        <!-- Tabs -->
         <div class="flex bg-gray-100 rounded-full p-1 mb-6">
           <button id="tab-daily" onclick="switchTab('daily')" class="flex-1 py-2 text-xs font-bold rounded-full bg-white text-indigo-600 shadow-sm transition-all">Daily</button>
           <button id="tab-weekly" onclick="switchTab('weekly')" class="flex-1 py-2 text-xs font-bold rounded-full text-gray-500 hover:text-gray-800 transition-all">Weekly</button>
@@ -83,8 +75,6 @@
         </div>
 
         <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3 px-2"><i class="fa-solid fa-crown text-yellow-500 mr-1"></i> Top 3 Performers</h3>
-
-        <!-- Leaderboard Lists -->
         <div class="min-h-[150px]">
           <div id="lb-daily" class="space-y-3"><p class="text-center text-gray-400 py-6 text-sm"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Loading...</p></div>
           <div id="lb-weekly" class="space-y-3 hidden"></div>
@@ -116,26 +106,40 @@
         <h2 class="text-2xl font-black text-gray-800 mb-1">Challenge Completed!</h2>
         <p class="text-sm text-gray-500 mb-6">Scores submitted successfully.</p>
         
-        <div class="bg-indigo-50 border border-indigo-100 rounded-2xl p-6 mb-6">
+        <div class="bg-indigo-50 border border-indigo-100 rounded-2xl p-6 mb-4">
           <p class="text-xs font-bold text-indigo-400 uppercase tracking-widest mb-1">Total Score</p>
           <h1 id="finalScore" class="text-6xl font-black text-indigo-600">--</h1>
         </div>
+
+        <button onclick="openAnalysis()" class="w-full bg-indigo-100 text-indigo-700 font-bold py-3 rounded-xl mb-4 hover:bg-indigo-200 transition active:scale-95 border border-indigo-200"><i class="fa-solid fa-chart-simple mr-2"></i> View Analysis</button>
         
         <button onclick="returnHome()" class="w-full bg-gray-900 text-white font-bold py-3.5 rounded-xl hover:bg-black transition active:scale-95">Return to Dashboard</button>
       </div>
     </div>
+    
+  </div>
 
+  <!-- 📊 ANALYSIS MODAL POPUP -->
+  <div id="analysisModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden flex justify-center items-center z-[100] p-4 transition-opacity">
+    <div class="bg-white rounded-3xl w-full max-w-md shadow-2xl relative overflow-hidden flex flex-col max-h-[85vh]">
+      <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-indigo-500 to-purple-600"></div>
+      
+      <div class="flex justify-between items-center p-6 border-b border-gray-100 shrink-0">
+        <h3 class="text-xl font-black text-gray-800"><i class="fa-solid fa-magnifying-glass-chart text-indigo-500 mr-2"></i>Session Analysis</h3>
+        <button onclick="closeAnalysis()" class="text-gray-400 hover:text-red-500 w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center transition"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      
+      <div id="analysisContent" class="p-6 overflow-y-auto smooth-scroll overscroll-contain flex-1 space-y-4">
+        <!-- Analysis details injected here -->
+      </div>
+    </div>
   </div>
 
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbyVJ-gPQWSqjcEwISrKO1OuXU3fCuGs2PHpbDHfAqYoT2x3BEAc8MdGnysSgypHG0E/exec";
     
-    function returnToPortal() {
-      window.close(); 
-      window.location.href = "student.html"; 
-    }
+    function returnToPortal() { window.close(); window.location.href = "student.html"; }
 
-    // Auth & Name Check
     const studentId = localStorage.getItem('studentId') || sessionStorage.getItem('studentId');
     const studentName = localStorage.getItem('studentName') || sessionStorage.getItem('studentName');
 
@@ -154,45 +158,23 @@
     
     document.getElementById('displayStudentName').innerText = studentName;
 
-    // Reset Timers Logic
     function updateResetTimers() {
       const now = new Date();
-      
-      // Daily Reset (Today at 23:59:59)
       const dailyTarget = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
       const dailyDiff = dailyTarget - now;
-      
-      const dH = Math.floor((dailyDiff / (1000 * 60 * 60)) % 24);
-      const dM = Math.floor((dailyDiff / 1000 / 60) % 60);
-      const dS = Math.floor((dailyDiff / 1000) % 60);
-      
       document.getElementById('timerDailyReset').innerText = 
-        `${String(dH).padStart(2, '0')}:${String(dM).padStart(2, '0')}:${String(dS).padStart(2, '0')}`;
+        `${String(Math.floor((dailyDiff / (1000 * 60 * 60)) % 24)).padStart(2, '0')}:${String(Math.floor((dailyDiff / 1000 / 60) % 60)).padStart(2, '0')}:${String(Math.floor((dailyDiff / 1000) % 60)).padStart(2, '0')}`;
         
-      // Weekly Reset (Next Sunday at 23:59:59)
-      const dayOfWeek = now.getDay(); // 0 = Sunday
-      const daysToSunday = (7 - dayOfWeek) % 7; 
-      
+      const daysToSunday = (7 - now.getDay()) % 7; 
       const weeklyTarget = new Date(now.getFullYear(), now.getMonth(), now.getDate() + daysToSunday, 23, 59, 59);
       const weeklyDiff = weeklyTarget - now;
-      
-      const wD = Math.floor(weeklyDiff / (1000 * 60 * 60 * 24));
-      const wH = Math.floor((weeklyDiff / (1000 * 60 * 60)) % 24);
-      const wM = Math.floor((weeklyDiff / 1000 / 60) % 60);
-      const wS = Math.floor((weeklyDiff / 1000) % 60);
-      
       document.getElementById('timerWeeklyReset').innerText = 
-        `${wD}d ${String(wH).padStart(2, '0')}:${String(wM).padStart(2, '0')}:${String(wS).padStart(2, '0')}`;
+        `${Math.floor(weeklyDiff / (1000 * 60 * 60 * 24))}d ${String(Math.floor((weeklyDiff / (1000 * 60 * 60)) % 24)).padStart(2, '0')}:${String(Math.floor((weeklyDiff / 1000 / 60) % 60)).padStart(2, '0')}:${String(Math.floor((weeklyDiff / 1000) % 60)).padStart(2, '0')}`;
     }
-    
-    // Start Reset Timers
-    setInterval(updateResetTimers, 1000);
-    updateResetTimers();
+    setInterval(updateResetTimers, 1000); updateResetTimers();
 
     let quizData = [], currentIndex = 0, userAnswers = [], timerInterval, timeLeft = 300;
-    
-    const POSITIVE_MARK = 2;
-    const NEGATIVE_MARK = -1;
+    const POSITIVE_MARK = 2, NEGATIVE_MARK = -1;
 
     loadLeaderboard();
 
@@ -220,18 +202,7 @@
       const buildHtml = (arr) => arr.map(r => {
         const isMe = String(r.id) === String(studentId);
         const rankColor = r.rank === 1 ? 'text-yellow-500' : (r.rank === 2 ? 'text-gray-400' : (r.rank === 3 ? 'text-orange-400' : 'text-gray-300'));
-        const bgStyle = isMe ? 'bg-indigo-50 border-indigo-200 shadow-md' : 'bg-white border-gray-100';
-        
-        return `
-        <div class="flex justify-between items-center p-3.5 ${bgStyle} border rounded-xl shadow-sm transition">
-          <div class="flex items-center gap-3">
-            <span class="w-6 text-center font-black ${rankColor} text-lg">#${r.rank}</span>
-            <div class="flex flex-col">
-              <span class="font-bold text-gray-800 text-sm">${r.name} ${isMe ? '<span class="text-[9px] bg-indigo-600 text-white px-1.5 py-0.5 rounded-full ml-1 font-bold">YOU</span>' : ''}</span>
-            </div>
-          </div>
-          <span class="text-sm font-black text-indigo-600 bg-white border border-indigo-100 px-2.5 py-1 rounded-lg">${r.score} pts</span>
-        </div>`;
+        return `<div class="flex justify-between items-center p-3.5 ${isMe ? 'bg-indigo-50 border-indigo-200 shadow-md' : 'bg-white border-gray-100'} border rounded-xl shadow-sm transition"><div class="flex items-center gap-3"><span class="w-6 text-center font-black ${rankColor} text-lg">#${r.rank}</span><div class="flex flex-col"><span class="font-bold text-gray-800 text-sm">${r.name} ${isMe ? '<span class="text-[9px] bg-indigo-600 text-white px-1.5 py-0.5 rounded-full ml-1 font-bold">YOU</span>' : ''}</span></div></div><span class="text-sm font-black text-indigo-600 bg-white border border-indigo-100 px-2.5 py-1 rounded-lg">${r.score} pts</span></div>`;
       }).join('') || "<p class='text-center text-sm text-gray-400 py-6'>No scores yet. Be the first!</p>";
 
       if (res.ok) {
@@ -239,16 +210,9 @@
         document.getElementById('lb-weekly').innerHTML = buildHtml(res.leaderboard.weekly);
         document.getElementById('lb-allTime').innerHTML = buildHtml(res.leaderboard.overall);
         
-        document.getElementById('dashRankDaily').innerText = `#${res.myStats.daily.rank}`;
-        document.getElementById('dashScoreDaily').innerText = `${res.myStats.daily.score} pts`;
-        
-        document.getElementById('dashRankWeekly').innerText = `#${res.myStats.weekly.rank}`;
-        document.getElementById('dashScoreWeekly').innerText = `${res.myStats.weekly.score} pts`;
-        
-        document.getElementById('dashRankOverall').innerText = `#${res.myStats.overall.rank}`;
-        document.getElementById('dashScoreOverall').innerText = `${res.myStats.overall.score} pts`;
-      } else {
-        document.getElementById('lb-daily').innerHTML = "<p class='text-red-500 text-center py-4'>Failed to load data.</p>";
+        document.getElementById('dashRankDaily').innerText = `#${res.myStats.daily.rank}`; document.getElementById('dashScoreDaily').innerText = `${res.myStats.daily.score} pts`;
+        document.getElementById('dashRankWeekly').innerText = `#${res.myStats.weekly.rank}`; document.getElementById('dashScoreWeekly').innerText = `${res.myStats.weekly.score} pts`;
+        document.getElementById('dashRankOverall').innerText = `#${res.myStats.overall.rank}`; document.getElementById('dashScoreOverall').innerText = `${res.myStats.overall.score} pts`;
       }
     }
 
@@ -263,19 +227,14 @@
       document.getElementById('optionsContainer').innerHTML = '';
       document.getElementById('nextBtn').classList.add('hidden');
       
-      const res = await fetchAPI('getQuiz');
+      const res = await fetchAPI('getQuiz', { studentId: studentId });
       
       if (res.ok && res.questions && res.questions.length > 0) {
-        quizData = res.questions;
-        userAnswers = new Array(quizData.length).fill(null);
-        currentIndex = 0;
-        timeLeft = 300;
-        
-        renderQuestion();
-        startTimer();
+        quizData = res.questions; userAnswers = new Array(quizData.length).fill(null);
+        currentIndex = 0; timeLeft = 300;
+        renderQuestion(); startTimer();
       } else {
-        alert("Failed to load questions. Check your database.");
-        returnHome();
+        alert("Failed to load questions. Check your database."); returnHome();
       }
     }
 
@@ -284,53 +243,30 @@
       document.getElementById('questionCount').innerText = `Q ${currentIndex + 1}/${quizData.length}`;
       document.getElementById('questionText').innerText = q.question;
       
-      const container = document.getElementById('optionsContainer');
-      container.innerHTML = '';
+      const container = document.getElementById('optionsContainer'); container.innerHTML = '';
       
       q.options.forEach((opt, index) => {
-        const optNum = index + 1;
-        const isSelected = userAnswers[currentIndex] === optNum;
-        
+        const optNum = index + 1; const isSelected = userAnswers[currentIndex] === optNum;
         const btn = document.createElement('button');
         btn.className = `w-full text-left p-4 rounded-xl border-2 transition-all quiz-option flex items-center gap-3 ${isSelected ? 'selected' : 'border-gray-100 bg-gray-50 hover:bg-gray-100 hover:border-gray-200 text-gray-600 font-medium'}`;
         btn.innerHTML = `<span class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${isSelected ? 'bg-indigo-600 text-white' : 'bg-white text-gray-400 border border-gray-200'} shrink-0">${String.fromCharCode(65 + index)}</span> <span>${opt}</span>`;
-        btn.onclick = () => selectOption(optNum);
+        btn.onclick = () => { userAnswers[currentIndex] = optNum; renderQuestion(); };
         container.appendChild(btn);
       });
 
-      const nextBtn = document.getElementById('nextBtn');
-      nextBtn.classList.remove('hidden');
-      if (currentIndex === quizData.length - 1) {
-        nextBtn.innerText = "Submit Challenge";
-        nextBtn.className = "w-full bg-indigo-600 text-white font-black py-3.5 rounded-xl shadow-md hover:bg-indigo-700 transition active:scale-95";
-      } else {
-        nextBtn.innerText = "Next Question";
-        nextBtn.className = "w-full bg-gray-900 text-white font-bold py-3.5 rounded-xl shadow-sm hover:bg-black transition active:scale-95";
-      }
+      const nextBtn = document.getElementById('nextBtn'); nextBtn.classList.remove('hidden');
+      if (currentIndex === quizData.length - 1) { nextBtn.innerText = "Submit Challenge"; nextBtn.className = "w-full bg-indigo-600 text-white font-black py-3.5 rounded-xl shadow-md hover:bg-indigo-700 transition active:scale-95"; } 
+      else { nextBtn.innerText = "Next Question"; nextBtn.className = "w-full bg-gray-900 text-white font-bold py-3.5 rounded-xl shadow-sm hover:bg-black transition active:scale-95"; }
     }
 
-    function selectOption(optNum) { userAnswers[currentIndex] = optNum; renderQuestion(); }
-
-    function nextQuestion() {
-      if (currentIndex < quizData.length - 1) { currentIndex++; renderQuestion(); } 
-      else { finishChallenge(); }
-    }
+    function nextQuestion() { if (currentIndex < quizData.length - 1) { currentIndex++; renderQuestion(); } else { finishChallenge(); } }
 
     function startTimer() {
-      const display = document.getElementById('timerDisplay');
-      display.classList.remove('text-red-500', 'animate-pulse');
-      display.classList.add('text-indigo-600');
-      
+      const display = document.getElementById('timerDisplay'); display.classList.remove('text-red-500', 'animate-pulse'); display.classList.add('text-indigo-600');
       timerInterval = setInterval(() => {
         timeLeft--;
-        const m = Math.floor(timeLeft / 60).toString().padStart(2, '0');
-        const s = (timeLeft % 60).toString().padStart(2, '0');
-        display.innerHTML = `<i class="fa-regular fa-clock text-lg"></i> ${m}:${s}`;
-        
-        if (timeLeft <= 60) {
-          display.classList.remove('text-indigo-600');
-          display.classList.add('text-red-500', 'animate-pulse');
-        }
+        display.innerHTML = `<i class="fa-regular fa-clock text-lg"></i> ${String(Math.floor(timeLeft / 60)).padStart(2, '0')}:${String(timeLeft % 60).padStart(2, '0')}`;
+        if (timeLeft <= 60) { display.classList.remove('text-indigo-600'); display.classList.add('text-red-500', 'animate-pulse'); }
         if (timeLeft <= 0) finishChallenge();
       }, 1000);
     }
@@ -346,21 +282,44 @@
       });
 
       document.getElementById('finalScore').innerText = score;
-      await fetchAPI('submitScore', { studentId: studentId, studentName: studentName, score: score });
+      
+      // Pass the played question IDs to the backend so they are marked as seen
+      const playedQs = quizData.map(q => q.id).join(',');
+      await fetchAPI('submitScore', { studentId: studentId, studentName: studentName, score: score, playedQs: playedQs });
     }
 
-    function returnHome() {
-      showScreen('home');
-      document.getElementById('dashRankDaily').innerHTML = '<i class="fa-solid fa-spinner fa-spin text-white"></i>';
-      document.getElementById('dashRankWeekly').innerHTML = '<i class="fa-solid fa-spinner fa-spin text-gray-300"></i>';
-      document.getElementById('dashRankOverall').innerHTML = '<i class="fa-solid fa-spinner fa-spin text-gray-300"></i>';
-      
-      document.getElementById('dashScoreDaily').innerText = '-- pts';
-      document.getElementById('dashScoreWeekly').innerText = '-- pts';
-      document.getElementById('dashScoreOverall').innerText = '-- pts';
-      
-      loadLeaderboard(); 
+    function openAnalysis() {
+      document.getElementById('analysisModal').classList.remove('hidden');
+      let html = '';
+      quizData.forEach((q, i) => {
+        const userAns = userAnswers[i]; const correctAns = parseInt(q.answer);
+        const isCorrect = userAns === correctAns;
+        
+        html += `<div class="p-4 rounded-xl border ${isCorrect ? 'bg-green-50 border-green-200' : (userAns === null ? 'bg-orange-50 border-orange-200' : 'bg-red-50 border-red-200')}">
+            <p class="font-bold text-gray-800 text-sm mb-3">Q${i+1}: ${q.question}</p>
+            <div class="space-y-1.5">`;
+        
+        q.options.forEach((opt, idx) => {
+          const optNum = idx + 1;
+          let style = "text-gray-500 text-xs px-2 py-1"; let icon = "";
+          
+          if (optNum === correctAns) {
+            style = "text-green-700 font-bold bg-green-100/50 px-2 py-1.5 rounded-lg border border-green-200";
+            icon = '<i class="fa-solid fa-circle-check text-green-500"></i>';
+          } else if (optNum === userAns) {
+            style = "text-red-600 font-bold bg-red-100/50 px-2 py-1.5 rounded-lg border border-red-200 line-through opacity-80";
+            icon = '<i class="fa-solid fa-circle-xmark text-red-500"></i>';
+          }
+          
+          html += `<div class="${style} flex justify-between items-center">${opt} ${icon}</div>`;
+        });
+        html += `</div></div>`;
+      });
+      document.getElementById('analysisContent').innerHTML = html;
     }
+
+    function closeAnalysis() { document.getElementById('analysisModal').classList.add('hidden'); }
+    function returnHome() { showScreen('home'); document.getElementById('dashRankDaily').innerHTML = '<i class="fa-solid fa-spinner fa-spin text-white"></i>'; loadLeaderboard(); }
   </script>
 </body>
 </html>
