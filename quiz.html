@@ -13,6 +13,7 @@
       overscroll-behavior-y: none !important;
     }
     
+    /* Scrollable areas: allow touch panning anywhere */
     .modal-scroll-area {
       overflow-y: auto;
       -webkit-overflow-scrolling: touch; 
@@ -34,19 +35,51 @@
     .screen { display: none; animation: fadeIn 0.3s ease-in-out; }
     .screen.active { display: block; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Fixed bottom bar – Start Challenge */
+    .bottom-fixed-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #f8fafc;
+      padding: 12px 16px 20px 16px;
+      box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.04);
+      z-index: 50;
+      display: flex;
+      justify-content: center;
+    }
+    .bottom-fixed-bar .inner-bar {
+      width: 100%;
+      max-width: 28rem; /* max-w-md */
+    }
+
+    /* Add bottom padding to home screen so content isn't hidden behind fixed bar */
+    #screen-home {
+      padding-bottom: 90px;
+    }
+
+    /* Ensure modal scroll areas work from any touch point */
+    #fullLeaderboardList {
+      touch-action: pan-y;
+      overscroll-behavior: contain;
+      -webkit-overflow-scrolling: touch;
+    }
   </style>
 </head>
-<body class="text-gray-800 p-4 md:p-8 flex justify-center min-h-screen items-start pt-10">
+<body class="text-gray-800 p-4 md:p-8 flex justify-center min-h-screen items-start pt-10 pb-0">
 
-  <div class="w-full max-w-md">
-    
+  <div class="w-full max-w-md pb-28"> <!-- extra bottom padding for fixed bar -->
+
     <!-- Header -->
     <div class="flex justify-between items-center mb-6 px-2">
       <div>
         <h1 class="text-2xl font-black text-gray-800 tracking-tight"><i class="fa-solid fa-brain text-indigo-600 mr-2"></i>Quiz Portal</h1>
         <p class="text-xs text-gray-500 font-medium mt-1">Player: <span id="displayStudentName" class="text-indigo-600 font-bold">Loading...</span></p>
+        <!-- Motivational quote appears here (below player name) -->
+        <div id="motivationalQuoteHome" class="mt-2 min-h-[2.5rem]"></div>
       </div>
-      <button onclick="returnToPortal()" class="w-10 h-10 bg-white rounded-full shadow-sm text-gray-400 hover:text-red-500 flex items-center justify-center transition border border-gray-100"><i class="fa-solid fa-xmark text-xl"></i></button>
+      <button onclick="returnToPortal()" class="w-10 h-10 bg-white rounded-full shadow-sm text-gray-400 hover:text-red-500 flex items-center justify-center transition border border-gray-100 self-start"><i class="fa-solid fa-xmark text-xl"></i></button>
     </div>
 
     <!-- 1. HOME / LEADERBOARD SCREEN -->
@@ -97,33 +130,25 @@
           <div id="lb-allTime" class="space-y-3 hidden"></div>
         </div>
 
-        <!-- NEW: View All Leaderboard Button -->
+        <!-- View All Leaderboard Button -->
         <button onclick="openFullLeaderboard()" class="w-full bg-indigo-50 text-indigo-600 font-bold py-3 mt-4 rounded-xl hover:bg-indigo-100 transition active:scale-95 text-sm border border-indigo-100">
           View All Leaderboard
         </button>
       </div>
 
-      <button onclick="startChallenge()" class="w-full bg-gray-900 text-white font-black py-4 rounded-2xl shadow-lg transition active:scale-95 btn-glow flex items-center justify-center gap-2 text-lg">
-        <i class="fa-solid fa-play"></i> START CHALLENGE
-      </button>
-
+      <!-- Feedback button moved BELOW leaderboard (no longer above Start) -->
       <button onclick="openFeedback()" class="w-full bg-transparent text-gray-400 font-bold py-3 mt-2 rounded-xl hover:text-indigo-600 hover:bg-white transition active:scale-95 flex items-center justify-center gap-2 text-sm border border-transparent hover:border-gray-100">
         <i class="fa-solid fa-comment-dots"></i> Give us feedback
       </button>
     </div>
 
-    <!-- 🌟 NEW: FULL LEADERBOARD SCREEN -->
+    <!-- 🌟 FULL LEADERBOARD SCREEN (now with better scroll and quote placement) -->
     <div id="screen-full-leaderboard" class="screen bg-white rounded-[2rem] p-6 shadow-sm border border-gray-100 flex flex-col h-[85vh]">
       <div class="flex justify-between items-center mb-4 pb-4 border-b border-gray-100 shrink-0">
         <h3 class="text-xl font-black text-gray-800"><i class="fa-solid fa-ranking-star text-indigo-500 mr-2"></i>Full Leaderboard</h3>
         <button onclick="returnHome()" class="text-gray-400 hover:text-red-500 w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center transition"><i class="fa-solid fa-arrow-left"></i></button>
       </div>
       
-      <!-- Motivational Quote Section -->
-      <div id="motivationalQuote" class="bg-gradient-to-r from-indigo-50 to-purple-50 p-4 rounded-xl border border-indigo-100 mb-4 shrink-0">
-        <!-- Quote logic injected here -->
-      </div>
-
       <!-- Tabs for Full Leaderboard -->
       <div class="flex bg-gray-100 rounded-full p-1 mb-4 shrink-0">
         <button id="full-tab-daily" onclick="switchFullTab('daily')" class="flex-1 py-2 text-xs font-bold rounded-full bg-white text-indigo-600 shadow-sm transition-all">Daily</button>
@@ -131,12 +156,11 @@
         <button id="full-tab-allTime" onclick="switchFullTab('allTime')" class="flex-1 py-2 text-xs font-bold rounded-full text-gray-500 transition-all">Overall</button>
       </div>
 
-      <!-- Full List Scroll Area -->
+      <!-- Full List Scroll Area (now with full touch scrolling) -->
       <div id="fullLeaderboardList" class="overflow-y-auto modal-scroll-area flex-1 space-y-3 pr-2 pb-6">
         <!-- List injected here -->
       </div>
     </div>
-
 
     <!-- 2. ACTIVE QUIZ SCREEN -->
     <div id="screen-quiz" class="screen bg-white rounded-[2rem] p-6 shadow-sm border border-gray-100">
@@ -168,6 +192,15 @@
       </div>
     </div>
     
+  </div>
+
+  <!-- FIXED BOTTOM BAR: START CHALLENGE -->
+  <div class="bottom-fixed-bar">
+    <div class="inner-bar">
+      <button onclick="startChallenge()" class="w-full bg-gray-900 text-white font-black py-4 rounded-2xl shadow-lg transition active:scale-95 btn-glow flex items-center justify-center gap-2 text-lg">
+        <i class="fa-solid fa-play"></i> START CHALLENGE
+      </button>
+    </div>
   </div>
 
   <!-- 📊 ANALYSIS MODAL POPUP -->
@@ -214,7 +247,7 @@
   </div>
 
   <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbyVJ-gPQWSqjcEwISrKO1OuXU3fCuGs2PHpbDHfAqYoT2x3BEAc8MdGnysSgypHG0E/exec";
+    const API_URL = "YOUR_NEW_API_URL_HERE";
     
     function returnToPortal() { window.close(); window.location.href = "student.html"; }
 
@@ -254,7 +287,6 @@
     let quizData = [], currentIndex = 0, userAnswers = [], timerInterval, timeLeft = 300;
     const POSITIVE_MARK = 2, NEGATIVE_MARK = -1;
     
-    // NEW DATA STORES
     let fullLeaderboardData = null;
     let currentHomeTab = 'daily';
     let currentFullTab = 'daily';
@@ -292,7 +324,6 @@
       if (res.ok) {
         fullLeaderboardData = res.leaderboard;
         
-        // Render Top 3 for the Home Screen
         document.getElementById('lb-daily').innerHTML = buildHtmlTop3(res.leaderboard.daily);
         document.getElementById('lb-weekly').innerHTML = buildHtmlTop3(res.leaderboard.weekly);
         document.getElementById('lb-allTime').innerHTML = buildHtmlTop3(res.leaderboard.overall);
@@ -300,17 +331,48 @@
         document.getElementById('dashRankDaily').innerText = `#${res.myStats.daily.rank}`; document.getElementById('dashScoreDaily').innerText = `${res.myStats.daily.score} pts`;
         document.getElementById('dashRankWeekly').innerText = `#${res.myStats.weekly.rank}`; document.getElementById('dashScoreWeekly').innerText = `${res.myStats.weekly.score} pts`;
         document.getElementById('dashRankOverall').innerText = `#${res.myStats.overall.rank}`; document.getElementById('dashScoreOverall').innerText = `${res.myStats.overall.score} pts`;
+
+        // Update motivational quote on home screen (below player name)
+        updateHomeMotivationalQuote(res.leaderboard.daily);
+      }
+    }
+
+    // Motivational quote for home screen (below player name)
+    function updateHomeMotivationalQuote(dailyLeaderboard) {
+      const container = document.getElementById('motivationalQuoteHome');
+      if (!container || !dailyLeaderboard || dailyLeaderboard.length === 0) {
+        container.innerHTML = '';
+        return;
+      }
+      const myEntry = dailyLeaderboard.find(s => String(s.id) === String(studentId));
+      if (!myEntry) {
+        container.innerHTML = `<p class="text-xs text-indigo-500 font-semibold"><i class="fa-solid fa-gamepad mr-1"></i> Play a game to join the leaderboard!</p>`;
+      } else if (myEntry.rank === 1) {
+        container.innerHTML = `<p class="text-xs text-indigo-600 font-bold"><i class="fa-solid fa-crown text-yellow-500 mr-1"></i> You are the Top Ranker! Keep defending your title!</p>`;
+      } else {
+        const targetEntry = dailyLeaderboard.find(s => s.rank === myEntry.rank - 1);
+        if (targetEntry) {
+          const scoreDiff = targetEntry.score - myEntry.score;
+          container.innerHTML = `<p class="text-xs text-indigo-600 font-bold"><i class="fa-solid fa-fire text-orange-500 mr-1"></i> You are just <span class="text-indigo-800">${scoreDiff}</span> score away from <span class="text-indigo-800">${targetEntry.name}</span>. Beat them, you can play!</p>`;
+        } else {
+          container.innerHTML = `<p class="text-xs text-indigo-600 font-bold"><i class="fa-solid fa-arrow-up text-green-500 mr-1"></i> Keep playing to improve your rank!</p>`;
+        }
       }
     }
 
     function showScreen(screenId) {
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
       document.getElementById(`screen-${screenId}`).classList.add('active');
+      // Hide bottom fixed bar on full leaderboard screen
+      const bottomBar = document.querySelector('.bottom-fixed-bar');
+      if (bottomBar) {
+        bottomBar.style.display = (screenId === 'full-leaderboard') ? 'none' : 'flex';
+      }
     }
 
     // --- FULL LEADERBOARD LOGIC --- //
     function openFullLeaderboard() {
-      switchFullTab(currentHomeTab); // Matches the tab you were looking at
+      switchFullTab(currentHomeTab);
       showScreen('full-leaderboard');
     }
 
@@ -330,29 +392,12 @@
       const dataArray = fullLeaderboardData[mapKey];
       
       const myEntry = dataArray.find(s => String(s.id) === String(studentId));
-      const quoteContainer = document.getElementById('motivationalQuote');
-      
-      // Motivational Quote Logic
-      if (!myEntry) {
-        quoteContainer.innerHTML = `<p class="text-sm font-bold text-gray-700 text-center"><i class="fa-solid fa-gamepad text-indigo-500 mr-1"></i> Play a game to join the leaderboard!</p>`;
-      } else if (myEntry.rank === 1) {
-        quoteContainer.innerHTML = `<p class="text-sm font-bold text-indigo-700 text-center"><i class="fa-solid fa-crown text-yellow-500 mr-1"></i> You are the Top Ranker! Keep defending your title!</p>`;
-      } else {
-        const targetEntry = dataArray.find(s => s.rank === myEntry.rank - 1);
-        if (targetEntry) {
-          const scoreDiff = targetEntry.score - myEntry.score;
-          quoteContainer.innerHTML = `<p class="text-sm font-bold text-gray-700 leading-snug"><i class="fa-solid fa-fire text-orange-500 mr-1"></i> You are just <span class="text-indigo-600 font-black">${scoreDiff}</span> score away from <span class="text-indigo-600 font-black">${targetEntry.name}</span>. Beat them, you can play!</p>`;
-        } else {
-           quoteContainer.innerHTML = `<p class="text-sm font-bold text-gray-700 leading-snug text-center"><i class="fa-solid fa-arrow-up text-green-500 mr-1"></i> Keep playing to improve your rank!</p>`;
-        }
-      }
 
       // Build the full list
       const buildHtmlFull = (arr) => arr.map(r => {
         const isMe = String(r.id) === String(studentId);
         const rankColor = r.rank === 1 ? 'text-yellow-500' : (r.rank === 2 ? 'text-gray-400' : (r.rank === 3 ? 'text-orange-400' : 'text-gray-300'));
         
-        // Highlight specific to 'ME'
         const bgStyle = isMe ? 'bg-indigo-600 text-white border-indigo-700 shadow-lg transform scale-[1.02]' : 'bg-white border-gray-100 text-gray-800';
         const nameColor = isMe ? 'text-white' : 'text-gray-800';
         const scoreBg = isMe ? 'bg-indigo-500 text-white border-indigo-400' : 'bg-white text-indigo-600 border-indigo-100';
@@ -373,7 +418,6 @@
       document.getElementById('fullLeaderboardList').innerHTML = buildHtmlFull(dataArray);
     }
     // --- END FULL LEADERBOARD LOGIC --- //
-
 
     async function startChallenge() {
       showScreen('quiz');
@@ -464,7 +508,11 @@
       document.getElementById('analysisModal').classList.add('hidden'); document.getElementById('analysisModal').classList.remove('flex');
     }
     
-    function returnHome() { showScreen('home'); document.getElementById('dashRankDaily').innerHTML = '<i class="fa-solid fa-spinner fa-spin text-white"></i>'; loadLeaderboard(); }
+    function returnHome() { 
+      showScreen('home'); 
+      document.getElementById('dashRankDaily').innerHTML = '<i class="fa-solid fa-spinner fa-spin text-white"></i>'; 
+      loadLeaderboard(); 
+    }
 
     function openFeedback() {
       document.body.style.overflow = 'hidden'; document.documentElement.style.overflow = 'hidden';
@@ -513,7 +561,7 @@
       }
     }
 
-    // JS TOUCH LOCK: Actively prevent browser pull-to-refresh inside modals/scroll areas
+    // Touch lock for smooth scrolling inside modals and full leaderboard
     document.querySelectorAll('.modal-scroll-area').forEach(scrollBox => {
       scrollBox.addEventListener('touchstart', function(e) {
         this.allowUp = (this.scrollTop > 0);
