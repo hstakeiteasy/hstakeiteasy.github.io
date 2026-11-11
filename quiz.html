@@ -22,25 +22,12 @@
       touch-action: pan-y;
     }
 
-    /* Make the scrollbar wide enough for a finger to easily grab and drag */
     .modal-scroll-area::-webkit-scrollbar { width: 16px; }
-    .modal-scroll-area::-webkit-scrollbar-track { 
-      background: #f1f5f9; 
-      border-left: 1px solid #e2e8f0;
-    }
-    .modal-scroll-area::-webkit-scrollbar-thumb { 
-      background: #818cf8; 
-      border-radius: 10px; 
-      border: 3px solid #f1f5f9; /* Creates a clean padded look */
-    }
-    .modal-scroll-area::-webkit-scrollbar-thumb:active {
-      background: #6366f1; /* Darkens when touched/dragged */
-    }
+    .modal-scroll-area::-webkit-scrollbar-track { background: #f1f5f9; border-left: 1px solid #e2e8f0; }
+    .modal-scroll-area::-webkit-scrollbar-thumb { background: #818cf8; border-radius: 10px; border: 3px solid #f1f5f9; }
+    .modal-scroll-area::-webkit-scrollbar-thumb:active { background: #6366f1; }
     
-    @keyframes glow { 
-      0% { box-shadow: 0 0 5px rgba(99, 102, 241, 0.4); } 
-      100% { box-shadow: 0 0 20px rgba(99, 102, 241, 0.8), 0 0 30px rgba(99, 102, 241, 0.6); } 
-    }
+    @keyframes glow { 0% { box-shadow: 0 0 5px rgba(99, 102, 241, 0.4); } 100% { box-shadow: 0 0 20px rgba(99, 102, 241, 0.8), 0 0 30px rgba(99, 102, 241, 0.6); } }
     .btn-glow { animation: glow 1.5s infinite alternate; }
     
     .quiz-option { transition: all 0.2s ease-in-out; }
@@ -115,6 +102,11 @@
       <button onclick="startChallenge()" class="w-full bg-gray-900 text-white font-black py-4 rounded-2xl shadow-lg transition active:scale-95 btn-glow flex items-center justify-center gap-2 text-lg">
         <i class="fa-solid fa-play"></i> START CHALLENGE
       </button>
+
+      <!-- Feedback Button -->
+      <button onclick="openFeedback()" class="w-full bg-transparent text-gray-400 font-bold py-3 mt-2 rounded-xl hover:text-indigo-600 hover:bg-white transition active:scale-95 flex items-center justify-center gap-2 text-sm border border-transparent hover:border-gray-100">
+        <i class="fa-solid fa-comment-dots"></i> Give us feedback
+      </button>
     </div>
 
     <!-- 2. ACTIVE QUIZ SCREEN -->
@@ -153,15 +145,41 @@
   <div id="analysisModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden flex justify-center items-center z-[100] p-4 transition-opacity">
     <div class="bg-white rounded-3xl w-full max-w-md shadow-2xl relative overflow-hidden flex flex-col max-h-[85vh]">
       <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-indigo-500 to-purple-600 z-10"></div>
-      
       <div class="flex justify-between items-center p-6 border-b border-gray-100 shrink-0">
         <h3 class="text-xl font-black text-gray-800"><i class="fa-solid fa-magnifying-glass-chart text-indigo-500 mr-2"></i>Session Analysis</h3>
         <button onclick="closeAnalysis()" class="text-gray-400 hover:text-red-500 w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center transition"><i class="fa-solid fa-xmark"></i></button>
       </div>
-      
-      <!-- Grab-able scrollbar area -->
-      <div id="analysisContent" class="p-6 pr-2 modal-scroll-area flex-1 space-y-4">
-        <!-- Analysis details injected here -->
+      <div id="analysisContent" class="p-6 pr-2 modal-scroll-area flex-1 space-y-4"></div>
+    </div>
+  </div>
+
+  <!-- 💬 FEEDBACK MODAL POPUP (Powered by FormSubmit.co) -->
+  <div id="feedbackModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden flex justify-center items-center z-[110] p-4 transition-opacity">
+    <div class="bg-white rounded-3xl w-full max-w-md shadow-2xl relative overflow-hidden flex flex-col">
+      <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 to-indigo-600 z-10"></div>
+      <div class="flex justify-between items-center p-6 border-b border-gray-100 shrink-0">
+        <h3 class="text-xl font-black text-gray-800"><i class="fa-solid fa-paper-plane text-indigo-500 mr-2"></i>Feedback</h3>
+        <button onclick="closeFeedback()" class="text-gray-400 hover:text-red-500 w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center transition"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="p-6 space-y-4">
+        <p class="text-sm text-gray-500 mb-2 font-medium">Have suggestions or found a bug? Let us know!</p>
+        
+        <div>
+          <label class="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1 mb-1 block">Name</label>
+          <input type="text" id="fbName" placeholder="Your Name" class="w-full p-3.5 rounded-xl border border-gray-200 focus:border-indigo-500 focus:outline-none bg-gray-50 font-medium text-gray-700 transition">
+        </div>
+        <div>
+          <label class="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1 mb-1 block">Email ID</label>
+          <input type="email" id="fbEmail" placeholder="your.email@example.com" class="w-full p-3.5 rounded-xl border border-gray-200 focus:border-indigo-500 focus:outline-none bg-gray-50 font-medium text-gray-700 transition">
+        </div>
+        <div>
+          <label class="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1 mb-1 block">Message</label>
+          <textarea id="fbText" placeholder="Your feedback..." rows="3" class="w-full p-3.5 rounded-xl border border-gray-200 focus:border-indigo-500 focus:outline-none bg-gray-50 font-medium text-gray-700 resize-none transition"></textarea>
+        </div>
+        
+        <button onclick="submitFeedbackForm()" id="fbSubmitBtn" class="w-full bg-indigo-600 text-white font-bold py-4 rounded-xl shadow-md hover:bg-indigo-700 transition active:scale-95 flex justify-center items-center gap-2 mt-2">
+          Submit Feedback
+        </button>
       </div>
     </div>
   </div>
@@ -313,38 +331,22 @@
       });
 
       document.getElementById('finalScore').innerText = score;
-      
       const playedQs = quizData.map(q => q.id).join(',');
       await fetchAPI('submitScore', { studentId: studentId, studentName: studentName, score: score, playedQs: playedQs });
     }
 
     function openAnalysis() {
-      document.body.style.overflow = 'hidden';
-      document.documentElement.style.overflow = 'hidden';
-      
-      document.getElementById('analysisModal').classList.remove('hidden');
-      document.getElementById('analysisModal').classList.add('flex');
+      document.body.style.overflow = 'hidden'; document.documentElement.style.overflow = 'hidden';
+      document.getElementById('analysisModal').classList.remove('hidden'); document.getElementById('analysisModal').classList.add('flex');
       let html = '';
       quizData.forEach((q, i) => {
         const userAns = userAnswers[i]; const correctAns = parseInt(q.answer);
         const isCorrect = userAns === correctAns;
-        
-        html += `<div class="p-4 rounded-xl border mr-2 ${isCorrect ? 'bg-green-50 border-green-200' : (userAns === null ? 'bg-orange-50 border-orange-200' : 'bg-red-50 border-red-200')}">
-            <p class="font-bold text-gray-800 text-sm mb-3">Q${i+1}: ${q.question}</p>
-            <div class="space-y-1.5">`;
-        
+        html += `<div class="p-4 rounded-xl border mr-2 ${isCorrect ? 'bg-green-50 border-green-200' : (userAns === null ? 'bg-orange-50 border-orange-200' : 'bg-red-50 border-red-200')}"><p class="font-bold text-gray-800 text-sm mb-3">Q${i+1}: ${q.question}</p><div class="space-y-1.5">`;
         q.options.forEach((opt, idx) => {
-          const optNum = idx + 1;
-          let style = "text-gray-500 text-xs px-2 py-1"; let icon = "";
-          
-          if (optNum === correctAns) {
-            style = "text-green-700 font-bold bg-green-100/50 px-2 py-1.5 rounded-lg border border-green-200";
-            icon = '<i class="fa-solid fa-circle-check text-green-500"></i>';
-          } else if (optNum === userAns) {
-            style = "text-red-600 font-bold bg-red-100/50 px-2 py-1.5 rounded-lg border border-red-200 line-through opacity-80";
-            icon = '<i class="fa-solid fa-circle-xmark text-red-500"></i>';
-          }
-          
+          const optNum = idx + 1; let style = "text-gray-500 text-xs px-2 py-1"; let icon = "";
+          if (optNum === correctAns) { style = "text-green-700 font-bold bg-green-100/50 px-2 py-1.5 rounded-lg border border-green-200"; icon = '<i class="fa-solid fa-circle-check text-green-500"></i>'; } 
+          else if (optNum === userAns) { style = "text-red-600 font-bold bg-red-100/50 px-2 py-1.5 rounded-lg border border-red-200 line-through opacity-80"; icon = '<i class="fa-solid fa-circle-xmark text-red-500"></i>'; }
           html += `<div class="${style} flex justify-between items-center">${opt} ${icon}</div>`;
         });
         html += `</div></div>`;
@@ -353,32 +355,93 @@
     }
 
     function closeAnalysis() { 
-      document.body.style.overflow = 'auto';
-      document.documentElement.style.overflow = 'auto';
-      document.getElementById('analysisModal').classList.add('hidden'); 
-      document.getElementById('analysisModal').classList.remove('flex');
+      document.body.style.overflow = 'auto'; document.documentElement.style.overflow = 'auto';
+      document.getElementById('analysisModal').classList.add('hidden'); document.getElementById('analysisModal').classList.remove('flex');
     }
     
     function returnHome() { showScreen('home'); document.getElementById('dashRankDaily').innerHTML = '<i class="fa-solid fa-spinner fa-spin text-white"></i>'; loadLeaderboard(); }
 
-    // JS TOUCH LOCK: Actively prevent browser pull-to-refresh inside the modal
+    // FEEDBACK FORM LOGIC WITH FORMSUBMIT.CO
+    function openFeedback() {
+      document.body.style.overflow = 'hidden'; document.documentElement.style.overflow = 'hidden';
+      document.getElementById('fbName').value = studentName;
+      document.getElementById('feedbackModal').classList.remove('hidden');
+      document.getElementById('feedbackModal').classList.add('flex');
+    }
+
+    function closeFeedback() {
+      document.body.style.overflow = 'auto'; document.documentElement.style.overflow = 'auto';
+      document.getElementById('feedbackModal').classList.add('hidden');
+      document.getElementById('feedbackModal').classList.remove('flex');
+    }
+
+    async function submitFeedbackForm() {
+      const name = document.getElementById('fbName').value.trim();
+      const email = document.getElementById('fbEmail').value.trim();
+      const text = document.getElementById('fbText').value.trim();
+      
+      if (!name || !email || !text) {
+        alert("Please fill in all fields.");
+        return;
+      }
+      
+      const btn = document.getElementById('fbSubmitBtn');
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Submitting...';
+      btn.disabled = true;
+
+      try {
+        // Sends request via FormSubmit AJAX endpoint directly to your email
+        const response = await fetch("https://formsubmit.co/ajax/hello@sumitaidev.com", {
+          method: "POST",
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify({
+            StudentID: studentId,
+            Name: name,
+            Email: email,
+            Message: text,
+            _subject: "New Quiz Portal Feedback!"
+          })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          btn.innerHTML = '<i class="fa-solid fa-check"></i> Submitted!';
+          btn.classList.replace('bg-indigo-600', 'bg-green-500');
+          
+          setTimeout(() => {
+            closeFeedback();
+            document.getElementById('fbText').value = '';
+            btn.innerHTML = 'Submit Feedback';
+            btn.classList.replace('bg-green-500', 'bg-indigo-600');
+            btn.disabled = false;
+          }, 1500);
+        } else {
+          throw new Error("FormSubmit failed");
+        }
+      } catch (err) {
+        alert("Failed to send feedback. Please try again.");
+        btn.innerHTML = 'Submit Feedback';
+        btn.disabled = false;
+      }
+    }
+
+    // JS TOUCH LOCK: Actively prevent browser pull-to-refresh inside modals
     const scrollBox = document.getElementById('analysisContent');
     scrollBox.addEventListener('touchstart', function(e) {
       this.allowUp = (this.scrollTop > 0);
       this.allowDown = (this.scrollTop < this.scrollHeight - this.clientHeight);
       this.slideBeginY = e.changedTouches[0].pageY;
     }, { passive: false });
-
     scrollBox.addEventListener('touchmove', function(e) {
       let slideStartY = e.changedTouches[0].pageY;
       let up = (slideStartY > this.slideBeginY);
       let down = (slideStartY < this.slideBeginY);
       this.slideBeginY = slideStartY;
-
-      // If at the top and pulling down, or at bottom and pulling up, kill the event to stop refresh
-      if ((up && !this.allowUp) || (down && !this.allowDown)) {
-        e.preventDefault();
-      }
+      if ((up && !this.allowUp) || (down && !this.allowDown)) e.preventDefault();
     }, { passive: false });
   </script>
 </body>
