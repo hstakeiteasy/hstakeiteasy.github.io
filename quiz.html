@@ -30,7 +30,7 @@
         <h1 class="text-2xl font-black text-gray-800 tracking-tight"><i class="fa-solid fa-brain text-indigo-600 mr-2"></i>Quiz Portal</h1>
         <p class="text-xs text-gray-500 font-medium mt-1">Player: <span id="displayStudentName" class="text-indigo-600 font-bold">Loading...</span></p>
       </div>
-      <button onclick="window.close()" class="w-10 h-10 bg-white rounded-full shadow-sm text-gray-400 hover:text-red-500 flex items-center justify-center transition border border-gray-100"><i class="fa-solid fa-xmark text-xl"></i></button>
+      <button onclick="returnToPortal()" class="w-10 h-10 bg-white rounded-full shadow-sm text-gray-400 hover:text-red-500 flex items-center justify-center transition border border-gray-100"><i class="fa-solid fa-xmark text-xl"></i></button>
     </div>
 
     <!-- 1. HOME / LEADERBOARD SCREEN -->
@@ -108,25 +108,39 @@
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbyVJ-gPQWSqjcEwISrKO1OuXU3fCuGs2PHpbDHfAqYoT2x3BEAc8MdGnysSgypHG0E/exec";
     
-    // Auth Check & Variable Setup
-    const studentId = localStorage.getItem('studentId') || sessionStorage.getItem('studentId');
-    const studentName = localStorage.getItem('studentName') || "Unknown Student";
+    // Centralized function to return to the student portal
+    function returnToPortal() {
+      // If the portal is hstakeiteasy.github.io, we redirect there. 
+      // It also safely attempts to close the tab if opened via target="_blank"
+      window.close(); 
+      window.location.href = "https://hstakeiteasy.github.io/"; 
+    }
 
-    if (!studentId) {
+    // Auth & Name Check
+    const studentId = localStorage.getItem('studentId') || sessionStorage.getItem('studentId');
+    const studentName = localStorage.getItem('studentName') || sessionStorage.getItem('studentName');
+
+    // Strict validation: Block entry if ID or Name is missing
+    if (!studentId || !studentName) {
       document.body.innerHTML = `
         <div class="flex flex-col items-center justify-center min-h-screen text-center px-6">
-          <div class="bg-red-50 text-red-500 w-20 h-20 rounded-full flex items-center justify-center text-4xl mb-4"><i class="fa-solid fa-lock"></i></div>
-          <h2 class="text-2xl font-black text-gray-800 mb-2">Access Denied</h2>
-          <p class="text-gray-500 mb-6">You must be logged into the student portal to access the Quiz Challenge.</p>
-          <button onclick="window.close()" class="bg-gray-900 text-white px-6 py-3 rounded-xl font-bold">Close Window</button>
+          <div class="bg-red-50 text-red-500 w-20 h-20 rounded-full flex items-center justify-center text-4xl mb-4"><i class="fa-solid fa-triangle-exclamation"></i></div>
+          <h2 class="text-2xl font-black text-gray-800 mb-2">Profile Incomplete</h2>
+          <p class="text-gray-500 mb-8 font-medium">Please reopen your app or logout and then login.</p>
+          <button onclick="returnToPortal()" class="bg-gray-900 text-white px-8 py-3.5 rounded-xl font-bold shadow-md hover:bg-black transition active:scale-95 flex items-center gap-2">
+            <i class="fa-solid fa-arrow-left"></i> Back to Portal
+          </button>
         </div>`;
-      throw new Error("Unauthorized access.");
+      throw new Error("Unauthorized access or missing name.");
     }
     
     document.getElementById('displayStudentName').innerText = studentName;
 
     let quizData = [], currentIndex = 0, userAnswers = [], timerInterval, timeLeft = 300;
-    const POSITIVE_MARK = 4, NEGATIVE_MARK = -1;
+    
+    // Updated Marking Scheme
+    const POSITIVE_MARK = 2;
+    const NEGATIVE_MARK = -1;
 
     // Initialization
     loadLeaderboard();
