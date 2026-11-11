@@ -40,19 +40,20 @@
 </head>
 <body class="text-gray-800 p-4 md:p-8 flex justify-center min-h-screen items-start pt-10">
 
-  <div class="w-full max-w-md">
+  <div class="w-full max-w-md relative">
     
     <!-- Header -->
     <div class="flex justify-between items-center mb-6 px-2">
       <div>
         <h1 class="text-2xl font-black text-gray-800 tracking-tight"><i class="fa-solid fa-brain text-indigo-600 mr-2"></i>Quiz Portal</h1>
         <p class="text-xs text-gray-500 font-medium mt-1">Player: <span id="displayStudentName" class="text-indigo-600 font-bold">Loading...</span></p>
+        <p id="motivationalQuote" class="text-[11px] text-indigo-500 font-semibold mt-1 hidden"></p>
       </div>
       <button onclick="returnToPortal()" class="w-10 h-10 bg-white rounded-full shadow-sm text-gray-400 hover:text-red-500 flex items-center justify-center transition border border-gray-100"><i class="fa-solid fa-xmark text-xl"></i></button>
     </div>
 
     <!-- 1. HOME / LEADERBOARD SCREEN -->
-    <div id="screen-home" class="screen active space-y-6">
+    <div id="screen-home" class="screen active space-y-6 pb-24">
       
       <div class="grid grid-cols-3 gap-3 mb-6">
         <div class="bg-indigo-600 text-white rounded-2xl p-3 shadow-sm text-center flex flex-col justify-center">
@@ -99,14 +100,19 @@
         </div>
       </div>
 
-      <button onclick="startChallenge()" class="w-full bg-gray-900 text-white font-black py-4 rounded-2xl shadow-lg transition active:scale-95 btn-glow flex items-center justify-center gap-2 text-lg">
-        <i class="fa-solid fa-play"></i> START CHALLENGE
-      </button>
-
-      <!-- Feedback Button -->
+      <!-- Feedback Button (moved above the fixed CTA) -->
       <button onclick="openFeedback()" class="w-full bg-transparent text-gray-400 font-bold py-3 mt-2 rounded-xl hover:text-indigo-600 hover:bg-white transition active:scale-95 flex items-center justify-center gap-2 text-sm border border-transparent hover:border-gray-100">
         <i class="fa-solid fa-comment-dots"></i> Give us feedback
       </button>
+    </div>
+
+    <!-- Fixed Start Challenge Button (only on home screen) -->
+    <div id="startChallengeContainer" class="fixed bottom-0 left-0 right-0 z-50 p-4 bg-gradient-to-t from-slate-50 via-slate-50/95 to-transparent">
+      <div class="w-full max-w-md mx-auto">
+        <button onclick="startChallenge()" class="w-full bg-gray-900 text-white font-black py-4 rounded-2xl shadow-lg transition active:scale-95 btn-glow flex items-center justify-center gap-2 text-lg">
+          <i class="fa-solid fa-play"></i> START CHALLENGE
+        </button>
+      </div>
     </div>
 
     <!-- 2. ACTIVE QUIZ SCREEN -->
@@ -245,6 +251,19 @@
       document.getElementById(`tab-${tab}`).className = 'flex-1 py-2 text-xs font-bold rounded-full bg-white text-indigo-600 shadow-sm transition-all';
     }
 
+    // Builds motivational quote comparing with the student directly above
+    function buildMotivationalQuote(myRank, leaderboardArr, scopeLabel) {
+      if (!leaderboardArr || leaderboardArr.length === 0) return null;
+      if (myRank <= 1) return "You're at the top! Keep defending your crown 👑";
+      const above = leaderboardArr.find(r => Number(r.rank) === Number(myRank) - 1);
+      if (!above) return null;
+      const me = leaderboardArr.find(r => Number(r.rank) === Number(myRank));
+      if (!me) return null;
+      const diff = Number(above.score) - Number(me.score);
+      if (diff <= 0) return null;
+      return `You're just ${diff} pts away from ${above.name} in ${scopeLabel}! 💪`;
+    }
+
     async function loadLeaderboard() {
       const res = await fetchAPI('getLeaderboard', { studentId: studentId });
       
@@ -262,12 +281,29 @@
         document.getElementById('dashRankDaily').innerText = `#${res.myStats.daily.rank}`; document.getElementById('dashScoreDaily').innerText = `${res.myStats.daily.score} pts`;
         document.getElementById('dashRankWeekly').innerText = `#${res.myStats.weekly.rank}`; document.getElementById('dashScoreWeekly').innerText = `${res.myStats.weekly.score} pts`;
         document.getElementById('dashRankOverall').innerText = `#${res.myStats.overall.rank}`; document.getElementById('dashScoreOverall').innerText = `${res.myStats.overall.score} pts`;
+
+        // Motivational quote - based on current tab (daily by default)
+        const quoteEl = document.getElementById('motivationalQuote');
+        const quote = buildMotivationalQuote(res.myStats.daily.rank, res.leaderboard.daily, 'today');
+        if (quote) {
+          quoteEl.innerText = quote;
+          quoteEl.classList.remove('hidden');
+          quoteEl.dataset.scope = 'daily';
+        } else {
+          quoteEl.classList.add('hidden');
+        }
       }
     }
 
     function showScreen(screenId) {
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
       document.getElementById(`screen-${screenId}`).classList.add('active');
+      // Hide the fixed start button when not on home
+      const startCtn = document.getElementById('startChallengeContainer');
+      if (startCtn) {
+        if (screenId === 'home') startCtn.classList.remove('hidden');
+        else startCtn.classList.add('hidden');
+      }
     }
 
     async function startChallenge() {
