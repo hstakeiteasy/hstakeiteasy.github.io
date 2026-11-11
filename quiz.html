@@ -36,23 +36,42 @@
     <!-- 1. HOME / LEADERBOARD SCREEN -->
     <div id="screen-home" class="screen active space-y-6">
       
-      <!-- Personal Dashboard Stats (Now with Scores) -->
+      <!-- Personal Dashboard Stats (With Reset Timers) -->
       <div class="grid grid-cols-3 gap-3 mb-6">
+        
+        <!-- Daily Card -->
         <div class="bg-indigo-600 text-white rounded-2xl p-3 shadow-sm text-center flex flex-col justify-center">
           <p class="text-[10px] font-bold uppercase tracking-wider mb-0.5 opacity-80">Daily</p>
           <p id="dashRankDaily" class="text-xl font-black">#--</p>
-          <p id="dashScoreDaily" class="text-[10px] font-medium opacity-80">-- pts</p>
+          <p id="dashScoreDaily" class="text-[10px] font-medium opacity-80 mb-2">-- pts</p>
+          <div class="bg-black/20 rounded-lg py-1 mt-auto">
+            <p class="text-[7px] font-bold uppercase opacity-70 mb-0.5">Resets In</p>
+            <p id="timerDailyReset" class="text-[9px] font-mono font-bold tracking-wider text-indigo-100">--:--:--</p>
+          </div>
         </div>
+
+        <!-- Weekly Card -->
         <div class="bg-white rounded-2xl p-3 shadow-sm border border-gray-100 text-center flex flex-col justify-center">
           <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Weekly</p>
           <p id="dashRankWeekly" class="text-xl font-black text-gray-800">#--</p>
-          <p id="dashScoreWeekly" class="text-[10px] font-medium text-gray-400">-- pts</p>
+          <p id="dashScoreWeekly" class="text-[10px] font-medium text-gray-400 mb-2">-- pts</p>
+          <div class="bg-gray-50 border border-gray-100 rounded-lg py-1 mt-auto">
+            <p class="text-[7px] font-bold uppercase text-gray-400 mb-0.5">Resets In</p>
+            <p id="timerWeeklyReset" class="text-[9px] font-mono font-bold tracking-wider text-gray-500">--d --:--:--</p>
+          </div>
         </div>
+
+        <!-- Overall Card -->
         <div class="bg-white rounded-2xl p-3 shadow-sm border border-gray-100 text-center flex flex-col justify-center">
           <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Overall</p>
           <p id="dashRankOverall" class="text-xl font-black text-gray-800">#--</p>
-          <p id="dashScoreOverall" class="text-[10px] font-medium text-gray-400">-- pts</p>
+          <p id="dashScoreOverall" class="text-[10px] font-medium text-gray-400 mb-2">-- pts</p>
+          <div class="bg-gray-50 border border-gray-100 rounded-lg py-1 mt-auto">
+            <p class="text-[7px] font-bold uppercase text-gray-400 mb-0.5">Lifetime</p>
+            <p class="text-[9px] font-mono font-bold tracking-wider text-gray-500">Never Resets</p>
+          </div>
         </div>
+
       </div>
 
       <div class="bg-white rounded-[2rem] p-6 shadow-sm border border-gray-100">
@@ -111,7 +130,6 @@
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbyVJ-gPQWSqjcEwISrKO1OuXU3fCuGs2PHpbDHfAqYoT2x3BEAc8MdGnysSgypHG0E/exec";
     
-    // Redirects directly to student.html
     function returnToPortal() {
       window.close(); 
       window.location.href = "student.html"; 
@@ -121,7 +139,6 @@
     const studentId = localStorage.getItem('studentId') || sessionStorage.getItem('studentId');
     const studentName = localStorage.getItem('studentName') || sessionStorage.getItem('studentName');
 
-    // Strict validation: Block entry if ID or Name is missing
     if (!studentId || !studentName) {
       document.body.innerHTML = `
         <div class="flex flex-col items-center justify-center min-h-screen text-center px-6">
@@ -137,13 +154,46 @@
     
     document.getElementById('displayStudentName').innerText = studentName;
 
+    // Reset Timers Logic
+    function updateResetTimers() {
+      const now = new Date();
+      
+      // Daily Reset (Today at 23:59:59)
+      const dailyTarget = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+      const dailyDiff = dailyTarget - now;
+      
+      const dH = Math.floor((dailyDiff / (1000 * 60 * 60)) % 24);
+      const dM = Math.floor((dailyDiff / 1000 / 60) % 60);
+      const dS = Math.floor((dailyDiff / 1000) % 60);
+      
+      document.getElementById('timerDailyReset').innerText = 
+        `${String(dH).padStart(2, '0')}:${String(dM).padStart(2, '0')}:${String(dS).padStart(2, '0')}`;
+        
+      // Weekly Reset (Next Sunday at 23:59:59)
+      const dayOfWeek = now.getDay(); // 0 = Sunday
+      const daysToSunday = (7 - dayOfWeek) % 7; 
+      
+      const weeklyTarget = new Date(now.getFullYear(), now.getMonth(), now.getDate() + daysToSunday, 23, 59, 59);
+      const weeklyDiff = weeklyTarget - now;
+      
+      const wD = Math.floor(weeklyDiff / (1000 * 60 * 60 * 24));
+      const wH = Math.floor((weeklyDiff / (1000 * 60 * 60)) % 24);
+      const wM = Math.floor((weeklyDiff / 1000 / 60) % 60);
+      const wS = Math.floor((weeklyDiff / 1000) % 60);
+      
+      document.getElementById('timerWeeklyReset').innerText = 
+        `${wD}d ${String(wH).padStart(2, '0')}:${String(wM).padStart(2, '0')}:${String(wS).padStart(2, '0')}`;
+    }
+    
+    // Start Reset Timers
+    setInterval(updateResetTimers, 1000);
+    updateResetTimers();
+
     let quizData = [], currentIndex = 0, userAnswers = [], timerInterval, timeLeft = 300;
     
-    // Scoring setup
     const POSITIVE_MARK = 2;
     const NEGATIVE_MARK = -1;
 
-    // Initialization
     loadLeaderboard();
 
     async function fetchAPI(action, params = {}) {
@@ -189,7 +239,6 @@
         document.getElementById('lb-weekly').innerHTML = buildHtml(res.leaderboard.weekly);
         document.getElementById('lb-allTime').innerHTML = buildHtml(res.leaderboard.overall);
         
-        // Populate Dashboard with Rank AND Score
         document.getElementById('dashRankDaily').innerText = `#${res.myStats.daily.rank}`;
         document.getElementById('dashScoreDaily').innerText = `${res.myStats.daily.score} pts`;
         
