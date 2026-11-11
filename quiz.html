@@ -14,16 +14,28 @@
       overscroll-behavior-y: none !important;
     }
     
-    /* MODAL SCROLL PHYSICS */
+    /* MODAL SCROLL PHYSICS - THICK SCROLLBAR FOR TOUCH */
     .modal-scroll-area {
       overflow-y: auto;
-      -webkit-overflow-scrolling: touch; /* Silky smooth iOS scrolling */
-      overscroll-behavior-y: contain; /* Traps scroll inside the modal, preventing background refresh */
+      -webkit-overflow-scrolling: touch; 
+      overscroll-behavior-y: contain; 
+      touch-action: pan-y;
     }
 
-    .modal-scroll-area::-webkit-scrollbar { width: 5px; }
-    .modal-scroll-area::-webkit-scrollbar-track { background: #f8fafc; border-radius: 10px; }
-    .modal-scroll-area::-webkit-scrollbar-thumb { background: #c7d2fe; border-radius: 10px; }
+    /* Make the scrollbar wide enough for a finger to easily grab and drag */
+    .modal-scroll-area::-webkit-scrollbar { width: 16px; }
+    .modal-scroll-area::-webkit-scrollbar-track { 
+      background: #f1f5f9; 
+      border-left: 1px solid #e2e8f0;
+    }
+    .modal-scroll-area::-webkit-scrollbar-thumb { 
+      background: #818cf8; 
+      border-radius: 10px; 
+      border: 3px solid #f1f5f9; /* Creates a clean padded look */
+    }
+    .modal-scroll-area::-webkit-scrollbar-thumb:active {
+      background: #6366f1; /* Darkens when touched/dragged */
+    }
     
     @keyframes glow { 
       0% { box-shadow: 0 0 5px rgba(99, 102, 241, 0.4); } 
@@ -147,7 +159,8 @@
         <button onclick="closeAnalysis()" class="text-gray-400 hover:text-red-500 w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center transition"><i class="fa-solid fa-xmark"></i></button>
       </div>
       
-      <div id="analysisContent" class="p-6 modal-scroll-area flex-1 space-y-4">
+      <!-- Grab-able scrollbar area -->
+      <div id="analysisContent" class="p-6 pr-2 modal-scroll-area flex-1 space-y-4">
         <!-- Analysis details injected here -->
       </div>
     </div>
@@ -306,7 +319,6 @@
     }
 
     function openAnalysis() {
-      // Double lock background scroll for Android/iOS universally
       document.body.style.overflow = 'hidden';
       document.documentElement.style.overflow = 'hidden';
       
@@ -317,7 +329,7 @@
         const userAns = userAnswers[i]; const correctAns = parseInt(q.answer);
         const isCorrect = userAns === correctAns;
         
-        html += `<div class="p-4 rounded-xl border ${isCorrect ? 'bg-green-50 border-green-200' : (userAns === null ? 'bg-orange-50 border-orange-200' : 'bg-red-50 border-red-200')}">
+        html += `<div class="p-4 rounded-xl border mr-2 ${isCorrect ? 'bg-green-50 border-green-200' : (userAns === null ? 'bg-orange-50 border-orange-200' : 'bg-red-50 border-red-200')}">
             <p class="font-bold text-gray-800 text-sm mb-3">Q${i+1}: ${q.question}</p>
             <div class="space-y-1.5">`;
         
@@ -341,15 +353,33 @@
     }
 
     function closeAnalysis() { 
-      // Unlock background scroll 
       document.body.style.overflow = 'auto';
       document.documentElement.style.overflow = 'auto';
-      
       document.getElementById('analysisModal').classList.add('hidden'); 
       document.getElementById('analysisModal').classList.remove('flex');
     }
     
     function returnHome() { showScreen('home'); document.getElementById('dashRankDaily').innerHTML = '<i class="fa-solid fa-spinner fa-spin text-white"></i>'; loadLeaderboard(); }
+
+    // JS TOUCH LOCK: Actively prevent browser pull-to-refresh inside the modal
+    const scrollBox = document.getElementById('analysisContent');
+    scrollBox.addEventListener('touchstart', function(e) {
+      this.allowUp = (this.scrollTop > 0);
+      this.allowDown = (this.scrollTop < this.scrollHeight - this.clientHeight);
+      this.slideBeginY = e.changedTouches[0].pageY;
+    }, { passive: false });
+
+    scrollBox.addEventListener('touchmove', function(e) {
+      let slideStartY = e.changedTouches[0].pageY;
+      let up = (slideStartY > this.slideBeginY);
+      let down = (slideStartY < this.slideBeginY);
+      this.slideBeginY = slideStartY;
+
+      // If at the top and pulling down, or at bottom and pulling up, kill the event to stop refresh
+      if ((up && !this.allowUp) || (down && !this.allowDown)) {
+        e.preventDefault();
+      }
+    }, { passive: false });
   </script>
 </body>
 </html>
