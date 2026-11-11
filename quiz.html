@@ -7,14 +7,12 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    /* STOPS PULL-TO-REFRESH UNIVERSALLY ON MOBILE */
     html, body { 
       background-color: #f8fafc; 
       overscroll-behavior: none !important; 
       overscroll-behavior-y: none !important;
     }
     
-    /* MODAL SCROLL PHYSICS - THICK SCROLLBAR FOR TOUCH */
     .modal-scroll-area {
       overflow-y: auto;
       -webkit-overflow-scrolling: touch; 
@@ -92,22 +90,53 @@
         </div>
 
         <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3 px-2"><i class="fa-solid fa-crown text-yellow-500 mr-1"></i> Top 3 Performers</h3>
+        
         <div class="min-h-[150px]">
           <div id="lb-daily" class="space-y-3"><p class="text-center text-gray-400 py-6 text-sm"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Loading...</p></div>
           <div id="lb-weekly" class="space-y-3 hidden"></div>
           <div id="lb-allTime" class="space-y-3 hidden"></div>
         </div>
+
+        <!-- NEW: View All Leaderboard Button -->
+        <button onclick="openFullLeaderboard()" class="w-full bg-indigo-50 text-indigo-600 font-bold py-3 mt-4 rounded-xl hover:bg-indigo-100 transition active:scale-95 text-sm border border-indigo-100">
+          View All Leaderboard
+        </button>
       </div>
 
       <button onclick="startChallenge()" class="w-full bg-gray-900 text-white font-black py-4 rounded-2xl shadow-lg transition active:scale-95 btn-glow flex items-center justify-center gap-2 text-lg">
         <i class="fa-solid fa-play"></i> START CHALLENGE
       </button>
 
-      <!-- Feedback Button -->
       <button onclick="openFeedback()" class="w-full bg-transparent text-gray-400 font-bold py-3 mt-2 rounded-xl hover:text-indigo-600 hover:bg-white transition active:scale-95 flex items-center justify-center gap-2 text-sm border border-transparent hover:border-gray-100">
         <i class="fa-solid fa-comment-dots"></i> Give us feedback
       </button>
     </div>
+
+    <!-- 🌟 NEW: FULL LEADERBOARD SCREEN -->
+    <div id="screen-full-leaderboard" class="screen bg-white rounded-[2rem] p-6 shadow-sm border border-gray-100 flex flex-col h-[85vh]">
+      <div class="flex justify-between items-center mb-4 pb-4 border-b border-gray-100 shrink-0">
+        <h3 class="text-xl font-black text-gray-800"><i class="fa-solid fa-ranking-star text-indigo-500 mr-2"></i>Full Leaderboard</h3>
+        <button onclick="returnHome()" class="text-gray-400 hover:text-red-500 w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center transition"><i class="fa-solid fa-arrow-left"></i></button>
+      </div>
+      
+      <!-- Motivational Quote Section -->
+      <div id="motivationalQuote" class="bg-gradient-to-r from-indigo-50 to-purple-50 p-4 rounded-xl border border-indigo-100 mb-4 shrink-0">
+        <!-- Quote logic injected here -->
+      </div>
+
+      <!-- Tabs for Full Leaderboard -->
+      <div class="flex bg-gray-100 rounded-full p-1 mb-4 shrink-0">
+        <button id="full-tab-daily" onclick="switchFullTab('daily')" class="flex-1 py-2 text-xs font-bold rounded-full bg-white text-indigo-600 shadow-sm transition-all">Daily</button>
+        <button id="full-tab-weekly" onclick="switchFullTab('weekly')" class="flex-1 py-2 text-xs font-bold rounded-full text-gray-500 transition-all">Weekly</button>
+        <button id="full-tab-allTime" onclick="switchFullTab('allTime')" class="flex-1 py-2 text-xs font-bold rounded-full text-gray-500 transition-all">Overall</button>
+      </div>
+
+      <!-- Full List Scroll Area -->
+      <div id="fullLeaderboardList" class="overflow-y-auto modal-scroll-area flex-1 space-y-3 pr-2 pb-6">
+        <!-- List injected here -->
+      </div>
+    </div>
+
 
     <!-- 2. ACTIVE QUIZ SCREEN -->
     <div id="screen-quiz" class="screen bg-white rounded-[2rem] p-6 shadow-sm border border-gray-100">
@@ -153,7 +182,7 @@
     </div>
   </div>
 
-  <!-- 💬 FEEDBACK MODAL POPUP (Powered by FormSubmit.co) -->
+  <!-- 💬 FEEDBACK MODAL POPUP -->
   <div id="feedbackModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden flex justify-center items-center z-[110] p-4 transition-opacity">
     <div class="bg-white rounded-3xl w-full max-w-md shadow-2xl relative overflow-hidden flex flex-col">
       <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 to-indigo-600 z-10"></div>
@@ -224,6 +253,11 @@
 
     let quizData = [], currentIndex = 0, userAnswers = [], timerInterval, timeLeft = 300;
     const POSITIVE_MARK = 2, NEGATIVE_MARK = -1;
+    
+    // NEW DATA STORES
+    let fullLeaderboardData = null;
+    let currentHomeTab = 'daily';
+    let currentFullTab = 'daily';
 
     loadLeaderboard();
 
@@ -237,6 +271,7 @@
     }
 
     function switchTab(tab) {
+      currentHomeTab = tab;
       ['daily', 'weekly', 'allTime'].forEach(t => {
         document.getElementById(`lb-${t}`).classList.add('hidden');
         document.getElementById(`tab-${t}`).className = 'flex-1 py-2 text-xs font-bold rounded-full text-gray-500 hover:text-gray-800 transition-all bg-transparent shadow-none';
@@ -248,16 +283,19 @@
     async function loadLeaderboard() {
       const res = await fetchAPI('getLeaderboard', { studentId: studentId });
       
-      const buildHtml = (arr) => arr.map(r => {
+      const buildHtmlTop3 = (arr) => arr.slice(0, 3).map(r => {
         const isMe = String(r.id) === String(studentId);
         const rankColor = r.rank === 1 ? 'text-yellow-500' : (r.rank === 2 ? 'text-gray-400' : (r.rank === 3 ? 'text-orange-400' : 'text-gray-300'));
         return `<div class="flex justify-between items-center p-3.5 ${isMe ? 'bg-indigo-50 border-indigo-200 shadow-md' : 'bg-white border-gray-100'} border rounded-xl shadow-sm transition"><div class="flex items-center gap-3"><span class="w-6 text-center font-black ${rankColor} text-lg">#${r.rank}</span><div class="flex flex-col"><span class="font-bold text-gray-800 text-sm">${r.name} ${isMe ? '<span class="text-[9px] bg-indigo-600 text-white px-1.5 py-0.5 rounded-full ml-1 font-bold">YOU</span>' : ''}</span></div></div><span class="text-sm font-black text-indigo-600 bg-white border border-indigo-100 px-2.5 py-1 rounded-lg">${r.score} pts</span></div>`;
       }).join('') || "<p class='text-center text-sm text-gray-400 py-6'>No scores yet. Be the first!</p>";
 
       if (res.ok) {
-        document.getElementById('lb-daily').innerHTML = buildHtml(res.leaderboard.daily);
-        document.getElementById('lb-weekly').innerHTML = buildHtml(res.leaderboard.weekly);
-        document.getElementById('lb-allTime').innerHTML = buildHtml(res.leaderboard.overall);
+        fullLeaderboardData = res.leaderboard;
+        
+        // Render Top 3 for the Home Screen
+        document.getElementById('lb-daily').innerHTML = buildHtmlTop3(res.leaderboard.daily);
+        document.getElementById('lb-weekly').innerHTML = buildHtmlTop3(res.leaderboard.weekly);
+        document.getElementById('lb-allTime').innerHTML = buildHtmlTop3(res.leaderboard.overall);
         
         document.getElementById('dashRankDaily').innerText = `#${res.myStats.daily.rank}`; document.getElementById('dashScoreDaily').innerText = `${res.myStats.daily.score} pts`;
         document.getElementById('dashRankWeekly').innerText = `#${res.myStats.weekly.rank}`; document.getElementById('dashScoreWeekly').innerText = `${res.myStats.weekly.score} pts`;
@@ -269,6 +307,73 @@
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
       document.getElementById(`screen-${screenId}`).classList.add('active');
     }
+
+    // --- FULL LEADERBOARD LOGIC --- //
+    function openFullLeaderboard() {
+      switchFullTab(currentHomeTab); // Matches the tab you were looking at
+      showScreen('full-leaderboard');
+    }
+
+    function switchFullTab(tab) {
+      currentFullTab = tab;
+      ['daily', 'weekly', 'allTime'].forEach(t => {
+        document.getElementById(`full-tab-${t}`).className = 'flex-1 py-2 text-xs font-bold rounded-full text-gray-500 transition-all bg-transparent shadow-none';
+      });
+      document.getElementById(`full-tab-${tab}`).className = 'flex-1 py-2 text-xs font-bold rounded-full bg-white text-indigo-600 shadow-sm transition-all';
+      renderFullLeaderboard();
+    }
+
+    function renderFullLeaderboard() {
+      if(!fullLeaderboardData) return;
+      
+      const mapKey = currentFullTab === 'allTime' ? 'overall' : currentFullTab;
+      const dataArray = fullLeaderboardData[mapKey];
+      
+      const myEntry = dataArray.find(s => String(s.id) === String(studentId));
+      const quoteContainer = document.getElementById('motivationalQuote');
+      
+      // Motivational Quote Logic
+      if (!myEntry) {
+        quoteContainer.innerHTML = `<p class="text-sm font-bold text-gray-700 text-center"><i class="fa-solid fa-gamepad text-indigo-500 mr-1"></i> Play a game to join the leaderboard!</p>`;
+      } else if (myEntry.rank === 1) {
+        quoteContainer.innerHTML = `<p class="text-sm font-bold text-indigo-700 text-center"><i class="fa-solid fa-crown text-yellow-500 mr-1"></i> You are the Top Ranker! Keep defending your title!</p>`;
+      } else {
+        const targetEntry = dataArray.find(s => s.rank === myEntry.rank - 1);
+        if (targetEntry) {
+          const scoreDiff = targetEntry.score - myEntry.score;
+          quoteContainer.innerHTML = `<p class="text-sm font-bold text-gray-700 leading-snug"><i class="fa-solid fa-fire text-orange-500 mr-1"></i> You are just <span class="text-indigo-600 font-black">${scoreDiff}</span> score away from <span class="text-indigo-600 font-black">${targetEntry.name}</span>. Beat them, you can play!</p>`;
+        } else {
+           quoteContainer.innerHTML = `<p class="text-sm font-bold text-gray-700 leading-snug text-center"><i class="fa-solid fa-arrow-up text-green-500 mr-1"></i> Keep playing to improve your rank!</p>`;
+        }
+      }
+
+      // Build the full list
+      const buildHtmlFull = (arr) => arr.map(r => {
+        const isMe = String(r.id) === String(studentId);
+        const rankColor = r.rank === 1 ? 'text-yellow-500' : (r.rank === 2 ? 'text-gray-400' : (r.rank === 3 ? 'text-orange-400' : 'text-gray-300'));
+        
+        // Highlight specific to 'ME'
+        const bgStyle = isMe ? 'bg-indigo-600 text-white border-indigo-700 shadow-lg transform scale-[1.02]' : 'bg-white border-gray-100 text-gray-800';
+        const nameColor = isMe ? 'text-white' : 'text-gray-800';
+        const scoreBg = isMe ? 'bg-indigo-500 text-white border-indigo-400' : 'bg-white text-indigo-600 border-indigo-100';
+        const numColor = isMe ? 'text-white' : rankColor;
+
+        return `
+        <div class="flex justify-between items-center p-3.5 ${bgStyle} border rounded-xl shadow-sm transition">
+          <div class="flex items-center gap-3">
+            <span class="w-6 text-center font-black ${numColor} text-lg">#${r.rank}</span>
+            <div class="flex flex-col">
+              <span class="font-bold ${nameColor} text-sm">${r.name} ${isMe ? '<span class="text-[9px] bg-white text-indigo-600 px-1.5 py-0.5 rounded-full ml-1 font-black">YOU</span>' : ''}</span>
+            </div>
+          </div>
+          <span class="text-sm font-black ${scoreBg} border px-2.5 py-1 rounded-lg">${r.score} pts</span>
+        </div>`;
+      }).join('') || "<p class='text-center text-sm text-gray-400 py-6'>No scores yet.</p>";
+
+      document.getElementById('fullLeaderboardList').innerHTML = buildHtmlFull(dataArray);
+    }
+    // --- END FULL LEADERBOARD LOGIC --- //
+
 
     async function startChallenge() {
       showScreen('quiz');
@@ -361,7 +466,6 @@
     
     function returnHome() { showScreen('home'); document.getElementById('dashRankDaily').innerHTML = '<i class="fa-solid fa-spinner fa-spin text-white"></i>'; loadLeaderboard(); }
 
-    // FEEDBACK FORM LOGIC WITH FORMSUBMIT.CO
     function openFeedback() {
       document.body.style.overflow = 'hidden'; document.documentElement.style.overflow = 'hidden';
       document.getElementById('fbName').value = studentName;
@@ -390,59 +494,41 @@
       btn.disabled = true;
 
       try {
-        // Sends request via FormSubmit AJAX endpoint directly to your email
         const response = await fetch("https://formsubmit.co/ajax/hello@sumitaidev.com", {
           method: "POST",
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          },
-          body: JSON.stringify({
-            StudentID: studentId,
-            Name: name,
-            Email: email,
-            Message: text,
-            _subject: "New Quiz Portal Feedback!"
-          })
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify({ StudentID: studentId, Name: name, Email: email, Message: text, _subject: "New Quiz Portal Feedback!" })
         });
-
         const result = await response.json();
-
         if (result.success) {
           btn.innerHTML = '<i class="fa-solid fa-check"></i> Submitted!';
           btn.classList.replace('bg-indigo-600', 'bg-green-500');
-          
           setTimeout(() => {
-            closeFeedback();
-            document.getElementById('fbText').value = '';
-            btn.innerHTML = 'Submit Feedback';
-            btn.classList.replace('bg-green-500', 'bg-indigo-600');
-            btn.disabled = false;
+            closeFeedback(); document.getElementById('fbText').value = ''; btn.innerHTML = 'Submit Feedback';
+            btn.classList.replace('bg-green-500', 'bg-indigo-600'); btn.disabled = false;
           }, 1500);
-        } else {
-          throw new Error("FormSubmit failed");
-        }
+        } else throw new Error("FormSubmit failed");
       } catch (err) {
-        alert("Failed to send feedback. Please try again.");
-        btn.innerHTML = 'Submit Feedback';
-        btn.disabled = false;
+        alert("Failed to send feedback. Please try again."); btn.innerHTML = 'Submit Feedback'; btn.disabled = false;
       }
     }
 
-    // JS TOUCH LOCK: Actively prevent browser pull-to-refresh inside modals
-    const scrollBox = document.getElementById('analysisContent');
-    scrollBox.addEventListener('touchstart', function(e) {
-      this.allowUp = (this.scrollTop > 0);
-      this.allowDown = (this.scrollTop < this.scrollHeight - this.clientHeight);
-      this.slideBeginY = e.changedTouches[0].pageY;
-    }, { passive: false });
-    scrollBox.addEventListener('touchmove', function(e) {
-      let slideStartY = e.changedTouches[0].pageY;
-      let up = (slideStartY > this.slideBeginY);
-      let down = (slideStartY < this.slideBeginY);
-      this.slideBeginY = slideStartY;
-      if ((up && !this.allowUp) || (down && !this.allowDown)) e.preventDefault();
-    }, { passive: false });
+    // JS TOUCH LOCK: Actively prevent browser pull-to-refresh inside modals/scroll areas
+    document.querySelectorAll('.modal-scroll-area').forEach(scrollBox => {
+      scrollBox.addEventListener('touchstart', function(e) {
+        this.allowUp = (this.scrollTop > 0);
+        this.allowDown = (this.scrollTop < this.scrollHeight - this.clientHeight);
+        this.slideBeginY = e.changedTouches[0].pageY;
+      }, { passive: false });
+      
+      scrollBox.addEventListener('touchmove', function(e) {
+        let slideStartY = e.changedTouches[0].pageY;
+        let up = (slideStartY > this.slideBeginY);
+        let down = (slideStartY < this.slideBeginY);
+        this.slideBeginY = slideStartY;
+        if ((up && !this.allowUp) || (down && !this.allowDown)) e.preventDefault();
+      }, { passive: false });
+    });
   </script>
 </body>
 </html>
