@@ -36,19 +36,22 @@
     <!-- 1. HOME / LEADERBOARD SCREEN -->
     <div id="screen-home" class="screen active space-y-6">
       
-      <!-- Personal Dashboard Stats -->
+      <!-- Personal Dashboard Stats (Now with Scores) -->
       <div class="grid grid-cols-3 gap-3 mb-6">
-        <div class="bg-indigo-600 text-white rounded-2xl p-4 shadow-sm text-center">
-          <p class="text-[10px] font-bold uppercase tracking-wider mb-1 opacity-80">Daily Rank</p>
-          <p id="dashRankDaily" class="text-2xl font-black">#--</p>
+        <div class="bg-indigo-600 text-white rounded-2xl p-3 shadow-sm text-center flex flex-col justify-center">
+          <p class="text-[10px] font-bold uppercase tracking-wider mb-0.5 opacity-80">Daily</p>
+          <p id="dashRankDaily" class="text-xl font-black">#--</p>
+          <p id="dashScoreDaily" class="text-[10px] font-medium opacity-80">-- pts</p>
         </div>
-        <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 text-center">
-          <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Weekly</p>
-          <p id="dashRankWeekly" class="text-2xl font-black text-gray-800">#--</p>
+        <div class="bg-white rounded-2xl p-3 shadow-sm border border-gray-100 text-center flex flex-col justify-center">
+          <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Weekly</p>
+          <p id="dashRankWeekly" class="text-xl font-black text-gray-800">#--</p>
+          <p id="dashScoreWeekly" class="text-[10px] font-medium text-gray-400">-- pts</p>
         </div>
-        <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 text-center">
-          <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Overall</p>
-          <p id="dashRankOverall" class="text-2xl font-black text-gray-800">#--</p>
+        <div class="bg-white rounded-2xl p-3 shadow-sm border border-gray-100 text-center flex flex-col justify-center">
+          <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Overall</p>
+          <p id="dashRankOverall" class="text-xl font-black text-gray-800">#--</p>
+          <p id="dashScoreOverall" class="text-[10px] font-medium text-gray-400">-- pts</p>
         </div>
       </div>
 
@@ -108,12 +111,10 @@
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbyVJ-gPQWSqjcEwISrKO1OuXU3fCuGs2PHpbDHfAqYoT2x3BEAc8MdGnysSgypHG0E/exec";
     
-    // Centralized function to return to the student portal
+    // Redirects directly to student.html
     function returnToPortal() {
-      // If the portal is hstakeiteasy.github.io, we redirect there. 
-      // It also safely attempts to close the tab if opened via target="_blank"
       window.close(); 
-      window.location.href = "https://hstakeiteasy.github.io/"; 
+      window.location.href = "student.html"; 
     }
 
     // Auth & Name Check
@@ -138,7 +139,7 @@
 
     let quizData = [], currentIndex = 0, userAnswers = [], timerInterval, timeLeft = 300;
     
-    // Updated Marking Scheme
+    // Scoring setup
     const POSITIVE_MARK = 2;
     const NEGATIVE_MARK = -1;
 
@@ -188,9 +189,15 @@
         document.getElementById('lb-weekly').innerHTML = buildHtml(res.leaderboard.weekly);
         document.getElementById('lb-allTime').innerHTML = buildHtml(res.leaderboard.overall);
         
-        document.getElementById('dashRankDaily').innerText = `#${res.myRanks.daily}`;
-        document.getElementById('dashRankWeekly').innerText = `#${res.myRanks.weekly}`;
-        document.getElementById('dashRankOverall').innerText = `#${res.myRanks.overall}`;
+        // Populate Dashboard with Rank AND Score
+        document.getElementById('dashRankDaily').innerText = `#${res.myStats.daily.rank}`;
+        document.getElementById('dashScoreDaily').innerText = `${res.myStats.daily.score} pts`;
+        
+        document.getElementById('dashRankWeekly').innerText = `#${res.myStats.weekly.rank}`;
+        document.getElementById('dashScoreWeekly').innerText = `${res.myStats.weekly.score} pts`;
+        
+        document.getElementById('dashRankOverall').innerText = `#${res.myStats.overall.rank}`;
+        document.getElementById('dashScoreOverall').innerText = `${res.myStats.overall.score} pts`;
       } else {
         document.getElementById('lb-daily').innerHTML = "<p class='text-red-500 text-center py-4'>Failed to load data.</p>";
       }
@@ -298,6 +305,11 @@
       document.getElementById('dashRankDaily').innerHTML = '<i class="fa-solid fa-spinner fa-spin text-white"></i>';
       document.getElementById('dashRankWeekly').innerHTML = '<i class="fa-solid fa-spinner fa-spin text-gray-300"></i>';
       document.getElementById('dashRankOverall').innerHTML = '<i class="fa-solid fa-spinner fa-spin text-gray-300"></i>';
+      
+      document.getElementById('dashScoreDaily').innerText = '-- pts';
+      document.getElementById('dashScoreWeekly').innerText = '-- pts';
+      document.getElementById('dashScoreOverall').innerText = '-- pts';
+      
       loadLeaderboard(); 
     }
   </script>
