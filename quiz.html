@@ -7,19 +7,23 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    /* ADDED: overscroll-behavior-y: none completely blocks the mobile "pull-to-refresh" page reload */
-    body { 
+    /* STOPS PULL-TO-REFRESH UNIVERSALLY ON MOBILE */
+    html, body { 
       background-color: #f8fafc; 
-      overscroll-behavior-y: none; 
+      overscroll-behavior: none !important; 
+      overscroll-behavior-y: none !important;
     }
     
-    .smooth-scroll { 
-      scroll-behavior: smooth; 
-      -webkit-overflow-scrolling: touch; 
+    /* MODAL SCROLL PHYSICS */
+    .modal-scroll-area {
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch; /* Silky smooth iOS scrolling */
+      overscroll-behavior-y: contain; /* Traps scroll inside the modal, preventing background refresh */
     }
-    .smooth-scroll::-webkit-scrollbar { width: 5px; }
-    .smooth-scroll::-webkit-scrollbar-track { background: #f8fafc; border-radius: 10px; }
-    .smooth-scroll::-webkit-scrollbar-thumb { background: #c7d2fe; border-radius: 10px; }
+
+    .modal-scroll-area::-webkit-scrollbar { width: 5px; }
+    .modal-scroll-area::-webkit-scrollbar-track { background: #f8fafc; border-radius: 10px; }
+    .modal-scroll-area::-webkit-scrollbar-thumb { background: #c7d2fe; border-radius: 10px; }
     
     @keyframes glow { 
       0% { box-shadow: 0 0 5px rgba(99, 102, 241, 0.4); } 
@@ -136,15 +140,14 @@
   <!-- 📊 ANALYSIS MODAL POPUP -->
   <div id="analysisModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden flex justify-center items-center z-[100] p-4 transition-opacity">
     <div class="bg-white rounded-3xl w-full max-w-md shadow-2xl relative overflow-hidden flex flex-col max-h-[85vh]">
-      <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-indigo-500 to-purple-600"></div>
+      <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-indigo-500 to-purple-600 z-10"></div>
       
       <div class="flex justify-between items-center p-6 border-b border-gray-100 shrink-0">
         <h3 class="text-xl font-black text-gray-800"><i class="fa-solid fa-magnifying-glass-chart text-indigo-500 mr-2"></i>Session Analysis</h3>
         <button onclick="closeAnalysis()" class="text-gray-400 hover:text-red-500 w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center transition"><i class="fa-solid fa-xmark"></i></button>
       </div>
       
-      <!-- ADDED overscroll-contain directly to the scrollable area to trap touch scrolls -->
-      <div id="analysisContent" class="p-6 overflow-y-auto smooth-scroll overscroll-contain flex-1 space-y-4">
+      <div id="analysisContent" class="p-6 modal-scroll-area flex-1 space-y-4">
         <!-- Analysis details injected here -->
       </div>
     </div>
@@ -303,8 +306,10 @@
     }
 
     function openAnalysis() {
-      // Prevent body scrolling when modal is open
+      // Double lock background scroll for Android/iOS universally
       document.body.style.overflow = 'hidden';
+      document.documentElement.style.overflow = 'hidden';
+      
       document.getElementById('analysisModal').classList.remove('hidden');
       document.getElementById('analysisModal').classList.add('flex');
       let html = '';
@@ -336,8 +341,10 @@
     }
 
     function closeAnalysis() { 
-      // Restore body scrolling
+      // Unlock background scroll 
       document.body.style.overflow = 'auto';
+      document.documentElement.style.overflow = 'auto';
+      
       document.getElementById('analysisModal').classList.add('hidden'); 
       document.getElementById('analysisModal').classList.remove('flex');
     }
