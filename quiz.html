@@ -2,89 +2,76 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Quiz Challenge - HSTakeItEasy</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
   <style>
+    /* Prevent pull-to-refresh on mobile */
     html, body { 
       background-color: #f8fafc; 
-      overscroll-behavior: none !important; 
-      overscroll-behavior-y: none !important;
+      overscroll-behavior-y: none; 
+      height: 100%;
+      overflow: hidden; /* Prevents the whole page from scrolling */
     }
     
-    /* Scrollable areas: allow touch panning anywhere */
-    .modal-scroll-area {
+    /* The main app container acts as the scrolling viewport */
+    #app-container {
+      height: 100%;
       overflow-y: auto;
-      -webkit-overflow-scrolling: touch; 
-      overscroll-behavior-y: contain; 
-      touch-action: pan-y;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 100px; /* Space for fixed bottom bar */
     }
 
-    .modal-scroll-area::-webkit-scrollbar { width: 16px; }
-    .modal-scroll-area::-webkit-scrollbar-track { background: #f1f5f9; border-left: 1px solid #e2e8f0; }
-    .modal-scroll-area::-webkit-scrollbar-thumb { background: #818cf8; border-radius: 10px; border: 3px solid #f1f5f9; }
-    .modal-scroll-area::-webkit-scrollbar-thumb:active { background: #6366f1; }
-    
-    @keyframes glow { 0% { box-shadow: 0 0 5px rgba(99, 102, 241, 0.4); } 100% { box-shadow: 0 0 20px rgba(99, 102, 241, 0.8), 0 0 30px rgba(99, 102, 241, 0.6); } }
-    .btn-glow { animation: glow 1.5s infinite alternate; }
-    
-    .quiz-option { transition: all 0.2s ease-in-out; }
-    .quiz-option.selected { border-color: #4f46e5 !important; background-color: #e0e7ff !important; font-weight: 800; color: #4f46e5; }
-    
-    .screen { display: none; animation: fadeIn 0.3s ease-in-out; }
-    .screen.active { display: block; }
+    /* Custom Scrollbar for smooth scrolling areas */
+    .smooth-scroll {
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior-y: contain;
+    }
+    .smooth-scroll::-webkit-scrollbar { width: 6px; }
+    .smooth-scroll::-webkit-scrollbar-track { background: transparent; }
+    .smooth-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    .smooth-scroll::-webkit-scrollbar-thumb:active { background: #94a3b8; }
+
+    /* Screen Transitions */
+    .screen { display: none; }
+    .screen.active { display: block; animation: fadeIn 0.3s ease-in-out; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-    /* Fixed bottom bar – Start Challenge */
-    .bottom-fixed-bar {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: #f8fafc;
-      padding: 12px 16px 20px 16px;
-      box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.04);
-      z-index: 50;
-      display: flex;
-      justify-content: center;
-    }
-    .bottom-fixed-bar .inner-bar {
-      width: 100%;
-      max-width: 28rem; /* max-w-md */
-    }
+    /* Start Button Glow */
+    @keyframes glow { 0% { box-shadow: 0 0 5px rgba(99, 102, 241, 0.4); } 100% { box-shadow: 0 0 20px rgba(99, 102, 241, 0.8); } }
+    .btn-glow { animation: glow 1.5s infinite alternate; }
 
-    /* Add bottom padding to home screen so content isn't hidden behind fixed bar */
-    #screen-home {
-      padding-bottom: 90px;
-    }
-
-    /* Ensure modal scroll areas work from any touch point */
-    #fullLeaderboardList {
-      touch-action: pan-y;
-      overscroll-behavior: contain;
-      -webkit-overflow-scrolling: touch;
-    }
+    /* Option Selection */
+    .quiz-option { transition: all 0.2s ease-in-out; }
+    .quiz-option.selected { border-color: #4f46e5 !important; background-color: #e0e7ff !important; font-weight: 800; color: #4f46e5; }
   </style>
 </head>
-<body class="text-gray-800 p-4 md:p-8 flex justify-center min-h-screen items-start pt-10 pb-0">
+<body class="text-gray-800 flex justify-center">
 
-  <div class="w-full max-w-md pb-28"> <!-- extra bottom padding for fixed bar -->
-
-    <!-- Header -->
-    <div class="flex justify-between items-center mb-6 px-2">
-      <div>
-        <h1 class="text-2xl font-black text-gray-800 tracking-tight"><i class="fa-solid fa-brain text-indigo-600 mr-2"></i>Quiz Portal</h1>
-        <p class="text-xs text-gray-500 font-medium mt-1">Player: <span id="displayStudentName" class="text-indigo-600 font-bold">Loading...</span></p>
-        <!-- Motivational quote appears here (below player name) -->
-        <div id="motivationalQuoteHome" class="mt-2 min-h-[2.5rem]"></div>
-      </div>
-      <button onclick="returnToPortal()" class="w-10 h-10 bg-white rounded-full shadow-sm text-gray-400 hover:text-red-500 flex items-center justify-center transition border border-gray-100 self-start"><i class="fa-solid fa-xmark text-xl"></i></button>
-    </div>
-
-    <!-- 1. HOME / LEADERBOARD SCREEN -->
-    <div id="screen-home" class="screen active space-y-6">
+  <!-- MAIN SCROLLABLE CONTAINER -->
+  <div id="app-container" class="w-full max-w-md relative bg-[#f8fafc]">
+    
+    <!-- ==================== 1. HOME SCREEN ==================== -->
+    <div id="screen-home" class="screen active p-4 pt-8">
       
+      <!-- Header & Quote -->
+      <div class="flex justify-between items-start mb-6 px-2">
+        <div class="w-full pr-4">
+          <h1 class="text-2xl font-black text-gray-800 tracking-tight"><i class="fa-solid fa-brain text-indigo-600 mr-2"></i>Quiz Portal</h1>
+          <p class="text-xs text-gray-500 font-medium mt-1">Player: <span id="displayStudentName" class="text-indigo-600 font-bold">Loading...</span></p>
+          
+          <!-- MOTIVATIONAL QUOTE HERE -->
+          <div id="motivationalQuoteHome" class="mt-3 bg-indigo-50 border border-indigo-100 p-3 rounded-xl text-xs font-bold text-indigo-700 leading-snug hidden">
+            <!-- Injected via JS -->
+          </div>
+        </div>
+        <button onclick="returnToPortal()" class="w-10 h-10 shrink-0 bg-white rounded-full shadow-sm text-gray-400 hover:text-red-500 flex items-center justify-center transition border border-gray-100"><i class="fa-solid fa-xmark text-xl"></i></button>
+      </div>
+
+      <!-- Stats Dashboard -->
       <div class="grid grid-cols-3 gap-3 mb-6">
         <div class="bg-indigo-600 text-white rounded-2xl p-3 shadow-sm text-center flex flex-col justify-center">
           <p class="text-[10px] font-bold uppercase tracking-wider mb-0.5 opacity-80">Daily</p>
@@ -115,7 +102,8 @@
         </div>
       </div>
 
-      <div class="bg-white rounded-[2rem] p-6 shadow-sm border border-gray-100">
+      <!-- Top 3 Leaderboard -->
+      <div class="bg-white rounded-[2rem] p-6 shadow-sm border border-gray-100 mb-6">
         <div class="flex bg-gray-100 rounded-full p-1 mb-6">
           <button id="tab-daily" onclick="switchTab('daily')" class="flex-1 py-2 text-xs font-bold rounded-full bg-white text-indigo-600 shadow-sm transition-all">Daily</button>
           <button id="tab-weekly" onclick="switchTab('weekly')" class="flex-1 py-2 text-xs font-bold rounded-full text-gray-500 hover:text-gray-800 transition-all">Weekly</button>
@@ -130,80 +118,88 @@
           <div id="lb-allTime" class="space-y-3 hidden"></div>
         </div>
 
-        <!-- View All Leaderboard Button -->
         <button onclick="openFullLeaderboard()" class="w-full bg-indigo-50 text-indigo-600 font-bold py-3 mt-4 rounded-xl hover:bg-indigo-100 transition active:scale-95 text-sm border border-indigo-100">
           View All Leaderboard
         </button>
       </div>
 
-      <!-- Feedback button below leaderboard -->
-      <button onclick="openFeedback()" class="w-full bg-transparent text-gray-400 font-bold py-3 mt-2 rounded-xl hover:text-indigo-600 hover:bg-white transition active:scale-95 flex items-center justify-center gap-2 text-sm border border-transparent hover:border-gray-100">
+      <!-- Feedback Button -->
+      <button onclick="openFeedback()" class="w-full bg-transparent text-gray-400 font-bold py-3 rounded-xl hover:text-indigo-600 hover:bg-white transition active:scale-95 flex items-center justify-center gap-2 text-sm border border-transparent hover:border-gray-100 mb-4">
         <i class="fa-solid fa-comment-dots"></i> Give us feedback
       </button>
+
+      <!-- Fixed Start Challenge Button (Only appears on Home screen) -->
+      <div id="startButtonContainer" class="fixed bottom-0 left-0 right-0 p-4 pb-6 bg-gradient-to-t from-[#f8fafc] via-[#f8fafc] to-transparent z-40 flex justify-center pointer-events-none">
+        <div class="w-full max-w-md pointer-events-auto">
+          <button onclick="startChallenge()" class="w-full bg-gray-900 text-white font-black py-4 rounded-2xl shadow-xl transition active:scale-95 btn-glow flex items-center justify-center gap-2 text-lg">
+            <i class="fa-solid fa-play"></i> START CHALLENGE
+          </button>
+        </div>
+      </div>
     </div>
 
-    <!-- 🌟 FULL LEADERBOARD SCREEN -->
-    <div id="screen-full-leaderboard" class="screen bg-white rounded-[2rem] p-6 shadow-sm border border-gray-100 flex flex-col h-[85vh]">
-      <div class="flex justify-between items-center mb-4 pb-4 border-b border-gray-100 shrink-0">
+    <!-- ==================== 2. FULL LEADERBOARD SCREEN ==================== -->
+    <div id="screen-full-leaderboard" class="screen absolute inset-0 bg-white z-50 flex flex-col h-full">
+      <!-- Header -->
+      <div class="flex justify-between items-center p-6 pb-4 border-b border-gray-100 shrink-0">
         <h3 class="text-xl font-black text-gray-800"><i class="fa-solid fa-ranking-star text-indigo-500 mr-2"></i>Full Leaderboard</h3>
-        <button onclick="returnHome()" class="text-gray-400 hover:text-red-500 w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center transition"><i class="fa-solid fa-arrow-left"></i></button>
+        <button onclick="closeFullLeaderboard()" class="text-gray-400 hover:text-red-500 w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center transition"><i class="fa-solid fa-arrow-left"></i></button>
       </div>
       
-      <!-- Tabs for Full Leaderboard -->
-      <div class="flex bg-gray-100 rounded-full p-1 mb-4 shrink-0">
-        <button id="full-tab-daily" onclick="switchFullTab('daily')" class="flex-1 py-2 text-xs font-bold rounded-full bg-white text-indigo-600 shadow-sm transition-all">Daily</button>
-        <button id="full-tab-weekly" onclick="switchFullTab('weekly')" class="flex-1 py-2 text-xs font-bold rounded-full text-gray-500 transition-all">Weekly</button>
-        <button id="full-tab-allTime" onclick="switchFullTab('allTime')" class="flex-1 py-2 text-xs font-bold rounded-full text-gray-500 transition-all">Overall</button>
+      <!-- Tabs -->
+      <div class="p-6 pb-2 shrink-0">
+        <div class="flex bg-gray-100 rounded-full p-1">
+          <button id="full-tab-daily" onclick="switchFullTab('daily')" class="flex-1 py-2 text-xs font-bold rounded-full bg-white text-indigo-600 shadow-sm transition-all">Daily</button>
+          <button id="full-tab-weekly" onclick="switchFullTab('weekly')" class="flex-1 py-2 text-xs font-bold rounded-full text-gray-500 transition-all">Weekly</button>
+          <button id="full-tab-allTime" onclick="switchFullTab('allTime')" class="flex-1 py-2 text-xs font-bold rounded-full text-gray-500 transition-all">Overall</button>
+        </div>
       </div>
 
-      <!-- Full List Scroll Area -->
-      <div id="fullLeaderboardList" class="overflow-y-auto modal-scroll-area flex-1 space-y-3 pr-2 pb-6">
+      <!-- Scrollable List (Middle, Left, Right scrolling enabled) -->
+      <div id="fullLeaderboardList" class="smooth-scroll flex-1 px-6 pb-6 space-y-3">
         <!-- List injected here -->
       </div>
     </div>
 
-    <!-- 2. ACTIVE QUIZ SCREEN -->
-    <div id="screen-quiz" class="screen bg-white rounded-[2rem] p-6 shadow-sm border border-gray-100">
-      <div class="flex justify-between items-center mb-6 pb-4 border-b border-gray-100">
+    <!-- ==================== 3. QUIZ SCREEN ==================== -->
+    <div id="screen-quiz" class="screen absolute inset-0 bg-white z-50 p-6 flex flex-col h-full">
+      <div class="flex justify-between items-center mb-6 pb-4 border-b border-gray-100 shrink-0">
         <span id="questionCount" class="text-xs font-black text-gray-400 bg-gray-100 px-3 py-1.5 rounded-lg tracking-wider">Q 1/5</span>
         <span id="timerDisplay" class="text-2xl font-black text-indigo-600 flex items-center gap-2 font-mono"><i class="fa-regular fa-clock text-lg text-indigo-400"></i> 05:00</span>
       </div>
-      <h3 id="questionText" class="text-lg font-bold text-gray-800 mb-6 leading-snug">Loading question...</h3>
-      <div id="optionsContainer" class="space-y-3 mb-8"></div>
-      <button id="nextBtn" onclick="nextQuestion()" class="w-full bg-gray-900 text-white font-bold py-3.5 rounded-xl shadow-sm hover:bg-black transition active:scale-95 hidden">Next Question</button>
+      <div class="smooth-scroll flex-1">
+        <h3 id="questionText" class="text-lg font-bold text-gray-800 mb-6 leading-snug">Loading question...</h3>
+        <div id="optionsContainer" class="space-y-3 mb-8"></div>
+      </div>
+      <div class="shrink-0 pt-4">
+        <button id="nextBtn" onclick="nextQuestion()" class="w-full bg-gray-900 text-white font-bold py-3.5 rounded-xl shadow-sm hover:bg-black transition active:scale-95 hidden">Next Question</button>
+      </div>
     </div>
 
-    <!-- 3. RESULT SCREEN -->
-    <div id="screen-result" class="screen bg-white rounded-[2rem] p-8 shadow-sm border border-gray-100 text-center relative overflow-hidden">
-      <div class="absolute -top-10 -right-10 text-9xl text-indigo-50 opacity-50 z-0"><i class="fa-solid fa-trophy"></i></div>
-      <div class="relative z-10">
+    <!-- ==================== 4. RESULT SCREEN ==================== -->
+    <div id="screen-result" class="screen absolute inset-0 bg-white z-50 p-8 flex flex-col justify-center text-center">
+      <div class="absolute -top-10 -right-10 text-9xl text-indigo-50 opacity-50 z-0 pointer-events-none"><i class="fa-solid fa-trophy"></i></div>
+      <div class="relative z-10 w-full max-w-md mx-auto">
         <i class="fa-solid fa-circle-check text-5xl text-green-500 mb-4"></i>
         <h2 class="text-2xl font-black text-gray-800 mb-1">Challenge Completed!</h2>
         <p class="text-sm text-gray-500 mb-6">Scores submitted successfully.</p>
         
-        <div class="bg-indigo-50 border border-indigo-100 rounded-2xl p-6 mb-4">
+        <div class="bg-indigo-50 border border-indigo-100 rounded-2xl p-6 mb-6">
           <p class="text-xs font-bold text-indigo-400 uppercase tracking-widest mb-1">Total Score</p>
           <h1 id="finalScore" class="text-6xl font-black text-indigo-600">--</h1>
         </div>
 
         <button onclick="openAnalysis()" class="w-full bg-indigo-100 text-indigo-700 font-bold py-3 rounded-xl mb-4 hover:bg-indigo-200 transition active:scale-95 border border-indigo-200"><i class="fa-solid fa-chart-simple mr-2"></i> View Analysis</button>
-        
         <button onclick="returnHome()" class="w-full bg-gray-900 text-white font-bold py-3.5 rounded-xl hover:bg-black transition active:scale-95">Return to Dashboard</button>
       </div>
     </div>
-    
-  </div>
 
-  <!-- FIXED BOTTOM BAR: START CHALLENGE -->
-  <div class="bottom-fixed-bar">
-    <div class="inner-bar">
-      <button onclick="startChallenge()" class="w-full bg-gray-900 text-white font-black py-4 rounded-2xl shadow-lg transition active:scale-95 btn-glow flex items-center justify-center gap-2 text-lg">
-        <i class="fa-solid fa-play"></i> START CHALLENGE
-      </button>
-    </div>
-  </div>
+  </div> <!-- END APP CONTAINER -->
 
-  <!-- 📊 ANALYSIS MODAL POPUP -->
+
+  <!-- ==================== MODALS ==================== -->
+
+  <!-- ANALYSIS MODAL -->
   <div id="analysisModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden flex justify-center items-center z-[100] p-4 transition-opacity">
     <div class="bg-white rounded-3xl w-full max-w-md shadow-2xl relative overflow-hidden flex flex-col max-h-[85vh]">
       <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-indigo-500 to-purple-600 z-10"></div>
@@ -211,11 +207,11 @@
         <h3 class="text-xl font-black text-gray-800"><i class="fa-solid fa-magnifying-glass-chart text-indigo-500 mr-2"></i>Session Analysis</h3>
         <button onclick="closeAnalysis()" class="text-gray-400 hover:text-red-500 w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center transition"><i class="fa-solid fa-xmark"></i></button>
       </div>
-      <div id="analysisContent" class="p-6 pr-2 modal-scroll-area flex-1 space-y-4"></div>
+      <div id="analysisContent" class="p-6 smooth-scroll flex-1 space-y-4"></div>
     </div>
   </div>
 
-  <!-- 💬 FEEDBACK MODAL POPUP -->
+  <!-- FEEDBACK MODAL -->
   <div id="feedbackModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden flex justify-center items-center z-[110] p-4 transition-opacity">
     <div class="bg-white rounded-3xl w-full max-w-md shadow-2xl relative overflow-hidden flex flex-col">
       <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 to-indigo-600 z-10"></div>
@@ -247,6 +243,7 @@
   </div>
 
   <script>
+    // YOUR API URL
     const API_URL = "https://script.google.com/macros/s/AKfycbyVJ-gPQWSqjcEwISrKO1OuXU3fCuGs2PHpbDHfAqYoT2x3BEAc8MdGnysSgypHG0E/exec";
     
     function returnToPortal() { window.close(); window.location.href = "student.html"; }
@@ -302,6 +299,22 @@
       } catch (err) { return { ok: false }; }
     }
 
+    function showScreen(screenId) {
+      // Hide all screens
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      // Show target screen
+      document.getElementById(`screen-${screenId}`).classList.add('active');
+      
+      // Handle Start Button visibility (only show on Home)
+      const startBtn = document.getElementById('startButtonContainer');
+      if (screenId === 'home') {
+        startBtn.classList.remove('hidden');
+      } else {
+        startBtn.classList.add('hidden');
+      }
+    }
+
+    // --- HOME LEADERBOARD ---
     function switchTab(tab) {
       currentHomeTab = tab;
       ['daily', 'weekly', 'allTime'].forEach(t => {
@@ -332,48 +345,44 @@
         document.getElementById('dashRankWeekly').innerText = `#${res.myStats.weekly.rank}`; document.getElementById('dashScoreWeekly').innerText = `${res.myStats.weekly.score} pts`;
         document.getElementById('dashRankOverall').innerText = `#${res.myStats.overall.rank}`; document.getElementById('dashScoreOverall').innerText = `${res.myStats.overall.score} pts`;
 
-        // Update motivational quote on home screen (below player name)
         updateHomeMotivationalQuote(res.leaderboard.daily);
       }
     }
 
-    // Motivational quote for home screen (below player name)
     function updateHomeMotivationalQuote(dailyLeaderboard) {
       const container = document.getElementById('motivationalQuoteHome');
-      if (!container || !dailyLeaderboard || dailyLeaderboard.length === 0) {
-        container.innerHTML = '';
+      if (!container) return;
+      
+      container.classList.remove('hidden');
+      
+      if (!dailyLeaderboard || dailyLeaderboard.length === 0) {
+        container.innerHTML = `<i class="fa-solid fa-gamepad mr-1"></i> Play a game to join the leaderboard!`;
         return;
       }
       const myEntry = dailyLeaderboard.find(s => String(s.id) === String(studentId));
       if (!myEntry) {
-        container.innerHTML = `<p class="text-xs text-indigo-500 font-semibold"><i class="fa-solid fa-gamepad mr-1"></i> Play a game to join the leaderboard!</p>`;
+        container.innerHTML = `<i class="fa-solid fa-gamepad mr-1"></i> Play a game to join the leaderboard!`;
       } else if (myEntry.rank === 1) {
-        container.innerHTML = `<p class="text-xs text-indigo-600 font-bold"><i class="fa-solid fa-crown text-yellow-500 mr-1"></i> You are the Top Ranker! Keep defending your title!</p>`;
+        container.innerHTML = `<i class="fa-solid fa-crown text-yellow-500 mr-1"></i> You are the Top Ranker! Keep defending your title!`;
       } else {
         const targetEntry = dailyLeaderboard.find(s => s.rank === myEntry.rank - 1);
         if (targetEntry) {
           const scoreDiff = targetEntry.score - myEntry.score;
-          container.innerHTML = `<p class="text-xs text-indigo-600 font-bold"><i class="fa-solid fa-fire text-orange-500 mr-1"></i> You are just <span class="text-indigo-800">${scoreDiff}</span> score away from <span class="text-indigo-800">${targetEntry.name}</span>. Beat them, you can play!</p>`;
+          container.innerHTML = `<i class="fa-solid fa-fire text-orange-500 mr-1"></i> You are just <span class="text-indigo-900">${scoreDiff}</span> score away from <span class="text-indigo-900">${targetEntry.name}</span>. Beat them!`;
         } else {
-          container.innerHTML = `<p class="text-xs text-indigo-600 font-bold"><i class="fa-solid fa-arrow-up text-green-500 mr-1"></i> Keep playing to improve your rank!</p>`;
+          container.innerHTML = `<i class="fa-solid fa-arrow-up text-green-500 mr-1"></i> Keep playing to improve your rank!`;
         }
       }
     }
 
-    function showScreen(screenId) {
-      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-      document.getElementById(`screen-${screenId}`).classList.add('active');
-      // Hide bottom fixed bar on full leaderboard screen
-      const bottomBar = document.querySelector('.bottom-fixed-bar');
-      if (bottomBar) {
-        bottomBar.style.display = (screenId === 'full-leaderboard') ? 'none' : 'flex';
-      }
-    }
-
-    // --- FULL LEADERBOARD LOGIC --- //
+    // --- FULL LEADERBOARD ---
     function openFullLeaderboard() {
       switchFullTab(currentHomeTab);
       showScreen('full-leaderboard');
+    }
+
+    function closeFullLeaderboard() {
+      showScreen('home');
     }
 
     function switchFullTab(tab) {
@@ -390,10 +399,7 @@
       
       const mapKey = currentFullTab === 'allTime' ? 'overall' : currentFullTab;
       const dataArray = fullLeaderboardData[mapKey];
-      
-      const myEntry = dataArray.find(s => String(s.id) === String(studentId));
 
-      // Build the full list
       const buildHtmlFull = (arr) => arr.map(r => {
         const isMe = String(r.id) === String(studentId);
         const rankColor = r.rank === 1 ? 'text-yellow-500' : (r.rank === 2 ? 'text-gray-400' : (r.rank === 3 ? 'text-orange-400' : 'text-gray-300'));
@@ -417,8 +423,8 @@
 
       document.getElementById('fullLeaderboardList').innerHTML = buildHtmlFull(dataArray);
     }
-    // --- END FULL LEADERBOARD LOGIC --- //
 
+    // --- QUIZ LOGIC ---
     async function startChallenge() {
       showScreen('quiz');
       document.getElementById('questionText').innerText = "Fetching your questions...";
@@ -457,10 +463,20 @@
       else { nextBtn.innerText = "Next Question"; nextBtn.className = "w-full bg-gray-900 text-white font-bold py-3.5 rounded-xl shadow-sm hover:bg-black transition active:scale-95"; }
     }
 
-    function nextQuestion() { if (currentIndex < quizData.length - 1) { currentIndex++; renderQuestion(); } else { finishChallenge(); } }
+    function nextQuestion() { 
+      if (currentIndex < quizData.length - 1) { 
+        currentIndex++; 
+        renderQuestion(); 
+        // Scroll to top of quiz area for the new question
+        document.getElementById('screen-quiz').querySelector('.smooth-scroll').scrollTop = 0;
+      } else { 
+        finishChallenge(); 
+      } 
+    }
 
     function startTimer() {
       const display = document.getElementById('timerDisplay'); display.classList.remove('text-red-500', 'animate-pulse'); display.classList.add('text-indigo-600');
+      clearInterval(timerInterval);
       timerInterval = setInterval(() => {
         timeLeft--;
         display.innerHTML = `<i class="fa-regular fa-clock text-lg"></i> ${String(Math.floor(timeLeft / 60)).padStart(2, '0')}:${String(timeLeft % 60).padStart(2, '0')}`;
@@ -485,7 +501,6 @@
     }
 
     function openAnalysis() {
-      document.body.style.overflow = 'hidden'; document.documentElement.style.overflow = 'hidden';
       document.getElementById('analysisModal').classList.remove('hidden'); document.getElementById('analysisModal').classList.add('flex');
       let html = '';
       quizData.forEach((q, i) => {
@@ -504,7 +519,6 @@
     }
 
     function closeAnalysis() { 
-      document.body.style.overflow = 'auto'; document.documentElement.style.overflow = 'auto';
       document.getElementById('analysisModal').classList.add('hidden'); document.getElementById('analysisModal').classList.remove('flex');
     }
     
@@ -514,15 +528,14 @@
       loadLeaderboard(); 
     }
 
+    // --- FEEDBACK ---
     function openFeedback() {
-      document.body.style.overflow = 'hidden'; document.documentElement.style.overflow = 'hidden';
       document.getElementById('fbName').value = studentName;
       document.getElementById('feedbackModal').classList.remove('hidden');
       document.getElementById('feedbackModal').classList.add('flex');
     }
 
     function closeFeedback() {
-      document.body.style.overflow = 'auto'; document.documentElement.style.overflow = 'auto';
       document.getElementById('feedbackModal').classList.add('hidden');
       document.getElementById('feedbackModal').classList.remove('flex');
     }
@@ -560,23 +573,6 @@
         alert("Failed to send feedback. Please try again."); btn.innerHTML = 'Submit Feedback'; btn.disabled = false;
       }
     }
-
-    // Touch lock for smooth scrolling inside modals and full leaderboard
-    document.querySelectorAll('.modal-scroll-area').forEach(scrollBox => {
-      scrollBox.addEventListener('touchstart', function(e) {
-        this.allowUp = (this.scrollTop > 0);
-        this.allowDown = (this.scrollTop < this.scrollHeight - this.clientHeight);
-        this.slideBeginY = e.changedTouches[0].pageY;
-      }, { passive: false });
-      
-      scrollBox.addEventListener('touchmove', function(e) {
-        let slideStartY = e.changedTouches[0].pageY;
-        let up = (slideStartY > this.slideBeginY);
-        let down = (slideStartY < this.slideBeginY);
-        this.slideBeginY = slideStartY;
-        if ((up && !this.allowUp) || (down && !this.allowDown)) e.preventDefault();
-      }, { passive: false });
-    });
   </script>
 </body>
 </html>
