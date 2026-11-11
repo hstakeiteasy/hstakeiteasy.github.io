@@ -7,15 +7,29 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    body { background-color: #f8fafc; }
-    .smooth-scroll { scroll-behavior: smooth; -webkit-overflow-scrolling: touch; }
+    /* ADDED: overscroll-behavior-y: none completely blocks the mobile "pull-to-refresh" page reload */
+    body { 
+      background-color: #f8fafc; 
+      overscroll-behavior-y: none; 
+    }
+    
+    .smooth-scroll { 
+      scroll-behavior: smooth; 
+      -webkit-overflow-scrolling: touch; 
+    }
     .smooth-scroll::-webkit-scrollbar { width: 5px; }
     .smooth-scroll::-webkit-scrollbar-track { background: #f8fafc; border-radius: 10px; }
     .smooth-scroll::-webkit-scrollbar-thumb { background: #c7d2fe; border-radius: 10px; }
-    @keyframes glow { 0% { box-shadow: 0 0 5px rgba(99, 102, 241, 0.4); } 100% { box-shadow: 0 0 20px rgba(99, 102, 241, 0.8), 0 0 30px rgba(99, 102, 241, 0.6); } }
+    
+    @keyframes glow { 
+      0% { box-shadow: 0 0 5px rgba(99, 102, 241, 0.4); } 
+      100% { box-shadow: 0 0 20px rgba(99, 102, 241, 0.8), 0 0 30px rgba(99, 102, 241, 0.6); } 
+    }
     .btn-glow { animation: glow 1.5s infinite alternate; }
+    
     .quiz-option { transition: all 0.2s ease-in-out; }
     .quiz-option.selected { border-color: #4f46e5 !important; background-color: #e0e7ff !important; font-weight: 800; color: #4f46e5; }
+    
     .screen { display: none; animation: fadeIn 0.3s ease-in-out; }
     .screen.active { display: block; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -129,6 +143,7 @@
         <button onclick="closeAnalysis()" class="text-gray-400 hover:text-red-500 w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center transition"><i class="fa-solid fa-xmark"></i></button>
       </div>
       
+      <!-- ADDED overscroll-contain directly to the scrollable area to trap touch scrolls -->
       <div id="analysisContent" class="p-6 overflow-y-auto smooth-scroll overscroll-contain flex-1 space-y-4">
         <!-- Analysis details injected here -->
       </div>
@@ -283,13 +298,15 @@
 
       document.getElementById('finalScore').innerText = score;
       
-      // Pass the played question IDs to the backend so they are marked as seen
       const playedQs = quizData.map(q => q.id).join(',');
       await fetchAPI('submitScore', { studentId: studentId, studentName: studentName, score: score, playedQs: playedQs });
     }
 
     function openAnalysis() {
+      // Prevent body scrolling when modal is open
+      document.body.style.overflow = 'hidden';
       document.getElementById('analysisModal').classList.remove('hidden');
+      document.getElementById('analysisModal').classList.add('flex');
       let html = '';
       quizData.forEach((q, i) => {
         const userAns = userAnswers[i]; const correctAns = parseInt(q.answer);
@@ -318,7 +335,13 @@
       document.getElementById('analysisContent').innerHTML = html;
     }
 
-    function closeAnalysis() { document.getElementById('analysisModal').classList.add('hidden'); }
+    function closeAnalysis() { 
+      // Restore body scrolling
+      document.body.style.overflow = 'auto';
+      document.getElementById('analysisModal').classList.add('hidden'); 
+      document.getElementById('analysisModal').classList.remove('flex');
+    }
+    
     function returnHome() { showScreen('home'); document.getElementById('dashRankDaily').innerHTML = '<i class="fa-solid fa-spinner fa-spin text-white"></i>'; loadLeaderboard(); }
   </script>
 </body>
