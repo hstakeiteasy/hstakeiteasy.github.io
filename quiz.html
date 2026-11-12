@@ -272,8 +272,8 @@
     async function loadLeaderboard() {
       const res = await fetchAPI('getLeaderboard', { studentId: studentId });
       
-      // Only top 3 performers get medals + rank number (no hashtag)
-      const buildHtml = (arr) => arr.slice(0, 3).map(r => {
+      // Shows ALL members. Rank is plain number (no hashtag). Medals only for top 3.
+      const buildHtml = (arr) => arr.map(r => {
         const isMe = String(r.id) === String(studentId);
         const medal = r.rank === 1 ? '🥇' : (r.rank === 2 ? '🥈' : (r.rank === 3 ? '🥉' : ''));
         return `<div class="flex justify-between items-center p-3.5 ${isMe ? 'bg-indigo-50 border-indigo-200 shadow-md' : 'bg-white border-gray-100'} border rounded-xl shadow-sm transition"><div class="flex items-center gap-3"><span class="w-9 text-center font-black text-lg flex items-center justify-center gap-1"><span>${r.rank}</span>${medal ? `<span class="text-xl">${medal}</span>` : ''}</span><div class="flex flex-col"><span class="font-bold text-gray-800 text-sm">${r.name} ${isMe ? '<span class="text-[9px] bg-indigo-600 text-white px-1.5 py-0.5 rounded-full ml-1 font-bold">YOU</span>' : ''}</span></div></div><span class="text-sm font-black text-indigo-600 bg-white border border-indigo-100 px-2.5 py-1 rounded-lg">${r.score} pts</span></div>`;
