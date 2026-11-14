@@ -227,6 +227,38 @@
     </div>
   </div>
 
+  <!-- 🎧 HELP / ENQUIRY MODAL -->
+  <div id="helpModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex justify-center items-center z-[70] p-4 transition-opacity">
+    <div class="bg-white p-6 rounded-2xl w-full max-w-sm shadow-2xl relative overflow-hidden flex flex-col">
+      <!-- Decorative Header Bar -->
+      <div class="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-blue-500 to-cyan-500"></div>
+      
+      <div class="flex justify-between items-center mb-4 mt-2">
+        <h3 class="text-lg font-bold text-gray-800"><i class="fa-solid fa-headset text-blue-500 mr-2"></i>Help & Support</h3>
+        <button onclick="closeHelpModal()" class="text-gray-400 hover:text-red-500 text-2xl transition"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      
+      <form id="helpForm" onsubmit="submitHelpForm(event)" class="space-y-4 mt-2">
+        <div>
+          <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Student Name</label>
+          <input type="text" id="helpName" name="name" readonly class="w-full bg-gray-100 border border-gray-200 text-gray-700 text-sm rounded-xl px-4 py-2.5 focus:outline-none font-medium">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Email ID</label>
+          <input type="email" id="helpEmail" name="email" required placeholder="your@email.com" class="w-full bg-gray-50 border border-gray-200 text-gray-800 text-sm rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Your Enquiry</label>
+          <textarea id="helpMessage" name="message" required rows="3" placeholder="How can we help you?" class="w-full bg-gray-50 border border-gray-200 text-gray-800 text-sm rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all resize-none"></textarea>
+        </div>
+        <button type="submit" id="helpSubmitBtn" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition active:scale-95 flex justify-center items-center gap-2 shadow-md">
+          <span>Send Message</span>
+          <i class="fa-solid fa-paper-plane"></i>
+        </button>
+      </form>
+    </div>
+  </div>
+
   <!-- Bottom Navigation -->
   <div class="fixed bottom-0 w-full bg-white flex justify-between items-end px-2 pb-safe shadow-[0_-10px_20px_-5px_rgba(0,0,0,0.05)] rounded-t-2xl border-t border-gray-100 z-40">
     <div class="flex w-2/5 justify-evenly pb-2 pt-3">
@@ -238,7 +270,8 @@
     </div>
     <div class="flex w-2/5 justify-evenly pb-2 pt-3">
       <button onclick="window.open('https://hstakeiteasy.github.io/quiz', '_blank')" class="flex flex-col items-center text-gray-400 hover:text-blue-500 transition"><i class="fa-solid fa-brain text-xl mb-1"></i><span class="text-[10px] font-bold tracking-wide">QUIZ</span></button>
-      <button onclick="window.open('https://drive.google.com/drive/folders/1NrHIK8OBWpmWZhycweMdZF5Bz1Ujv6uA?usp=sharing', '_blank')" class="flex flex-col items-center text-gray-400 hover:text-blue-500 transition"><i class="fa-solid fa-bullhorn text-xl mb-1"></i><span class="text-[10px] font-bold tracking-wide">NOTICE</span></button>
+      <!-- REPLACED NOTICE BUTTON WITH HELP BUTTON -->
+      <button onclick="openHelpModal()" class="flex flex-col items-center text-gray-400 hover:text-blue-500 transition"><i class="fa-solid fa-headset text-xl mb-1"></i><span class="text-[10px] font-bold tracking-wide">HELP</span></button>
     </div>
   </div>
 
@@ -385,6 +418,76 @@
       }
     }
 
+    // --- HELP MODAL LOGIC ---
+    function openHelpModal() {
+      const studentName = localStorage.getItem('studentName') || 'Student';
+      document.getElementById('helpName').value = studentName;
+      document.getElementById('helpForm').reset();
+      document.getElementById('helpName').value = studentName; // retain name after reset
+      
+      const btn = document.getElementById('helpSubmitBtn');
+      btn.disabled = false;
+      btn.innerHTML = '<span>Send Message</span><i class="fa-solid fa-paper-plane"></i>';
+      btn.className = 'w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition active:scale-95 flex justify-center items-center gap-2 shadow-md';
+      
+      document.getElementById('helpModal').classList.remove('hidden');
+    }
+
+    function closeHelpModal() {
+      document.getElementById('helpModal').classList.add('hidden');
+    }
+
+    async function submitHelpForm(event) {
+      event.preventDefault();
+      const btn = document.getElementById('helpSubmitBtn');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sending...';
+
+      const name = document.getElementById('helpName').value;
+      const email = document.getElementById('helpEmail').value;
+      const message = document.getElementById('helpMessage').value;
+
+      try {
+        // USING FORMSUBMIT AJAX TO PREVENT PAGE RELOAD
+        const response = await fetch("https://formsubmit.co/ajax/hello@sumitaidev.com", {
+            method: "POST",
+            headers: { 
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                name: name,
+                email: email,
+                message: message,
+                _subject: `New Enquiry from ${name} (HsTakeItEasy Portal)`
+            })
+        });
+
+        if (response.ok) {
+            btn.innerHTML = '<span>Sent Successfully</span><i class="fa-solid fa-check"></i>';
+            btn.classList.replace('bg-blue-600', 'bg-green-500');
+            btn.classList.replace('hover:bg-blue-700', 'hover:bg-green-600');
+            
+            setTimeout(() => {
+                closeHelpModal();
+            }, 2000);
+        } else {
+            throw new Error("Failed");
+        }
+      } catch (error) {
+        btn.innerHTML = '<span>Error Sending</span><i class="fa-solid fa-triangle-exclamation"></i>';
+        btn.classList.replace('bg-blue-600', 'bg-red-500');
+        btn.classList.replace('hover:bg-blue-700', 'hover:bg-red-600');
+        
+        setTimeout(() => {
+            btn.disabled = false;
+            btn.innerHTML = '<span>Send Message</span><i class="fa-solid fa-paper-plane"></i>';
+            btn.classList.replace('bg-red-500', 'bg-blue-600');
+            btn.classList.replace('hover:bg-red-600', 'hover:bg-blue-700');
+        }, 3000);
+      }
+    }
+
     async function openTestAnalysis(testId, testName) {
       if(!testId) return alert("Test ID missing");
       document.getElementById('analysisTestName').innerText = testName;
@@ -449,7 +552,7 @@
         if (meData.ok) {
           document.getElementById('studentName').innerText = meData.name || 'Student';
           document.getElementById('studentIdDisplay').innerText = `ID: ${meData.studentId || studentId}`;
-          // ADD THIS LINE SO THE QUIZ PORTAL KNOWS THE NAME
+          // ADD THIS LINE SO THE QUIZ PORTAL AND HELP MODAL KNOW THE NAME
           localStorage.setItem('studentName', meData.name || 'Student'); 
         }
 
