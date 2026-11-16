@@ -1013,38 +1013,40 @@
     }
 
     // 📲 NOTIFY PARENT ON WHATSAPP (BENGALI MESSAGE)
-    async function collectDistributedFee() {
-      const studentId = getSelectedFeeStudent(); const amount = document.getElementById('feeAmount').value;
-      if(!studentId || !amount) return alert("Enter valid student and amount");
-      const checks = document.querySelectorAll('.bill-check:checked'); if(checks.length === 0) return alert("Select bill");
-      
-      const res = await fetchAPI('collectMultiFee', { studentId: studentId, amount: amount, mode: document.getElementById('feeMode').value, note: document.getElementById('feeNote').value, billIds: JSON.stringify(Array.from(checks).map(c=>c.value)) });
-      
-      if(res.ok) { 
-        const st = allStudents.find(s => s.StudentID === studentId);
-        let phone = st ? String(st.ParentPhone).replace(/\D/g, '') : '';
-        if(phone.length === 10) phone = '91' + phone;
-        
-        const payMsg = `সম্মানীয় অভিভাবক/অভিভাবিকা,
-আপনার টিউশন ফি ₹${amount} সফলভাবে জমা হয়েছে। সময়মতো পেমেন্ট সম্পন্ন করার জন্য আপনাকে অসংখ্য ধন্যবাদ। আপনার নিয়মিত সহযোগিতা আমাকে অনুপ্রাণিত করে।
+async function collectDistributedFee() {
+  const studentId = getSelectedFeeStudent(); const amount = document.getElementById('feeAmount').value;
+  if(!studentId || !amount) return alert("Enter valid student and amount");
+  const checks = document.querySelectorAll('.bill-check:checked'); if(checks.length === 0) return alert("Select bill");
+  
+  const res = await fetchAPI('collectMultiFee', { studentId: studentId, amount: amount, mode: document.getElementById('feeMode').value, note: document.getElementById('feeNote').value, billIds: JSON.stringify(Array.from(checks).map(c=>c.value)) });
+  
+  if(res.ok) { 
+    const st = allStudents.find(s => s.StudentID === studentId);
+    let phone = st ? String(st.ParentPhone).replace(/\D/g, '') : '';
+    if(phone.length === 10) phone = '91' + phone;
+    
+    const studentName = st ? st.Name : '';
+    
+    const payMsg = `সম্মানীয় অভিভাবক/অভিভাবিকা,
+আপনার সন্তান ${studentName} এর টিউশন ফি ₹${amount} সফলভাবে জমা হয়েছে। সময়মতো পেমেন্ট সম্পন্ন করার জন্য আপনাকে অসংখ্য ধন্যবাদ। আপনার নিয়মিত সহযোগিতা আমাকে অনুপ্রাণিত করে।
 বিনীত,
 হাসিবুল সেখ
 HsTakeItEasy`;
-        
-        const waLink = phone ? `https://wa.me/${phone}?text=${encodeURIComponent(payMsg)}` : '';
-        
-        loadStudentBills(); 
-        document.getElementById('feeAmount').value=''; 
-        
-        document.getElementById('customAlertIcon').innerHTML = '<i class="fa-solid fa-circle-check text-green-500"></i>';
-        document.getElementById('customAlertTitle').innerText = 'Fee Collected Successfully!';
-        document.getElementById('customAlertBody').innerHTML = `Amount of ₹${amount} has been collected.<br><br>` + 
-          (waLink ? `<a href="${waLink}" target="_blank" onclick="document.getElementById('customAlertModal').classList.add('hidden')" class="bg-green-500 text-white px-4 py-2 rounded-lg font-bold shadow-md hover:bg-green-600 inline-block transition transform hover:-translate-y-0.5 active:scale-95"><i class="fa-brands fa-whatsapp mr-1"></i> Notify Parent on WhatsApp</a>` 
-                  : `<p class="text-red-500 text-xs font-bold">No valid parent phone number found.</p>`);
-        
-        document.getElementById('customAlertModal').classList.remove('hidden');
-      }
-    }
+    
+    const waLink = phone ? `https://wa.me/${phone}?text=${encodeURIComponent(payMsg)}` : '';
+    
+    loadStudentBills(); 
+    document.getElementById('feeAmount').value=''; 
+    
+    document.getElementById('customAlertIcon').innerHTML = '<i class="fa-solid fa-circle-check text-green-500"></i>';
+    document.getElementById('customAlertTitle').innerText = 'Fee Collected Successfully!';
+    document.getElementById('customAlertBody').innerHTML = `Amount of ₹${amount} has been collected.<br><br>` + 
+      (waLink ? `<a href="${waLink}" target="_blank" onclick="document.getElementById('customAlertModal').classList.add('hidden')" class="bg-green-500 text-white px-4 py-2 rounded-lg font-bold shadow-md hover:bg-green-600 inline-block transition transform hover:-translate-y-0.5 active:scale-95"><i class="fa-brands fa-whatsapp mr-1"></i> Notify Parent on WhatsApp</a>` 
+              : `<p class="text-red-500 text-xs font-bold">No valid parent phone number found.</p>`);
+    
+    document.getElementById('customAlertModal').classList.remove('hidden');
+  }
+}
 
     async function applyDistributedDiscount() {
       const studentId = getSelectedFeeStudent(); const amount = document.getElementById('feeAmount').value;
