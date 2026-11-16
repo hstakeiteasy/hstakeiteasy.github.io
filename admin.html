@@ -336,6 +336,24 @@
     </div>
   </div>
 
+  <!-- PAYMENT SUCCESS MODAL -->
+  <div id="paymentSuccessModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex justify-center items-center z-[70] p-4 transition-opacity">
+    <div class="bg-white p-6 rounded-[2rem] w-full max-w-sm shadow-2xl relative overflow-hidden flex flex-col text-center">
+      <div class="absolute top-0 left-0 w-full h-1.5 bg-green-500"></div>
+      <div class="w-20 h-20 bg-green-50 text-green-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-inner mt-4">
+        <i class="fa-solid fa-check text-4xl"></i>
+      </div>
+      <h3 class="text-2xl font-black text-gray-800 mb-2">Payment Successful!</h3>
+      <p class="text-sm text-gray-500 font-medium mb-6">The fee has been collected and updated in the system.</p>
+      <div class="flex gap-3">
+        <button onclick="document.getElementById('paymentSuccessModal').classList.add('hidden')" class="flex-1 bg-gray-100 text-gray-700 font-bold py-3 rounded-xl hover:bg-gray-200 transition">Close</button>
+        <a id="waShareBtn" href="#" target="_blank" onclick="document.getElementById('paymentSuccessModal').classList.add('hidden')" class="flex-1 bg-green-500 text-white font-bold py-3 rounded-xl hover:bg-green-600 transition flex items-center justify-center gap-2 shadow-md hidden">
+          <i class="fa-brands fa-whatsapp text-lg"></i> Share
+        </a>
+      </div>
+    </div>
+  </div>
+
   <!-- Payment History Modal -->
   <div id="paymentHistoryModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex justify-center items-center z-[60] p-4">
     <div class="bg-white p-6 rounded-lg w-full max-w-lg max-h-[90vh] flex flex-col">
@@ -384,7 +402,14 @@
     function logout() { localStorage.clear(); sessionStorage.clear(); window.location.href = 'login.html'; }
     function toggleSidebar() { document.getElementById('sidebar').classList.toggle('-translate-x-full'); document.getElementById('sidebarOverlay').classList.toggle('hidden'); }
     function switchTab(tabId) { document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active')); document.getElementById(tabId).classList.add('active'); if(window.innerWidth < 768) { toggleSidebar(); } }
-    function cleanDate(isoString) { if(!isoString) return ''; const d = new Date(isoString); return d.toLocaleDateString('en-IN', {day:'2-digit', month:'2-digit', year:'numeric'}); }
+    
+    function cleanDate(isoString) { 
+      if(!isoString) return ''; 
+      const d = new Date(isoString); 
+      // Fallback formatting if date is invalid
+      if(isNaN(d.getTime())) return isoString.split(' ')[0];
+      return d.toLocaleDateString('en-IN', {day:'2-digit', month:'2-digit', year:'numeric'}); 
+    }
 
     // FETCH API WITH CACHE BUSTER
     async function fetchAPI(action, params = {}, showLoader = true) {
@@ -642,6 +667,7 @@
                  <div>
                    <p class="text-xs font-bold text-gray-500 mb-1">Due: ${cleanDate(b.dueDate)} <span class="${statusColor} px-2 py-0.5 rounded ml-2">${b.status}</span></p>
                    <p class="text-sm font-bold text-gray-800">Bill: ₹${b.amount} ${b.note ? `<span class="text-[10px] text-purple-500 font-bold bg-purple-50 px-1 rounded ml-1 border border-purple-100">${b.note}</span>` : ''}</p>
+                   ${b.paidOn ? `<p class="text-[10px] text-gray-400 font-medium mt-1"><i class="fa-regular fa-calendar-check mr-1"></i> Paid on: ${cleanDate(b.paidOn)}</p>` : ''}
                  </div>
                  <div class="text-right">
                    <p class="text-sm font-black text-green-600">Paid: ₹${b.paid}</p>
@@ -841,16 +867,22 @@
       const res = await fetchAPI('collectMultiFee', { studentId: studentId, amount: amount, mode: document.getElementById('feeMode').value, note: document.getElementById('feeNote').value, billIds: JSON.stringify(Array.from(checks).map(c=>c.value)) });
       
       if(res.ok) { 
-        alert("Paid!");
-        
-        // WhatsApp Success Notification Logic
         const student = allStudents.find(s => s.StudentID === studentId);
+        const waBtn = document.getElementById('waShareBtn');
+        
+        // Setup WhatsApp Bengali Success Message
         if(student && student.ParentPhone) {
           let phone = String(student.ParentPhone).replace(/\D/g, ''); 
           if(phone.length === 10) phone = '91' + phone;
-          const msg = `সম্মানীয় অভিভাবক/অভিভাবিকা,\nআপনার টিউশন ফি ₹${amount} সফলভাবে জমা হয়েছে। সময়মতো পেমেন্ট সম্পন্ন করার জন্য আপনাকে অসংখ্য ধন্যবাদ। আপনার নিয়মিত সহযোগিতা আমাকে অনুপ্রাণিত করে।\nবিনীত,\nহাসিবুল সেখ\nHsTakeItEasy`;
-          window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+          const msg = `সম্মানীয় অভিভাবক/অভিভাবিকা\nআপনার টিউশন ফি ₹${amount} সফলভাবে জমা হয়েছে। সময়মতো পেমেন্ট সম্পন্ন করার জন্য আপনাকে অসংখ্য ধন্যবাদ। আপনার নিয়মিত সহযোগিতা আমাকে অনুপ্রাণিত করে।\nবিনীত,\nহাসিবুল সেখ\nHsTakeItEasy`;
+          waBtn.href = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
+          waBtn.classList.remove('hidden');
+        } else {
+          waBtn.classList.add('hidden');
         }
+        
+        // Show Success Modal
+        document.getElementById('paymentSuccessModal').classList.remove('hidden');
         
         loadStudentBills(); 
         document.getElementById('feeAmount').value=''; 
