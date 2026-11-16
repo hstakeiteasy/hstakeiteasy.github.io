@@ -56,7 +56,6 @@
       <!-- BATCHES TAB -->
       <div id="batches" class="tab-content active space-y-6">
         
-        <!-- HEADER WITH OVERALL STUDENT COUNT -->
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
           <h2 class="text-2xl font-bold">Manage Batches</h2>
           <div class="bg-indigo-50 border border-indigo-200 text-indigo-800 px-5 py-2 rounded-xl shadow-sm flex items-center gap-3">
@@ -107,7 +106,7 @@
           </div>
         </div>
 
-        <!-- 🛡️ UPDATED: Add Student UI (Now includes Gender, Custom Fee etc.) -->
+        <!-- ADD STUDENT UI (WITH GENDER & CUSTOM FEE) -->
         <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
           <div class="grid grid-cols-1 md:grid-cols-6 gap-3">
             <input type="text" id="sName" placeholder="Student Name" class="p-2 border rounded col-span-1 md:col-span-2">
@@ -130,7 +129,7 @@
           </div>
         </div>
         
-        <!-- 🛡️ UPDATED: Student Table area with Batch Filtering -->
+        <!-- STUDENT TABLE (WITH BATCH FILTER & GENDER COLUMN) -->
         <div class="bg-white p-4 md:p-6 rounded-lg shadow-sm border border-gray-100 overflow-x-auto">
           <div class="flex flex-col md:flex-row gap-2 mb-4">
             <input type="text" id="studentSearch" onkeyup="filterStudents()" placeholder="🔍 Search by Name or ID..." class="w-full p-3 border border-gray-300 rounded focus:outline-none focus:border-blue-500">
@@ -207,7 +206,6 @@
       <div id="dues" class="tab-content space-y-6">
         <h2 class="text-2xl font-bold mb-2">Dues & Billing</h2>
         
-        <!-- Toggle Buttons -->
         <div class="flex justify-center mb-6">
           <div class="bg-white rounded-lg p-1 shadow-sm border border-gray-100 flex w-full max-w-3xl flex-col md:flex-row">
             <button id="btnViewFeeAction" onclick="toggleDuesView('feeAction')" class="flex-1 py-2 px-1 text-sm font-bold rounded-md bg-blue-600 text-white shadow transition-all m-1">Fee Action</button>
@@ -223,7 +221,6 @@
           <div class="flex gap-2 mb-1">
             <div class="relative w-full">
               <input type="text" id="feeStudentInput" autocomplete="off" placeholder="Search Student ID or Name..." oninput="handleStudentSearch()" class="p-2 border rounded w-full focus:outline-none focus:border-blue-500">
-              <!-- Smart Dropdown replacing datalist -->
               <div id="studentSearchDropdown" class="absolute left-0 right-0 bg-white border border-gray-200 w-full max-h-48 overflow-y-auto hidden z-50 rounded-b shadow-xl"></div>
             </div>
             <button onclick="manualRefreshBills(this)" class="bg-blue-50 text-blue-600 border border-blue-100 px-3 rounded hover:bg-blue-100 transition focus:outline-none flex-shrink-0" title="Refresh Selected Student's Bills">
@@ -308,7 +305,6 @@
       <div id="more" class="tab-content space-y-6">
         <h2 class="text-2xl font-bold">Settings & Resources</h2>
         
-        <!-- Global Resources -->
         <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
           <h3 class="text-lg font-bold mb-2"><i class="fa-brands fa-google-drive text-blue-500"></i> Common Resource Folder</h3>
           <p class="text-sm text-gray-500 mb-4">This folder will be visible to ALL students in their Material section.</p>
@@ -318,7 +314,6 @@
           </div>
         </div>
 
-        <!-- Batch Wise Folders -->
         <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
           <h3 class="text-lg font-bold mb-2"><i class="fa-solid fa-folder-tree text-green-500"></i> Batch-Wise Class Folders</h3>
           <p class="text-sm text-gray-500 mb-4">Map a specific Google Drive folder (e.g. Class 5, Class 12) to each batch. Students will only see the folder assigned to their batch.</p>
@@ -416,7 +411,6 @@
     function cleanDate(isoString) { 
       if(!isoString) return ''; 
       const d = new Date(isoString); 
-      // Fallback formatting if date is invalid
       if(isNaN(d.getTime())) return isoString.split(' ')[0];
       return d.toLocaleDateString('en-IN', {day:'2-digit', month:'2-digit', year:'numeric'}); 
     }
@@ -441,7 +435,7 @@
     }
 
     let allBatches = [], allStudents = [], allTests = [];
-    window.currentStudentBills = []; // Store bills to view history
+    window.currentStudentBills = [];
 
     document.getElementById('attDate').valueAsDate = new Date(); document.getElementById('testDate').valueAsDate = new Date();
 
@@ -470,7 +464,6 @@
         allBatches.forEach(b => {
           document.querySelectorAll('.batch-dropdown, .batch-dropdown-strict').forEach(s => s.innerHTML += `<option value="${b.BatchID}">${b.BatchName}</option>`);
           
-          // Count Students in this batch
           const studentCount = allStudents.filter(s => String(s.BatchID) === String(b.BatchID)).length;
           
           bHtml += `<tr class="border-b hover:bg-gray-50 transition">
@@ -644,7 +637,7 @@
       
       const res = await fetchAPI('studentFees', {studentId: validStudentId}, false); 
       if(res.ok) {
-        window.currentStudentBills = res.bills; // Save for history modal
+        window.currentStudentBills = res.bills;
         let pending = res.bills.filter(b => b.status !== 'PAID').sort((a,b) => new Date(a.dueDate) - new Date(b.dueDate));
         let html = ''; if(pending.length === 0) html = '<p class="text-green-600 text-center font-medium py-2">No pending bills!</p>';
         pending.forEach(b => {
@@ -662,7 +655,6 @@
       if(!window.currentStudentBills || window.currentStudentBills.length === 0) {
         body.innerHTML = '<p class="text-gray-500 text-center py-4">No records found.</p>';
       } else {
-        // Show bills that have some payment or discount applied, or are fully paid
         let historyBills = window.currentStudentBills.filter(b => b.paid > 0 || b.discount > 0 || b.status === 'PAID').sort((a,b) => new Date(b.dueDate) - new Date(a.dueDate));
         
         if(historyBills.length === 0) {
@@ -895,7 +887,6 @@
         const student = allStudents.find(s => s.StudentID === studentId);
         const waBtn = document.getElementById('waShareBtn');
         
-        // Setup WhatsApp Bengali Success Message
         if(student && student.ParentPhone) {
           let phone = String(student.ParentPhone).replace(/\D/g, ''); 
           if(phone.length === 10) phone = '91' + phone;
@@ -906,9 +897,7 @@
           waBtn.classList.add('hidden');
         }
         
-        // Show Success Modal
         document.getElementById('paymentSuccessModal').classList.remove('hidden');
-        
         loadStudentBills(); 
         document.getElementById('feeAmount').value=''; 
       }
@@ -938,7 +927,6 @@
         res.students.forEach(s => { 
           let phone = String(s.parentPhone).replace(/\D/g, ''); if(phone.length === 10) phone = '91' + phone;
           
-          // Bengali Due Reminder Message
           const msg = `সম্মানীয় অভিভাবক/অভিভাবিকা,\n\nআপনাকে বিনীতভাবে জানানো যাচ্ছে যে, আপনার সন্তান ${s.name} টিউশন ফি বাবদ এ যাবৎ মোট ₹${s.due} টাকা বকেয়া রয়েছে। অনুগ্রহ করে অতিসত্বর ফি পরিশোধ করে সহযোগিতা করার জন্য অনুরোধ করা হলো।\n\nধন্যবাদান্তে,\nহাসিবুল সেখ\nHsTakeItEasy`;
           
           html += `<div class="flex justify-between items-center p-4 border-b hover:bg-gray-50 transition"><div><span class="font-semibold text-gray-800">${s.name} <span class="text-xs text-gray-400 font-mono">(${s.studentId})</span></span><span class="ml-2 text-[10px] bg-gray-200 text-gray-700 px-2 py-1 rounded font-bold uppercase">${s.batchName}</span><p class="text-sm text-red-500 font-bold mt-1">Due: ₹${s.due}</p></div><a href="https://wa.me/${phone}?text=${encodeURIComponent(msg)}" target="_blank" class="text-green-500 text-2xl hover:text-green-600 p-2"><i class="fa-brands fa-whatsapp"></i></a></div>`; 
