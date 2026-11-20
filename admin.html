@@ -399,7 +399,7 @@
       <input type="password" id="billAdminPass" placeholder="Admin Password" class="w-full border p-3 rounded-lg mb-4 focus:outline-none focus:border-blue-500 transition">
       <div class="flex justify-end gap-2">
         <button onclick="document.getElementById('billAuthModal').classList.add('hidden')" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 font-bold rounded-lg text-gray-800 transition">Cancel</button>
-        <button id="billAuthConfirmBtn" class="btn-primary">Confirm</button>
+        <button id="billAuthConfirmBtn" onclick="executeBillAction()" class="btn-primary">Confirm</button>
       </div>
     </div>
   </div>
@@ -484,6 +484,9 @@
     window.onload = async () => {
       // Initialize first tab selection visually
       switchTab('batches');
+
+      // 🔧 FIX: Wire up the bill auth confirm button (was missing onclick)
+      document.getElementById('billAuthConfirmBtn').onclick = executeBillAction;
 
       const bRes = await fetchAPI('getBatches');
       const sRes = await fetchAPI('getStudents');
@@ -985,23 +988,45 @@
     }
 
     let pendingBillAction = '';
+
+    // 🔧 FIXED: Validate month/year before opening password modal
     function openBillAuth(actionType) {
-      const month = document.getElementById('billMonth').value; const year = document.getElementById('billYear').value;
+      const month = Number(document.getElementById('billMonth').value);
+      const year = Number(document.getElementById('billYear').value);
       if(!month || !year) return alert("Specify Month and Year.");
-      pendingBillAction = actionType; document.getElementById('billAuthTitle').innerText = actionType === 'generate' ? 'Generate Bills' : 'Remove Bills'; document.getElementById('billAdminPass').value = '';
+      if(month < 1 || month > 12) return alert("Month must be between 1 and 12.");
+      if(year < 2000 || year > 2100) return alert("Year looks invalid.");
+      pendingBillAction = actionType;
+      document.getElementById('billAuthTitle').innerText = actionType === 'generate' ? 'Generate Bills' : 'Remove Bills';
+      document.getElementById('billAdminPass').value = '';
       document.getElementById('billAuthModal').classList.remove('hidden');
     }
 
+    // 🔧 FIXED: Now actually called via onclick on the Confirm button
     async function executeBillAction() {
-      const pass = document.getElementById('billAdminPass').value; if(!pass) return alert("Admin password required.");
-      const batchId = document.getElementById('billBatch').value; const month = document.getElementById('billMonth').value; const year = document.getElementById('billYear').value;
+      const pass = document.getElementById('billAdminPass').value;
+      if(!pass) return alert("Admin password required.");
+
+      const btn = document.getElementById('billAuthConfirmBtn');
+      btn.disabled = true;
+      btn.innerText = 'Processing...';
+
+      const batchId = document.getElementById('billBatch').value;
+      const month = document.getElementById('billMonth').value;
+      const year = document.getElementById('billYear').value;
       document.getElementById('billAuthModal').classList.add('hidden');
-      if(pendingBillAction === 'generate') {
-        const res = await fetchAPI('generateBills', {batchId: batchId, month: month, year: year, adminPass: pass});
-        if(res.ok) alert('Bills Generated'); else alert('Error: ' + res.msg);
-      } else if(pendingBillAction === 'remove') {
-        const res = await fetchAPI('deleteBills', {batchId: batchId, month: month, year: year, adminPass: pass});
-        if(res.ok) alert(`Deleted ${res.count} bills.`); else alert('Error: ' + res.msg);
+
+      try {
+        if(pendingBillAction === 'generate') {
+          const res = await fetchAPI('generateBills', {batchId: batchId, month: month, year: year, adminPass: pass});
+          if(res.ok) alert('Bills Generated'); else alert('Error: ' + res.msg);
+        } else if(pendingBillAction === 'remove') {
+          const res = await fetchAPI('deleteBills', {batchId: batchId, month: month, year: year, adminPass: pass});
+          if(res.ok) alert(`Deleted ${res.count} bills.`); else alert('Error: ' + res.msg);
+        }
+      } finally {
+        btn.disabled = false;
+        btn.innerText = 'Confirm';
       }
     }
 
